@@ -1,4 +1,4 @@
-/*********************************************************************************
+﻿/*********************************************************************************
 **********************************************************************************
 ***
 *** MTV3D - Mesh Tally Visualization in 3D
@@ -24,17 +24,24 @@
 #include "Resource.h"
 
 
+App* App::appPointer = nullptr;
+
+
+App::App() {
+	App::appPointer = this;
+}
+
+
+INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+
+
 int App::run(HINSTANCE hInstance, int& nCmdShow) {
 	this->hCurrentInst = hInstance;
 	this->createWndClasses();
 
-	this->hSplashWnd = std::make_unique<Window>(this->hCurrentInst, WndClass::Type::SPLASH);
-	ShowWindow(this->hSplashWnd->getHandle(), nCmdShow);
-	//UpdateWindow(this->hSplashWnd->getHandle());
-
-	/*this->hMainWnd = std::make_unique<Window>(this->hCurrentInst, WndClass::Type::MAIN);
-	ShowWindow(this->hMainWnd->getHandle(), nCmdShow);
-	UpdateWindow(this->hMainWnd->getHandle());*/
+	this->hSplashWnd = WindowFactory::createWindow(this->hCurrentInst, WndClass::Type::SPLASH);
+	ShowWindow(this->hSplashWnd, nCmdShow);
+	SetTimer(this->hSplashWnd, IDT_TIMER_SPLASH, SPLASH_TTL, nullptr);
 
 	HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MTV3D));
 	MSG msg;
@@ -50,13 +57,120 @@ int App::run(HINSTANCE hInstance, int& nCmdShow) {
 }
 
 
+LRESULT CALLBACK App::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+	LPTSTR lpWndClassName = new wchar_t[WCHAR_ARR_MAX];
+	GetClassName(hWnd, lpWndClassName, WCHAR_ARR_MAX);
+	WndClass::Type wcType = WndClass::retrieveWndClassType(std::wstring(lpWndClassName));
+	delete[] lpWndClassName;
+
+	switch (message) {
+	case WM_TIMER: {
+		switch (wParam) {
+		case IDT_TIMER_SPLASH:
+			DestroyWindow(hWnd);
+
+			App::appPointer->hMainWnd = WindowFactory::createWindow(App::appPointer->hCurrentInst, WndClass::Type::MAIN);
+			ShowWindow(App::appPointer->hMainWnd, SW_SHOW);
+			UpdateWindow(App::appPointer->hMainWnd);
+
+			break;
+		}
+		break;
+	}
+	case WM_COMMAND: {
+		int wmId = LOWORD(wParam);
+		// Parse the menu selections:
+		switch (wmId) {
+		case IDM_LOAD_NP: {
+			DialogBox(nullptr, L"Load New project", hWnd, nullptr);
+			break;
+		}
+		case IDM_EXIT: {
+			DestroyWindow(hWnd);
+			break;
+		}
+		case IDM_CHANGE_LANG: {
+			DialogBox(nullptr, L"Chage Language", hWnd, nullptr);
+			break;
+		}
+		case IDM_UPDATE: {
+			DialogBox(nullptr, L"Update", hWnd, nullptr);
+			break;
+		}
+		case IDM_DOC: {
+			DialogBox(nullptr, L"Documentation", hWnd, nullptr);
+			break;
+		}
+		case IDM_ABOUT: {
+			DialogBox(nullptr, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+			break;
+		}
+		default: {
+			return DefWindowProc(hWnd, message, wParam, lParam);
+		}
+		}
+		break;
+	}
+	case WM_PAINT: {
+		switch (wcType) {
+		case WndClass::Type::SPLASH: {
+		PAINTSTRUCT ps;
+		HDC hdc = BeginPaint(hWnd, &ps);
+
+		WindowFactory::loadSplash(hdc);
+		
+		EndPaint(hWnd, &ps);
+		DeleteDC(hdc);
+		break;
+		}
+		}
+		break;
+	}
+	case WM_DESTROY: {
+		switch (wcType) {
+		case WndClass::Type::SPLASH: {
+			break;
+		}
+		default: {
+			PostQuitMessage(0);
+		}
+		}
+		break;
+	}
+	}
+
+	return DefWindowProc(hWnd, message, wParam, lParam);
+}
+
+
+INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	UNREFERENCED_PARAMETER(lParam);
+	switch (message)
+	{
+	case WM_INITDIALOG:
+		return (INT_PTR)TRUE;
+
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hDlg, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+
+
+
 void App::createWndClasses() {
 	this->wndClassTypeStruct.clear();
 
 	this->wndClassTypeStruct[WndClass::Type::SPLASH] = {
 		sizeof(WNDCLASSEXW),
 		CS_HREDRAW | CS_VREDRAW,
-		Window::WndProc,
+		App::WndProc,
 		0,
 		0,
 		this->hCurrentInst,
@@ -71,7 +185,7 @@ void App::createWndClasses() {
 	this->wndClassTypeStruct[WndClass::Type::MAIN] = {
 		sizeof(WNDCLASSEXW),
 		CS_HREDRAW | CS_VREDRAW,
-		Window::WndProc,
+		App::WndProc,
 		0,
 		0,
 		this->hCurrentInst,

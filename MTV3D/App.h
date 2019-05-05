@@ -21,24 +21,27 @@
 **********************************************************************************/
 #pragma once
 
-#include "Window.h"
+#include "WindowFactory.h"
 #include <vector>
 #include <utility>
 #include <map>
 
 class App {
 private:
+	static App* appPointer;
+
 	std::map<WndClass::Type, WNDCLASSEXW> wndClassTypeStruct;
-	std::unique_ptr<Window> hSplashWnd;
-	std::unique_ptr<Window> hMainWnd;
-	std::vector<std::pair<std::unique_ptr<Window>, std::unique_ptr<Window>>> hVisWnd;
+	HWND hSplashWnd;
+	HWND hMainWnd;
+	std::vector<std::pair<HWND, HWND>> hVisWnd;
 public:
 	HINSTANCE hCurrentInst;
 
-	App() = default;
+	App();
 	~App() = default;
 
 	int run(HINSTANCE hInstance, int& nCmdShow);
+	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 private:
 	void createWndClasses();
 };

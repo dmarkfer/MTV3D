@@ -4,8 +4,14 @@
 #define IDR_MAINFRAME			128
 #define IDD_MTV3D_DIALOG	102
 #define IDD_ABOUTBOX			103
-#define IDM_ABOUT				104
-#define IDM_EXIT				105
+
+#define IDM_LOAD_NP			11
+#define IDM_EXIT			12
+#define IDM_CHANGE_LANG		21
+#define IDM_UPDATE			22
+#define IDM_DOC				32
+#define IDM_ABOUT			31
+
 #define IDI_MTV3D			107
 #define IDC_MTV3D			109
 

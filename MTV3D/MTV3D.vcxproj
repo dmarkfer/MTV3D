@@ -158,7 +158,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="UserInput.h" />
     <ClInclude Include="Visualization.h" />
-    <ClInclude Include="Window.h" />
+    <ClInclude Include="WindowFactory.h" />
     <ClInclude Include="WndClass.h" />
   </ItemGroup>
   <ItemGroup>
@@ -173,7 +173,7 @@
     </ClCompile>
     <ClCompile Include="UserInput.cpp" />
     <ClCompile Include="Visualization.cpp" />
-    <ClCompile Include="Window.cpp" />
+    <ClCompile Include="WindowFactory.cpp" />
     <ClCompile Include="WndClass.cpp" />
   </ItemGroup>
   <ItemGroup>

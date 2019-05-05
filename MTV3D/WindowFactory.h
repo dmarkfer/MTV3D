@@ -25,15 +25,8 @@
 #include "WndClass.h"
 
 
-class Window {
-private:
-	HWND hWnd;
+class WindowFactory {
 public:
-	Window(HINSTANCE hInst, WndClass::Type&& wndClassType);
-	Window(HINSTANCE hInst, WndClass::Type&& wndClassType, std::string& filename);
-	~Window() = default;
-
-	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-
-	HWND getHandle();
+	static HWND createWindow(HINSTANCE hInst, WndClass::Type&& wndClassType);
+	static void loadSplash(HDC hdc);
 };
