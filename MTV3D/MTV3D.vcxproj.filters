@@ -45,7 +45,10 @@
     <ClInclude Include="WndClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WindowFactory.h">
+    <ClInclude Include="MainWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SplashWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -71,7 +74,10 @@
     <ClCompile Include="WndClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WindowFactory.cpp">
+    <ClCompile Include="MainWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SplashWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

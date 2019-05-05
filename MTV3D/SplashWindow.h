@@ -21,12 +21,17 @@
 **********************************************************************************/
 #pragma once
 
-#include "stdafx.h"
 #include "WndClass.h"
 
 
-class WindowFactory {
+class SplashWindow {
+private:
+	HWND hWnd;
 public:
-	static HWND createWindow(HINSTANCE hInst, WndClass::Type&& wndClassType);
-	static void loadSplash(HDC hdc);
+	SplashWindow(HINSTANCE hInst);
+	~SplashWindow() = default;
+	
+	void loadSplash(HDC hdc);
+
+	HWND getHandle();
 };

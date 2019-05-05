@@ -5,12 +5,16 @@
 #define IDD_MTV3D_DIALOG	102
 #define IDD_ABOUTBOX			103
 
-#define IDM_LOAD_NP			11
+#define IDM_NEW_PROJ		11
 #define IDM_EXIT			12
 #define IDM_CHANGE_LANG		21
 #define IDM_UPDATE			22
 #define IDM_DOC				32
 #define IDM_ABOUT			31
+
+#define BUTTON_NEW_PROJ		1
+#define BUTTON_CLOSE_PROJ	2
+#define BUTTON_CLOSE_ALL	3
 
 #define IDI_MTV3D			107
 #define IDC_MTV3D			109

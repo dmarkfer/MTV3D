@@ -20,41 +20,25 @@
 **********************************************************************************
 **********************************************************************************/
 #include "stdafx.h"
-#include "WindowFactory.h"
-#include "Resource.h"
+#include "SplashWindow.h"
 
 
-HWND WindowFactory::createWindow(HINSTANCE hInst, WndClass::Type&& wndClassType) {
-	HWND hCreatedWnd = nullptr;
-
-	switch (wndClassType) {
-	case WndClass::Type::SPLASH: {
-		RECT primaryMonitor;
-		HWND hWndPrimaryDesktop = GetDesktopWindow();
-		GetWindowRect(hWndPrimaryDesktop, &primaryMonitor);
-
-		hCreatedWnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"Splash", nullptr, 0,
-			primaryMonitor.right/2-SPLASH_DIM, (primaryMonitor.bottom-SPLASH_DIM)/2, 2*SPLASH_DIM, SPLASH_DIM,
-			nullptr, nullptr, hInst, nullptr);
-
-		LONG style = GetWindowLong(hCreatedWnd, GWL_STYLE);
-		style &= ~(WS_BORDER | WS_CAPTION | WS_SYSMENU);
-		SetWindowLong(hCreatedWnd, GWL_STYLE, style);
-
-		break;
-	}
-	case WndClass::Type::MAIN: {
-		hCreatedWnd = CreateWindowW(L"Main", L"Mesh Tally Visualization in 3D", WS_OVERLAPPEDWINDOW | WS_MAXIMIZE,
-			CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInst, nullptr);
-		break;
-	}
-	}
-
-	return hCreatedWnd;
-};
+SplashWindow::SplashWindow(HINSTANCE hInst) {
+	RECT primaryMonitor;
+	HWND hWndPrimaryDesktop = GetDesktopWindow();
+	GetWindowRect(hWndPrimaryDesktop, &primaryMonitor);
+	
+	this->hWnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"Splash", nullptr, 0,
+		primaryMonitor.right/2-SPLASH_DIM, (primaryMonitor.bottom-SPLASH_DIM)/2, 2*SPLASH_DIM, SPLASH_DIM,
+		nullptr, nullptr, hInst, nullptr);
+	
+	LONG style = GetWindowLong(this->hWnd, GWL_STYLE);
+	style &= ~(WS_BORDER | WS_CAPTION | WS_SYSMENU);
+	SetWindowLong(this->hWnd, GWL_STYLE, style);
+}
 
 
-void WindowFactory::loadSplash(HDC hdc) {
+void SplashWindow::loadSplash(HDC hdc) {
 	HDC hMemDC = CreateCompatibleDC(hdc);
 
 	HBITMAP hMTVBitmap = (HBITMAP)LoadImage(nullptr, L"MTV3D.bmp", IMAGE_BITMAP,
@@ -104,4 +88,9 @@ void WindowFactory::loadSplash(HDC hdc) {
 
 	SetRect(&textRect, SPLASH_DIM, 15 * margin + unizgLogoDim, 2 * SPLASH_DIM - 6 * margin, 15 * margin + unizgLogoDim + 40);
 	DrawText(hdc, TEXT("Software developed by Domagoj Markota as Bachelor's\nThesis project (mentor: docent Mario Matijević, Ph.D.)."), -1, &textRect, DT_NOCLIP | DT_CENTER | DT_VCENTER);
+}
+
+
+HWND SplashWindow::getHandle() {
+	return this->hWnd;
 }

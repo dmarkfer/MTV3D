@@ -21,10 +21,11 @@
 **********************************************************************************/
 #include "stdafx.h"
 #include "App.h"
-#include "Resource.h"
 
 
 App* App::appPointer = nullptr;
+PAINTSTRUCT App::ps = {};
+HDC App::hdc = nullptr;
 
 
 App::App() {
@@ -39,9 +40,9 @@ int App::run(HINSTANCE hInstance, int& nCmdShow) {
 	this->hCurrentInst = hInstance;
 	this->createWndClasses();
 
-	this->hSplashWnd = WindowFactory::createWindow(this->hCurrentInst, WndClass::Type::SPLASH);
-	ShowWindow(this->hSplashWnd, nCmdShow);
-	SetTimer(this->hSplashWnd, IDT_TIMER_SPLASH, SPLASH_TTL, nullptr);
+	this->hSplashWnd = std::make_unique<SplashWindow>(this->hCurrentInst);
+	ShowWindow(this->hSplashWnd->getHandle(), nCmdShow);
+	SetTimer(this->hSplashWnd->getHandle(), IDT_TIMER_SPLASH, SPLASH_TTL, nullptr);
 
 	HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MTV3D));
 	MSG msg;
@@ -69,9 +70,8 @@ LRESULT CALLBACK App::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		case IDT_TIMER_SPLASH:
 			DestroyWindow(hWnd);
 
-			App::appPointer->hMainWnd = WindowFactory::createWindow(App::appPointer->hCurrentInst, WndClass::Type::MAIN);
-			ShowWindow(App::appPointer->hMainWnd, SW_SHOW);
-			UpdateWindow(App::appPointer->hMainWnd);
+			App::appPointer->hMainWnd = std::make_unique<MainWindow>(App::appPointer->hCurrentInst);
+			ShowWindow(App::appPointer->hMainWnd->getHandle(), SW_SHOWMAXIMIZED);
 
 			break;
 		}
@@ -81,8 +81,8 @@ LRESULT CALLBACK App::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		int wmId = LOWORD(wParam);
 		// Parse the menu selections:
 		switch (wmId) {
-		case IDM_LOAD_NP: {
-			DialogBox(nullptr, L"Load New project", hWnd, nullptr);
+		case IDM_NEW_PROJ: {
+			DialogBox(nullptr, L"New project", hWnd, nullptr);
 			break;
 		}
 		case IDM_EXIT: {
@@ -114,14 +114,22 @@ LRESULT CALLBACK App::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 	case WM_PAINT: {
 		switch (wcType) {
 		case WndClass::Type::SPLASH: {
-		PAINTSTRUCT ps;
-		HDC hdc = BeginPaint(hWnd, &ps);
+			hdc = BeginPaint(hWnd, &ps);
 
-		WindowFactory::loadSplash(hdc);
-		
-		EndPaint(hWnd, &ps);
-		DeleteDC(hdc);
-		break;
+			App::appPointer->hSplashWnd->loadSplash(hdc);
+			
+			EndPaint(hWnd, &ps);
+			DeleteDC(hdc);
+			break;
+		}
+		case WndClass::Type::MAIN: {
+			hdc = BeginPaint(hWnd, &ps);
+
+			App::appPointer->hMainWnd->loadLogo(hdc);
+
+			EndPaint(hWnd, &ps);
+			DeleteDC(hdc);
+			break;
 		}
 		}
 		break;
@@ -129,7 +137,11 @@ LRESULT CALLBACK App::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 	case WM_DESTROY: {
 		switch (wcType) {
 		case WndClass::Type::SPLASH: {
+			App::appPointer->hSplashWnd.reset();
 			break;
+		}
+		case WndClass::Type::MAIN: {
+			App::appPointer->hMainWnd.reset();
 		}
 		default: {
 			PostQuitMessage(0);

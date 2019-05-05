@@ -153,18 +153,20 @@
   <ItemGroup>
     <ClInclude Include="App.h" />
     <ClInclude Include="Graphics.h" />
+    <ClInclude Include="MainWindow.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="UserInput.h" />
     <ClInclude Include="Visualization.h" />
-    <ClInclude Include="WindowFactory.h" />
+    <ClInclude Include="SplashWindow.h" />
     <ClInclude Include="WndClass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -173,7 +175,7 @@
     </ClCompile>
     <ClCompile Include="UserInput.cpp" />
     <ClCompile Include="Visualization.cpp" />
-    <ClCompile Include="WindowFactory.cpp" />
+    <ClCompile Include="SplashWindow.cpp" />
     <ClCompile Include="WndClass.cpp" />
   </ItemGroup>
   <ItemGroup>

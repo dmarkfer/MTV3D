@@ -21,19 +21,20 @@
 **********************************************************************************/
 #pragma once
 
-#include "WindowFactory.h"
-#include <vector>
-#include <utility>
-#include <map>
+#include "SplashWindow.h"
+#include "MainWindow.h"
+
 
 class App {
 private:
 	static App* appPointer;
+	static PAINTSTRUCT ps;
+	static HDC hdc;
 
 	std::map<WndClass::Type, WNDCLASSEXW> wndClassTypeStruct;
-	HWND hSplashWnd;
-	HWND hMainWnd;
-	std::vector<std::pair<HWND, HWND>> hVisWnd;
+	std::unique_ptr<SplashWindow> hSplashWnd;
+	std::unique_ptr<MainWindow> hMainWnd;
+	std::vector<std::pair<std::unique_ptr<HWND>, std::unique_ptr<HWND>>> hVisWnd;
 public:
 	HINSTANCE hCurrentInst;
 
