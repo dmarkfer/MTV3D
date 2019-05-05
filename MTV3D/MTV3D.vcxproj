@@ -159,7 +159,7 @@
     <ClInclude Include="UserInput.h" />
     <ClInclude Include="Visualization.h" />
     <ClInclude Include="Window.h" />
-    <ClInclude Include="WndClassType.h" />
+    <ClInclude Include="WndClass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
@@ -174,11 +174,14 @@
     <ClCompile Include="UserInput.cpp" />
     <ClCompile Include="Visualization.cpp" />
     <ClCompile Include="Window.cpp" />
+    <ClCompile Include="WndClass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MTV3D.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="FER_logo.bmp" />
+    <Image Include="MTV3D.bmp" />
     <Image Include="MTV3D_128.ico" />
     <Image Include="MTV3D_256.ico" />
     <Image Include="MTV3D_48.ico" />
@@ -187,6 +190,7 @@
     <Image Include="MTV3D_24.ico" />
     <Image Include="MTV3D_64.ico" />
     <Image Include="MTV3D_16.ico" />
+    <Image Include="UniZg_logo.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -16,6 +16,9 @@
     <Filter Include="Resource Files\Icons">
       <UniqueIdentifier>{0ed30566-21aa-4762-be15-40bf0089b57a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Bitmaps">
+      <UniqueIdentifier>{739f9b2b-d79e-4d99-9379-0b5341aada14}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -42,7 +45,7 @@
     <ClInclude Include="UserInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WndClassType.h">
+    <ClInclude Include="WndClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -66,6 +69,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="UserInput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WndClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -98,6 +104,15 @@
     </Image>
     <Image Include="MTV3D_16.ico">
       <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="MTV3D.bmp">
+      <Filter>Resource Files\Bitmaps</Filter>
+    </Image>
+    <Image Include="FER_logo.bmp">
+      <Filter>Resource Files\Bitmaps</Filter>
+    </Image>
+    <Image Include="UniZg_logo.bmp">
+      <Filter>Resource Files\Bitmaps</Filter>
     </Image>
   </ItemGroup>
 </Project>

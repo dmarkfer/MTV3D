@@ -19,21 +19,14 @@
 ***
 **********************************************************************************
 **********************************************************************************/
-#pragma once
-
 #include "stdafx.h"
 #include "WndClass.h"
 
 
-class Window {
-private:
-	HWND hWnd;
-public:
-	Window(HINSTANCE hInst, WndClass::Type&& wndClassType);
-	Window(HINSTANCE hInst, WndClass::Type&& wndClassType, std::string& filename);
-	~Window() = default;
-
-	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-
-	HWND getHandle();
-};
+WndClass::Type WndClass::retrieveWndClassType(const std::wstring& wndClassName) {
+	if (wndClassName == L"Splash") return WndClass::Type::SPLASH;
+	if (wndClassName == L"Main") return WndClass::Type::MAIN;
+	if (wndClassName == L"VisMerged") return WndClass::Type::VIS_MERGED;
+	if (wndClassName == L"VisResult") return WndClass::Type::VIS_RESULT;
+	if (wndClassName == L"VisRelErr") return WndClass::Type::VIS_RELERR;
+}

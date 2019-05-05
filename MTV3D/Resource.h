@@ -7,14 +7,16 @@
 #define IDM_ABOUT				104
 #define IDM_EXIT				105
 #define IDI_MTV3D			107
-#define IDI_SMALL				108
 #define IDC_MTV3D			109
-#define IDC_MYICON				2
+
 #ifndef IDC_STATIC
 #define IDC_STATIC				-1
 #endif
-// Next default values for new objects
-//
+
+#define IDB_MTV3D	110
+#define IDT_TIMER_SPLASH	121
+
+
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 

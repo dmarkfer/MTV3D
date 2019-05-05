@@ -22,18 +22,17 @@
 #pragma once
 
 #include "stdafx.h"
-#include "WndClass.h"
 
 
-class Window {
-private:
-	HWND hWnd;
+class WndClass {
 public:
-	Window(HINSTANCE hInst, WndClass::Type&& wndClassType);
-	Window(HINSTANCE hInst, WndClass::Type&& wndClassType, std::string& filename);
-	~Window() = default;
+	enum Type {
+		SPLASH,
+		MAIN,
+		VIS_MERGED,
+		VIS_RESULT,
+		VIS_RELERR
+	};
 
-	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-
-	HWND getHandle();
+	static Type retrieveWndClassType(const std::wstring& wndClassName);
 };

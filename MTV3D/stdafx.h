@@ -2,11 +2,14 @@
 
 #include "targetver.h"
 
-#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
-// Windows Header Files
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 
-// reference additional headers your program requires here
 #include <memory>
 #include <string>
+
+
+#define BLACK RGB(0, 0, 0)
+#define DARK_GRAY RGB(35, 35, 35)
+#define WHITE RGB(255, 255, 255)
