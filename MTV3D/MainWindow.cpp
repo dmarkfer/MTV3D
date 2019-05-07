@@ -6,18 +6,64 @@ MainWindow::MainWindow(HINSTANCE hInst) {
 	this->hWnd = CreateWindowW(L"Main", L"Mesh Tally Visualization in 3D", WS_OVERLAPPEDWINDOW | WS_MAXIMIZE,
 		CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInst, nullptr);
 
+	GetClientRect(this->hWnd, &wndRect);
+
 	this->hBtnNewProj = CreateWindow(L"BUTTON", L"New project",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		200, 300, 150, 30,
+		wndRect.right - 300, 300, 150, 30,
 		this->hWnd, nullptr, hInst, nullptr);
-	this->hBtnCloseProj = CreateWindow(L"BUTTON", L"Close project",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		200, 350, 150, 30,
+
+	this->hBtnCloseSel = CreateWindow(L"BUTTON", L"Close selected",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | WS_DISABLED,
+		wndRect.right - 300, 350, 150, 30,
 		this->hWnd, nullptr, hInst, nullptr);
+	
 	this->hBtnCloseAll = CreateWindow(L"BUTTON", L"Close all",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		200, 400, 150, 30,
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | WS_DISABLED,
+		wndRect.right - 300, 400, 150, 30,
 		this->hWnd, nullptr, hInst, nullptr);
+}
+
+void MainWindow::initListView(HINSTANCE hInst) {
+	InitCommonControls();
+	
+	this->hWndListView = CreateWindowEx(WS_EX_CLIENTEDGE | LVS_EX_FULLROWSELECT, WC_LISTVIEW, nullptr,
+		WS_TABSTOP | WS_CHILD | WS_BORDER | WS_VISIBLE | LVS_AUTOARRANGE | LVS_REPORT | LVS_OWNERDATA,
+		0, 0, 0, 0,
+		this->hWnd, (HMENU)ID_LISTVIEW, hInst, nullptr);
+	SendMessage(hWndListView, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+
+	this->resizeListView();
+
+
+	LV_COLUMN lvColumn;
+	TCHAR columns[4][10] = { TEXT("Filename"), TEXT("Size"), TEXT("Created"), TEXT("Modified") };
+	RECT lwRect;
+	GetClientRect(hWndListView, &lwRect);
+
+	lvColumn.mask = LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
+	lvColumn.cx = lwRect.right / 2;
+	lvColumn.pszText = columns[0];
+	ListView_InsertColumn(this->hWndListView, 0, &lvColumn);
+
+	lvColumn.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
+	lvColumn.fmt = LVCFMT_CENTER;
+	lvColumn.cx = lwRect.right / 6;
+	lvColumn.pszText = columns[1];
+	ListView_InsertColumn(this->hWndListView, 1, &lvColumn);
+
+	lvColumn.pszText = columns[2];
+	ListView_InsertColumn(this->hWndListView, 2, &lvColumn);
+
+	lvColumn.pszText = columns[3];
+	ListView_InsertColumn(this->hWndListView, 3, &lvColumn);
+	
+	ListView_DeleteAllItems(this->hWndListView);
+}
+
+
+void MainWindow::resizeListView() {
+	MoveWindow(this->hWndListView, 100, 180, this->wndRect.right - 500, this->wndRect.bottom - 300, TRUE);
 }
 
 

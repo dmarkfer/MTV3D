@@ -13,8 +13,10 @@
 #define IDM_ABOUT			31
 
 #define BUTTON_NEW_PROJ		1
-#define BUTTON_CLOSE_PROJ	2
+#define BUTTON_CLOSE_SEL	2
 #define BUTTON_CLOSE_ALL	3
+
+#define ID_LISTVIEW  70
 
 #define IDI_MTV3D			107
 #define IDC_MTV3D			109

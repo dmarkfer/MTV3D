@@ -6,8 +6,11 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <CommCtrl.h>
+#pragma comment(lib, "comctl32.lib")
 
 
+#include <tchar.h>
 #include <memory>
 #include <string>
 #include <vector>

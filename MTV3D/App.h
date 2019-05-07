@@ -27,6 +27,7 @@
 
 class App {
 private:
+	HINSTANCE hCurrentInst;
 	static App* appPointer;
 	static PAINTSTRUCT ps;
 	static HDC hdc;
@@ -36,8 +37,6 @@ private:
 	std::unique_ptr<MainWindow> hMainWnd;
 	std::vector<std::pair<std::unique_ptr<HWND>, std::unique_ptr<HWND>>> hVisWnd;
 public:
-	HINSTANCE hCurrentInst;
-
 	App();
 	~App() = default;
 

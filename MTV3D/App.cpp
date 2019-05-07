@@ -71,9 +71,21 @@ LRESULT CALLBACK App::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			DestroyWindow(hWnd);
 
 			App::appPointer->hMainWnd = std::make_unique<MainWindow>(App::appPointer->hCurrentInst);
+			App::appPointer->hMainWnd->initListView(App::appPointer->hCurrentInst);
 			ShowWindow(App::appPointer->hMainWnd->getHandle(), SW_SHOWMAXIMIZED);
 
 			break;
+		}
+		break;
+	}
+	case WM_SIZE: {
+		switch (wcType) {
+		case WndClass::Type::MAIN: {
+			if (App::appPointer->hMainWnd) {
+				App::appPointer->hMainWnd->resizeListView();
+			}
+			break;
+		}
 		}
 		break;
 	}
@@ -90,7 +102,7 @@ LRESULT CALLBACK App::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			break;
 		}
 		case IDM_CHANGE_LANG: {
-			DialogBox(nullptr, L"Chage Language", hWnd, nullptr);
+			DialogBox(nullptr, L"Chage language", hWnd, nullptr);
 			break;
 		}
 		case IDM_UPDATE: {
