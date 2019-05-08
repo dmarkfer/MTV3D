@@ -14,6 +14,7 @@ private:
 	HWND hWndListOfProjects;
 	HWND hWndProjectDetails;
 public:
+	MainWindow() = default;
 	MainWindow(HINSTANCE hInst);
 	~MainWindow() = default;
 
@@ -22,4 +23,5 @@ public:
 	void resizeListView();
 
 	HWND getHandle();
+	HWND getHandleListView();
 };

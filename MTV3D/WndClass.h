@@ -34,5 +34,6 @@ public:
 		VIS_RELERR
 	};
 
-	static Type retrieveWndClassType(const std::wstring& wndClassName);
+	static Type typeByWndClassName(const std::wstring& wndClassName);
+	static Type typeByWndHandle(HWND hWnd);
 };

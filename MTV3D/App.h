@@ -23,6 +23,7 @@
 
 #include "SplashWindow.h"
 #include "MainWindow.h"
+#include "VisComponent.h"
 
 
 class App {
@@ -35,13 +36,16 @@ private:
 	std::map<WndClass::Type, WNDCLASSEXW> wndClassTypeStruct;
 	std::unique_ptr<SplashWindow> hSplashWnd;
 	std::unique_ptr<MainWindow> hMainWnd;
-	std::vector<std::pair<std::unique_ptr<HWND>, std::unique_ptr<HWND>>> hVisWnd;
+	std::vector<std::pair<int, std::pair<std::vector<LPWSTR>, VisComponent>>> openProjects;
 public:
 	App();
 	~App() = default;
 
 	int run(HINSTANCE hInstance, int& nCmdShow);
-	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 private:
 	void createWndClasses();
+	bool loadFile(LPWSTR fileAbsolutePath);
+	DWORD utf8CharacterCounter(LPCH fileBinaryContent);
+	LPWSTR getListViewString(int itemIndex, int subitemIndex);
 };

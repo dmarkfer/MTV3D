@@ -73,8 +73,7 @@ void SplashWindow::loadSplash(HDC hdc) {
 
 
 	RECT textRect;
-	HFONT hFont;
-	hFont = CreateFont(16, 6, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, EASTEUROPE_CHARSET,
+	HFONT hFont = CreateFont(16, 6, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, EASTEUROPE_CHARSET,
 		OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, TEXT("Times New Roman"));
 	SelectObject(hdc, hFont);
 	SetBkColor(hdc, DARK_GRAY);

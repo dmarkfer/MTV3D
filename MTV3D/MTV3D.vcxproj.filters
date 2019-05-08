@@ -51,6 +51,12 @@
     <ClInclude Include="SplashWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VisMergedWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VisComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -78,6 +84,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SplashWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VisMergedWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VisComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

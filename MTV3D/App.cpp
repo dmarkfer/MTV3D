@@ -58,11 +58,8 @@ int App::run(HINSTANCE hInstance, int& nCmdShow) {
 }
 
 
-LRESULT CALLBACK App::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-	LPTSTR lpWndClassName = new wchar_t[WCHAR_ARR_MAX];
-	GetClassName(hWnd, lpWndClassName, WCHAR_ARR_MAX);
-	WndClass::Type wcType = WndClass::retrieveWndClassType(std::wstring(lpWndClassName));
-	delete[] lpWndClassName;
+LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+	WndClass::Type wcType = WndClass::typeByWndHandle(hWnd);
 
 	switch (message) {
 	case WM_TIMER: {
@@ -75,6 +72,28 @@ LRESULT CALLBACK App::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			ShowWindow(App::appPointer->hMainWnd->getHandle(), SW_SHOWMAXIMIZED);
 
 			break;
+		}
+		break;
+	}
+	case WM_NOTIFY: {
+		LPNMHDR lpnmh = (LPNMHDR)lParam;
+		HWND hwndListView = GetDlgItem(hWnd, ID_LISTVIEW);
+
+		switch (lpnmh->code) {
+		case LVN_GETDISPINFO: {
+			LV_DISPINFO *lpdi = (LV_DISPINFO*)lParam;
+
+			if (lpdi->item.iSubItem) {
+				if (lpdi->item.mask & LVIF_TEXT) {
+					lpdi->item.pszText = App::appPointer->getListViewString(lpdi->item.iItem, lpdi->item.iSubItem);
+				}
+			}
+			else {
+				if (lpdi->item.mask & LVIF_TEXT) {
+					lpdi->item.pszText = App::appPointer->getListViewString(lpdi->item.iItem, lpdi->item.iSubItem);
+				}
+			}
+		}
 		}
 		break;
 	}
@@ -91,10 +110,41 @@ LRESULT CALLBACK App::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 	}
 	case WM_COMMAND: {
 		int wmId = LOWORD(wParam);
-		// Parse the menu selections:
+		
 		switch (wmId) {
-		case IDM_NEW_PROJ: {
-			DialogBox(nullptr, L"New project", hWnd, nullptr);
+		case IDM_NEW_PROJ:
+		case BUTTON_NEW_PROJ: {
+			OPENFILENAME ofnObj;
+			
+			ZeroMemory(&ofnObj, sizeof(OPENFILENAME));
+			
+			ofnObj.lStructSize = sizeof(OPENFILENAME);
+			ofnObj.hwndOwner = App::appPointer->hMainWnd->getHandle();
+			ofnObj.hInstance = App::appPointer->hCurrentInst;
+			ofnObj.lpstrFile = new WCHAR[FILEPATH_MAX_LENGTH];
+			ofnObj.lpstrFile[0] = '\0';
+			ofnObj.nMaxFile = FILEPATH_MAX_LENGTH;
+			ofnObj.lpstrTitle = L"Select file";
+			ofnObj.Flags = OFN_FILEMUSTEXIST;
+
+			if (GetOpenFileName(&ofnObj)) {
+				SetCursor(LoadCursor(nullptr, IDC_WAIT));
+
+				bool projectLoaded = App::appPointer->loadFile(ofnObj.lpstrFile);
+
+				SetCursor(LoadCursor(nullptr, IDC_ARROW));
+
+				if (! projectLoaded) {
+					delete[] ofnObj.lpstrFile;
+
+					MessageBox(App::appPointer->hMainWnd->getHandle(), L"Wrong file type!", nullptr, MB_ICONERROR);
+				}
+			}
+			else {
+				
+				delete[] ofnObj.lpstrFile;
+			}
+			
 			break;
 		}
 		case IDM_EXIT: {
@@ -149,11 +199,10 @@ LRESULT CALLBACK App::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 	case WM_DESTROY: {
 		switch (wcType) {
 		case WndClass::Type::SPLASH: {
-			App::appPointer->hSplashWnd.reset();
 			break;
 		}
 		case WndClass::Type::MAIN: {
-			App::appPointer->hMainWnd.reset();
+			//break;
 		}
 		default: {
 			PostQuitMessage(0);
@@ -194,7 +243,7 @@ void App::createWndClasses() {
 	this->wndClassTypeStruct[WndClass::Type::SPLASH] = {
 		sizeof(WNDCLASSEXW),
 		CS_HREDRAW | CS_VREDRAW,
-		App::WndProc,
+		App::wndProc,
 		0,
 		0,
 		this->hCurrentInst,
@@ -209,7 +258,7 @@ void App::createWndClasses() {
 	this->wndClassTypeStruct[WndClass::Type::MAIN] = {
 		sizeof(WNDCLASSEXW),
 		CS_HREDRAW | CS_VREDRAW,
-		App::WndProc,
+		App::wndProc,
 		0,
 		0,
 		this->hCurrentInst,
@@ -220,7 +269,159 @@ void App::createWndClasses() {
 		L"Main",
 		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D))
 	};
+	
 
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::SPLASH]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::MAIN]);
+}
+
+
+bool App::loadFile(LPWSTR fileAbsolutePath) {
+	HANDLE hFile = CreateFile(fileAbsolutePath, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+
+	if (hFile == INVALID_HANDLE_VALUE) {
+		return false;
+	}
+	
+	BY_HANDLE_FILE_INFORMATION fileInfo;
+	GetFileInformationByHandle(hFile, &fileInfo);
+
+	DWORD fileSize;
+	fileSize = GetFileSize(hFile, nullptr);
+	
+	if (fileSize == INVALID_FILE_SIZE) {
+		CloseHandle(hFile);
+		return false;
+	}
+
+
+	LPCH fileBinaryContent = new char[fileSize + 1];
+	DWORD bytesRead;
+
+	BOOL retVal = ReadFile(hFile, fileBinaryContent, fileSize, &bytesRead, nullptr);
+	CloseHandle(hFile);
+
+	if(! retVal) {
+		return false;
+	}
+	
+	
+	fileBinaryContent[fileSize] = '\0';
+
+	DWORD numberOfUTF8Characters = utf8CharacterCounter(fileBinaryContent);
+	LPWSTR fileUTF8Content = new WCHAR[numberOfUTF8Characters + 1];
+
+	try {
+		MultiByteToWideChar(
+			CP_UTF8, 0,
+			fileBinaryContent, fileSize,
+			fileUTF8Content, numberOfUTF8Characters
+		);
+	}
+	catch (...) {
+		delete[] fileBinaryContent;
+		delete[] fileUTF8Content;
+		return false;
+	}
+
+	fileUTF8Content[numberOfUTF8Characters] = '\0';
+	delete[] fileBinaryContent;
+	std::wistringstream fileContentStringStream(fileUTF8Content);
+	delete[] fileUTF8Content;
+
+	std::wstring fileLine;
+
+	for (int cnt = 0; cnt < 15; ++cnt) {
+		std::getline(fileContentStringStream, fileLine);
+	}
+	
+	
+	bool isPhoton = false;
+
+	for (WCHAR& ch : fileLine) {
+		if (ch != ' '  &&  ch != '\t') {
+			if (ch != 'X') {
+				isPhoton = true;
+				break;
+			}
+		}
+	}
+
+	
+	std::vector<VisComponent::Point> visPoints;
+	LPCWSTR fileLineWCStr;
+	VisComponent::Point point;
+
+	while (std::getline(fileContentStringStream, fileLine)) {
+		fileLineWCStr = fileLine.c_str();
+
+		if (isPhoton) {
+			swscanf_s(fileLineWCStr, L"%*s %lf %lf %lf %lf %lf", &point.x, &point.y, &point.z, &point.value, &point.relError);
+		}
+		else {
+			swscanf_s(fileLineWCStr, L"%lf %lf %lf %lf %lf", &point.x, &point.y, &point.z, &point.value, &point.relError);
+		}
+
+		visPoints.push_back(point);
+	}
+
+
+	LPWSTR fileSizeStr = new WCHAR[WCHAR_ARR_MAX];
+	LPWSTR fileCreatedStr = new WCHAR[WCHAR_ARR_MAX];
+	LPWSTR fileModifiedStr = new WCHAR[WCHAR_ARR_MAX];
+
+	swprintf_s(fileSizeStr, 20, L"%d\0", fileSize);
+
+	SYSTEMTIME stUTC, stLocal;
+
+	FileTimeToSystemTime(&fileInfo.ftCreationTime, &stUTC);
+	SystemTimeToTzSpecificLocalTime(nullptr, &stUTC, &stLocal);
+	swprintf_s(fileCreatedStr, 20, L"%02d/%02d/%d  %02d:%02d\0", stLocal.wMonth, stLocal.wDay, stLocal.wYear, stLocal.wHour, stLocal.wMinute);
+
+	FileTimeToSystemTime(&fileInfo.ftLastWriteTime, &stUTC);
+	SystemTimeToTzSpecificLocalTime(nullptr, &stUTC, &stLocal);
+	swprintf_s(fileModifiedStr, 20, L"%02d/%02d/%d  %02d:%02d\0", stLocal.wMonth, stLocal.wDay, stLocal.wYear, stLocal.wHour, stLocal.wMinute);
+
+	std::vector<LPWSTR> lvData { fileAbsolutePath, fileSizeStr, fileCreatedStr, fileModifiedStr };
+	VisComponent newProject;
+	this->openProjects.push_back(std::make_pair(-1, std::make_pair(lvData, newProject)));
+
+
+	LVITEM lvItem;
+	ZeroMemory(&lvItem, sizeof(LVITEM));
+	lvItem.mask = LVIF_PARAM | LVIF_TEXT;
+	lvItem.cchTextMax = MAX_PATH;
+
+	int lvIndex = SendMessage(this->hMainWnd->getHandleListView(), LVM_INSERTITEM, 0, (LPARAM)&lvItem);
+
+	if (lvIndex == -1) {
+		delete[] fileSizeStr;
+		delete[] fileCreatedStr;
+		delete[] fileModifiedStr;
+		this->openProjects.pop_back();
+		
+		return false;
+	}
+
+	this->openProjects[this->openProjects.size() - 1].first = lvIndex;
+
+	return true;
+}
+
+
+DWORD App::utf8CharacterCounter(LPCH fileBinaryContent) {
+	DWORD counter = 0;
+
+	for (int i = 0; fileBinaryContent[i] != '\0'; ++i) {
+		if ((fileBinaryContent[i] & 0xC0) != 0x80) {
+			++counter;
+		}
+	}
+
+	return counter;
+}
+
+
+LPWSTR App::getListViewString(int itemIndex, int subitemIndex) {
+	return this->openProjects[itemIndex].second.first[subitemIndex];
 }

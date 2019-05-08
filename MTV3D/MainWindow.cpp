@@ -11,17 +11,17 @@ MainWindow::MainWindow(HINSTANCE hInst) {
 	this->hBtnNewProj = CreateWindow(L"BUTTON", L"New project",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
 		wndRect.right - 300, 300, 150, 30,
-		this->hWnd, nullptr, hInst, nullptr);
+		this->hWnd, (HMENU) BUTTON_NEW_PROJ, hInst, nullptr);
 
 	this->hBtnCloseSel = CreateWindow(L"BUTTON", L"Close selected",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | WS_DISABLED,
 		wndRect.right - 300, 350, 150, 30,
-		this->hWnd, nullptr, hInst, nullptr);
+		this->hWnd, (HMENU) BUTTON_CLOSE_SEL, hInst, nullptr);
 	
 	this->hBtnCloseAll = CreateWindow(L"BUTTON", L"Close all",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | WS_DISABLED,
 		wndRect.right - 300, 400, 150, 30,
-		this->hWnd, nullptr, hInst, nullptr);
+		this->hWnd, (HMENU) BUTTON_CLOSE_ALL, hInst, nullptr);
 }
 
 void MainWindow::initListView(HINSTANCE hInst) {
@@ -36,10 +36,11 @@ void MainWindow::initListView(HINSTANCE hInst) {
 	this->resizeListView();
 
 
-	LV_COLUMN lvColumn;
-	TCHAR columns[4][10] = { TEXT("Filename"), TEXT("Size"), TEXT("Created"), TEXT("Modified") };
+	WCHAR columns[4][10] = { L"Filename", L"Size", L"Created", L"Modified" };
 	RECT lwRect;
 	GetClientRect(hWndListView, &lwRect);
+	LV_COLUMN lvColumn;
+	ZeroMemory(&lvColumn, sizeof(LVCOLUMN));
 
 	lvColumn.mask = LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
 	lvColumn.cx = lwRect.right / 2;
@@ -85,8 +86,7 @@ void MainWindow::loadLogo(HDC hdc) {
 
 
 	RECT textRect;
-	HFONT hFont;
-	hFont = CreateFont(30, 12, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, EASTEUROPE_CHARSET,
+	HFONT hFont = CreateFont(30, 12, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, EASTEUROPE_CHARSET,
 		OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, TEXT("Arial"));
 	SelectObject(hdc, hFont);
 	SetBkColor(hdc, DARK_GRAY);
@@ -99,4 +99,9 @@ void MainWindow::loadLogo(HDC hdc) {
 
 HWND MainWindow::getHandle() {
 	return this->hWnd;
+}
+
+
+HWND MainWindow::getHandleListView() {
+	return this->hWndListView;
 }

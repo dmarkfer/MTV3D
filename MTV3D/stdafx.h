@@ -8,14 +8,18 @@
 #include <windows.h>
 #include <CommCtrl.h>
 #pragma comment(lib, "comctl32.lib")
+#include <commdlg.h>
 
 
 #include <tchar.h>
 #include <memory>
 #include <string>
+#include <sstream>
 #include <vector>
-#include <utility>
 #include <map>
+#include <utility>
+#include <thread>
+#include <mutex>
 
 
 #define BLACK		RGB(0, 0, 0)
@@ -27,3 +31,4 @@
 #define SPLASH_TTL 5000 // ms
 
 #define WCHAR_ARR_MAX 256
+#define FILEPATH_MAX_LENGTH 1001

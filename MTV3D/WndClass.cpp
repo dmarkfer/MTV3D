@@ -23,10 +23,20 @@
 #include "WndClass.h"
 
 
-WndClass::Type WndClass::retrieveWndClassType(const std::wstring& wndClassName) {
+WndClass::Type WndClass::typeByWndClassName(const std::wstring& wndClassName) {
 	if (wndClassName == L"Splash") return WndClass::Type::SPLASH;
 	if (wndClassName == L"Main") return WndClass::Type::MAIN;
 	if (wndClassName == L"VisMerged") return WndClass::Type::VIS_MERGED;
 	if (wndClassName == L"VisResult") return WndClass::Type::VIS_RESULT;
 	return WndClass::Type::VIS_RELERR;
+}
+
+
+WndClass::Type WndClass::typeByWndHandle(HWND hWnd) {
+	LPTSTR lpWndClassName = new wchar_t[WCHAR_ARR_MAX];
+	GetClassName(hWnd, lpWndClassName, WCHAR_ARR_MAX);
+	WndClass::Type wcType = WndClass::typeByWndClassName(std::wstring(lpWndClassName));
+	delete[] lpWndClassName;
+
+	return wcType;
 }
