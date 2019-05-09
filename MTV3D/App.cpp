@@ -31,6 +31,7 @@ HDC App::hdc = nullptr;
 App::App() {
 	App::appPointer = this;
 
+	this->projectCounter = 0;
 	this->numberOfOpenProjects = 0;
 
 	VisComponent::mainThreadId = GetCurrentThreadId();
@@ -56,9 +57,9 @@ int App::run(HINSTANCE hInstance, int& nCmdShow) {
 			TranslateMessage(&msg);
 
 			if (msg.message == WM_THREAD_DONE) {
-				int* projectKnownId = (int*)msg.lParam;
-				this->closeProject(*projectKnownId);
-				delete projectKnownId;
+				int* projectId = (int*)msg.lParam;
+				this->closeProject(*projectId);
+				delete projectId;
 			}
 
 			DispatchMessage(&msg);
@@ -176,7 +177,7 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 
 				if (id > -1) {
 					PostThreadMessage(
-						GetThreadId(App::appPointer->projectsThreads[App::appPointer->retrieveValidProjectIndex(id)].native_handle()),
+						GetThreadId(App::appPointer->projectsThreads[id].second.native_handle()),
 						WM_QUIT, 0, 0
 					);
 				}
@@ -423,23 +424,11 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 	swprintf_s(fileModifiedStr, 20, L"%02d/%02d/%d  %02d:%02d\0", stLocal.wMonth, stLocal.wDay, stLocal.wYear, stLocal.wHour, stLocal.wMinute);
 
 	std::vector<LPWSTR> lvData { fileAbsolutePath, fileSizeStr, fileCreatedStr, fileModifiedStr };
-	this->openProjects.push_back(std::make_pair(-1, std::make_pair(lvData, nullptr)));
+	int newProjectId = this->giveNewProjectId();
+	this->openProjects.push_back(std::make_pair(newProjectId, std::make_pair(lvData, nullptr)));
+	
 
-
-	LVITEM lvItem;
-	ZeroMemory(&lvItem, sizeof(LVITEM));
-	lvItem.iItem = SendMessage(this->hMainWnd->getHandleListView(), LVM_GETITEMCOUNT, 0, 0);
-	lvItem.iSubItem = 0;
-	lvItem.mask = LVIF_PARAM | LVIF_TEXT;
-	lvItem.cchTextMax = MAX_PATH;
-	lvItem.stateMask = LVIS_SELECTED;
-	lvItem.state = 1;
-
-	int projectIndex = SendMessage(this->hMainWnd->getHandleListView(), LVM_INSERTITEM, 0, (LPARAM)&lvItem);
-
-	SendMessage(this->hMainWnd->getHandleListView(), LVM_SETITEMSTATE, projectIndex, (LPARAM)&lvItem);
-
-	if (projectIndex == -1) {
+	if (insertItemIntoListView() == -1) {
 		delete[] fileSizeStr;
 		delete[] fileCreatedStr;
 		delete[] fileModifiedStr;
@@ -449,18 +438,22 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 	}
 
 	++this->numberOfOpenProjects;
-
-	this->openProjects[this->numberOfOpenProjects - 1].first = projectIndex;
-	this->openProjects[this->numberOfOpenProjects - 1].second.second = std::make_unique<VisComponent>();
 	
-	this->projectsThreads[projectIndex] = std::thread(
-		&VisComponent::run,
-		this->openProjects[this->numberOfOpenProjects - 1].second.second.get(),
-		this->hCurrentInst, this->hAccelTable, projectIndex, fileAbsolutePath, visPoints.size(), visPoints.data()
+	this->openProjects[this->numberOfOpenProjects - 1].second.second = std::make_unique<VisComponent>();
+
+	this->projectsThreads.push_back(
+		std::make_pair(
+			newProjectId,
+			std::thread(
+				&VisComponent::run,
+				this->openProjects[this->numberOfOpenProjects - 1].second.second.get(),
+				this->hCurrentInst, this->hAccelTable, newProjectId, fileAbsolutePath, visPoints.size(), visPoints.data()
+			)
+		)
 	);
 
 	EnableWindow(this->hMainWnd->getHandleBtnCloseAll(), TRUE);
-
+	
 	return true;
 }
 
@@ -483,31 +476,22 @@ LPWSTR App::getListViewString(int itemIndex, int subitemIndex) {
 }
 
 
-int App::retrieveValidProjectIndex(int projectKnownId) {
-	int index = 0;
-	for (; index < this->numberOfOpenProjects; ++index) {
-		if (this->openProjects[index].first == projectKnownId) {
-			break;
-		}
-	}
-	return index;
-}
+void App::closeProject(int projectId) {
+	int index = this->retrieveProjectIndexWithinContainer(projectId);
 
+	this->projectsThreads[index].second.join();
+	this->projectsThreads.erase(this->projectsThreads.begin() + index);
 
-void App::closeProject(int projectKnownId) {
-	int index = this->retrieveValidProjectIndex(projectKnownId);
-
-	this->projectsThreads[index].join();
-	this->projectsThreads.erase(index);
-
-
+	
 	this->hMainWnd->deleteListViewItem(index);
-
+	
 
 	--this->numberOfOpenProjects;
 
+
+	EnableWindow(this->hMainWnd->getHandleBtnCloseSel(), FALSE);
+
 	if (! this->numberOfOpenProjects) {
-		EnableWindow(this->hMainWnd->getHandleBtnCloseSel(), FALSE);
 		EnableWindow(this->hMainWnd->getHandleBtnCloseAll(), FALSE);
 	}
 
@@ -515,14 +499,59 @@ void App::closeProject(int projectKnownId) {
 		delete[] fiEl;
 	}
 	this->openProjects.erase(this->openProjects.begin() + index);
+
+
+	this->recreateListView();
+}
+
+
+void App::recreateListView() {
+	this->hMainWnd->deleteListViewItem(-1);
+
+	ListView_SetItemCount(this->hMainWnd->getHandleListView(), this->numberOfOpenProjects);
 }
 
 
 void App::closeAllProjects() {
-	for (auto it = this->projectsThreads.begin(); it != this->projectsThreads.end(); ++it) {
+	for (int i = 0; i < this->numberOfOpenProjects; ++i) {
 		PostThreadMessage(
-			GetThreadId(it->second.native_handle()),
+			GetThreadId(this->projectsThreads[i].second.native_handle()),
 			WM_QUIT, 0, 0
 		);
 	}
+}
+
+
+int App::insertItemIntoListView() {
+	LVITEM lvItem;
+
+	ZeroMemory(&lvItem, sizeof(LVITEM));
+
+	lvItem.iItem = SendMessage(this->hMainWnd->getHandleListView(), LVM_GETITEMCOUNT, 0, 0);
+	lvItem.iSubItem = 0;
+	lvItem.mask = LVIF_PARAM | LVIF_TEXT;
+	lvItem.cchTextMax = MAX_PATH;
+
+	int index = SendMessage(this->hMainWnd->getHandleListView(), LVM_INSERTITEM, 0, (LPARAM)&lvItem);
+
+	ListView_SetItemState(this->hMainWnd->getHandleListView(), index, LVIS_FOCUSED, LVIS_FOCUSED);
+
+	return index;
+}
+
+
+int App::giveNewProjectId() {
+	++this->projectCounter;
+	return this->projectCounter - 1;
+}
+
+
+int App::retrieveProjectIndexWithinContainer(int projectId) {
+	int index = 0;
+	for (; index < this->numberOfOpenProjects; ++index) {
+		if (this->openProjects[index].first == projectId) {
+			break;
+		}
+	}
+	return index;
 }

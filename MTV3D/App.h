@@ -37,9 +37,11 @@ private:
 	std::map<WndClass::Type, WNDCLASSEXW> wndClassTypeStruct;
 	std::unique_ptr<SplashWindow> hSplashWnd;
 	std::unique_ptr<MainWindow> hMainWnd;
+
+	int projectCounter;
 	std::vector<std::pair<int, std::pair<std::vector<LPWSTR>, std::unique_ptr<VisComponent>>>> openProjects;
 	int numberOfOpenProjects;
-	std::map<int, std::thread> projectsThreads;
+	std::vector<std::pair<int, std::thread>> projectsThreads;
 public:
 	App();
 	~App() = default;
@@ -47,11 +49,14 @@ public:
 	int run(HINSTANCE hInstance, int& nCmdShow);
 	static LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 private:
+	int giveNewProjectId();
 	void createWndClasses();
 	bool loadFile(LPWSTR fileAbsolutePath);
 	DWORD utf8CharacterCounter(LPCH fileBinaryContent);
 	LPWSTR getListViewString(int itemIndex, int subitemIndex);
-	int retrieveValidProjectIndex(int projectKnownId);
-	void closeProject(int projectKnownId);
+	int retrieveProjectIndexWithinContainer(int projectId);
+	void closeProject(int projectId);
 	void closeAllProjects();
+	void recreateListView();
+	int insertItemIntoListView();
 };

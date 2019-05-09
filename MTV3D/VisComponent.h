@@ -34,12 +34,11 @@ public:
 	};
 
 	static DWORD mainThreadId;
-	static std::mutex mtx;
 private:
 	HINSTANCE hCurrentInst;
 	HACCEL hAccelTable;
 
-	int projectIndex;
+	int projectId;
 	LPWSTR fileAbsolutePath;
 	LPWSTR windowTitle;
 	std::vector<Point> visPoints;

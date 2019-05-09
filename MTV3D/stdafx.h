@@ -19,7 +19,6 @@
 #include <map>
 #include <utility>
 #include <thread>
-#include <mutex>
 
 
 #define BLACK		RGB(0, 0, 0)
@@ -28,7 +27,7 @@
 #define WHITE		RGB(255, 255, 255)
 
 #define SPLASH_DIM 384 // 768/2
-#define SPLASH_TTL 5000 // ms
+#define SPLASH_TTL 3000 // ms
 
 #define WCHAR_ARR_MAX 256
 #define FILEPATH_MAX_LENGTH 1001

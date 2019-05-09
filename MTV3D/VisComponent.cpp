@@ -31,10 +31,10 @@ VisComponent::~VisComponent() {
 }
 
 
-void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectIndex, LPWSTR fileAbsolutePath, int n, Point* visPoints) {
+void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId, LPWSTR fileAbsolutePath, int n, Point* visPoints) {
 	this->hCurrentInst = hCurrentInst;
 	this->hAccelTable = hAccelTable;
-	this->projectIndex = projectIndex;
+	this->projectId = projectId;
 	this->fileAbsolutePath = fileAbsolutePath;
 	this->windowTitle = new WCHAR[WCHAR_ARR_MAX];
 	swprintf_s(this->windowTitle, WCHAR_ARR_MAX - 1, L"MTV3D - %s\0", this->fileAbsolutePath);
@@ -61,7 +61,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectIn
 	}
 	
 	int* customLParam = new int;
-	*customLParam = this->projectIndex;
+	*customLParam = this->projectId;
 	PostThreadMessage(VisComponent::mainThreadId, WM_THREAD_DONE, 0, (LPARAM)customLParam);
 }
 
