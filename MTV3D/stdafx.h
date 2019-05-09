@@ -32,3 +32,5 @@
 
 #define WCHAR_ARR_MAX 256
 #define FILEPATH_MAX_LENGTH 1001
+
+#define WM_THREAD_DONE		WM_USER + 1

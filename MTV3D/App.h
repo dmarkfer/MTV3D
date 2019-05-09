@@ -29,6 +29,7 @@
 class App {
 private:
 	HINSTANCE hCurrentInst;
+	HACCEL hAccelTable;
 	static App* appPointer;
 	static PAINTSTRUCT ps;
 	static HDC hdc;
@@ -36,7 +37,9 @@ private:
 	std::map<WndClass::Type, WNDCLASSEXW> wndClassTypeStruct;
 	std::unique_ptr<SplashWindow> hSplashWnd;
 	std::unique_ptr<MainWindow> hMainWnd;
-	std::vector<std::pair<int, std::pair<std::vector<LPWSTR>, VisComponent>>> openProjects;
+	std::vector<std::pair<int, std::pair<std::vector<LPWSTR>, std::unique_ptr<VisComponent>>>> openProjects;
+	int numberOfOpenProjects;
+	std::map<int, std::thread> projectsThreads;
 public:
 	App();
 	~App() = default;
@@ -48,4 +51,7 @@ private:
 	bool loadFile(LPWSTR fileAbsolutePath);
 	DWORD utf8CharacterCounter(LPCH fileBinaryContent);
 	LPWSTR getListViewString(int itemIndex, int subitemIndex);
+	int retrieveValidProjectIndex(int projectKnownId);
+	void closeProject(int projectKnownId);
+	void closeAllProjects();
 };

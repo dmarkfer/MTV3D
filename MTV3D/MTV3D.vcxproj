@@ -159,7 +159,6 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="UserInput.h" />
     <ClInclude Include="VisMergedWindow.h" />
-    <ClInclude Include="Visualization.h" />
     <ClInclude Include="SplashWindow.h" />
     <ClInclude Include="VisComponent.h" />
     <ClInclude Include="WndClass.h" />
@@ -177,7 +176,6 @@
     </ClCompile>
     <ClCompile Include="UserInput.cpp" />
     <ClCompile Include="VisMergedWindow.cpp" />
-    <ClCompile Include="Visualization.cpp" />
     <ClCompile Include="SplashWindow.cpp" />
     <ClCompile Include="VisComponent.cpp" />
     <ClCompile Include="WndClass.cpp" />

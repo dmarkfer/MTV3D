@@ -1,8 +1,31 @@
+/*********************************************************************************
+**********************************************************************************
+***
+*** MTV3D - Mesh Tally Visualization in 3D
+*** Copyright (C) 2019  Domagoj Markota <domagoj.markota@gmail.com>
+***
+*** This program is free software: you can redistribute it and/or modify
+*** it under the terms of the GNU Affero General Public License as published
+*** by the Free Software Foundation, either version 3 of the License, or
+*** (at your option) any later version.
+***
+*** This program is distributed in the hope that it will be useful,
+*** but WITHOUT ANY WARRANTY; without even the implied warranty of
+*** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*** GNU Affero General Public License for more details.
+***
+*** You should have received a copy of the GNU Affero General Public License
+*** along with this program.  If not, see <https://www.gnu.org/licenses/>.
+***
+**********************************************************************************
+**********************************************************************************/
 #include "stdafx.h"
 #include "MainWindow.h"
 
 
 MainWindow::MainWindow(HINSTANCE hInst) {
+	SetCursor(LoadCursor(nullptr, IDC_ARROW));
+
 	this->hWnd = CreateWindowW(L"Main", L"Mesh Tally Visualization in 3D", WS_OVERLAPPEDWINDOW | WS_MAXIMIZE,
 		CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInst, nullptr);
 
@@ -97,8 +120,33 @@ void MainWindow::loadLogo(HDC hdc) {
 }
 
 
+void MainWindow::deleteListViewItem(int index) {
+	if (index == -1) {
+		SendMessage(this->hWndListView, LVM_DELETEALLITEMS, 0, 0);
+	}
+	else {
+		SendMessage(this->hWndListView, LVM_DELETEITEM, index, 0);
+	}
+}
+
+
 HWND MainWindow::getHandle() {
 	return this->hWnd;
+}
+
+
+HWND MainWindow::getHandleBtnNewProj() {
+	return this->hBtnNewProj;
+}
+
+
+HWND MainWindow::getHandleBtnCloseSel() {
+	return this->hBtnCloseSel;
+}
+
+
+HWND MainWindow::getHandleBtnCloseAll() {
+	return this->hBtnCloseAll;
 }
 
 

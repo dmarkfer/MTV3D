@@ -7,10 +7,12 @@
 
 #define IDM_NEW_PROJ		11
 #define IDM_EXIT			12
+#define IDM_CLOSE_PROJ		13
 #define IDM_CHANGE_LANG		21
 #define IDM_UPDATE			22
 #define IDM_DOC				32
 #define IDM_ABOUT			31
+#define IDM_SPLIT_WND		41
 
 #define BUTTON_NEW_PROJ		1
 #define BUTTON_CLOSE_SEL	2
@@ -20,13 +22,14 @@
 
 #define IDI_MTV3D			107
 #define IDC_MTV3D			109
+#define IDC_MTV3D_VIS		110
 
 #ifndef IDC_STATIC
 #define IDC_STATIC				-1
 #endif
 
-#define IDB_MTV3D	110
 #define IDT_TIMER_SPLASH	121
+
 
 
 #ifdef APSTUDIO_INVOKED

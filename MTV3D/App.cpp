@@ -30,6 +30,10 @@ HDC App::hdc = nullptr;
 
 App::App() {
 	App::appPointer = this;
+
+	this->numberOfOpenProjects = 0;
+
+	VisComponent::mainThreadId = GetCurrentThreadId();
 }
 
 
@@ -44,12 +48,19 @@ int App::run(HINSTANCE hInstance, int& nCmdShow) {
 	ShowWindow(this->hSplashWnd->getHandle(), nCmdShow);
 	SetTimer(this->hSplashWnd->getHandle(), IDT_TIMER_SPLASH, SPLASH_TTL, nullptr);
 
-	HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MTV3D));
+	this->hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MTV3D));
 	MSG msg;
 
 	while(GetMessage(&msg, nullptr, 0, 0)) {
-		if(!TranslateAccelerator(msg.hwnd, hAccelTable, &msg)) {
+		if(!TranslateAccelerator(msg.hwnd, this->hAccelTable, &msg)) {
 			TranslateMessage(&msg);
+
+			if (msg.message == WM_THREAD_DONE) {
+				int* projectKnownId = (int*)msg.lParam;
+				this->closeProject(*projectKnownId);
+				delete projectKnownId;
+			}
+
 			DispatchMessage(&msg);
 		}
 	}
@@ -80,6 +91,15 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		HWND hwndListView = GetDlgItem(hWnd, ID_LISTVIEW);
 
 		switch (lpnmh->code) {
+		case LVN_ITEMCHANGED: {
+			if (SendMessage(App::appPointer->hMainWnd->getHandleListView(), LVM_GETSELECTEDCOUNT, 0, 0)) {
+				EnableWindow(App::appPointer->hMainWnd->getHandleBtnCloseSel(), TRUE);
+			}
+			else {
+				EnableWindow(App::appPointer->hMainWnd->getHandleBtnCloseSel(), FALSE);
+			}
+			break;
+		}
 		case LVN_GETDISPINFO: {
 			LV_DISPINFO *lpdi = (LV_DISPINFO*)lParam;
 
@@ -147,6 +167,29 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			
 			break;
 		}
+		case BUTTON_CLOSE_SEL: {
+
+			int id = -1;
+			
+			while(true) {
+				id = SendMessage(App::appPointer->hMainWnd->getHandleListView(), LVM_GETNEXTITEM, id, LVNI_SELECTED);
+
+				if (id > -1) {
+					PostThreadMessage(
+						GetThreadId(App::appPointer->projectsThreads[App::appPointer->retrieveValidProjectIndex(id)].native_handle()),
+						WM_QUIT, 0, 0
+					);
+				}
+				else {
+					break;
+				}
+			}
+			break;
+		}
+		case BUTTON_CLOSE_ALL: {
+			App::appPointer->closeAllProjects();
+			break;
+		}
 		case IDM_EXIT: {
 			DestroyWindow(hWnd);
 			break;
@@ -202,13 +245,10 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			break;
 		}
 		case WndClass::Type::MAIN: {
-			//break;
-		}
-		default: {
+			App::appPointer->closeAllProjects();
 			PostQuitMessage(0);
 		}
 		}
-		break;
 	}
 	}
 
@@ -349,8 +389,8 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 
 	
 	std::vector<VisComponent::Point> visPoints;
-	LPCWSTR fileLineWCStr;
 	VisComponent::Point point;
+	/*LPCWSTR fileLineWCStr;
 
 	while (std::getline(fileContentStringStream, fileLine)) {
 		fileLineWCStr = fileLine.c_str();
@@ -363,7 +403,7 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 		}
 
 		visPoints.push_back(point);
-	}
+	}*/
 
 
 	LPWSTR fileSizeStr = new WCHAR[WCHAR_ARR_MAX];
@@ -383,18 +423,23 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 	swprintf_s(fileModifiedStr, 20, L"%02d/%02d/%d  %02d:%02d\0", stLocal.wMonth, stLocal.wDay, stLocal.wYear, stLocal.wHour, stLocal.wMinute);
 
 	std::vector<LPWSTR> lvData { fileAbsolutePath, fileSizeStr, fileCreatedStr, fileModifiedStr };
-	VisComponent newProject;
-	this->openProjects.push_back(std::make_pair(-1, std::make_pair(lvData, newProject)));
+	this->openProjects.push_back(std::make_pair(-1, std::make_pair(lvData, nullptr)));
 
 
 	LVITEM lvItem;
 	ZeroMemory(&lvItem, sizeof(LVITEM));
+	lvItem.iItem = SendMessage(this->hMainWnd->getHandleListView(), LVM_GETITEMCOUNT, 0, 0);
+	lvItem.iSubItem = 0;
 	lvItem.mask = LVIF_PARAM | LVIF_TEXT;
 	lvItem.cchTextMax = MAX_PATH;
+	lvItem.stateMask = LVIS_SELECTED;
+	lvItem.state = 1;
 
-	int lvIndex = SendMessage(this->hMainWnd->getHandleListView(), LVM_INSERTITEM, 0, (LPARAM)&lvItem);
+	int projectIndex = SendMessage(this->hMainWnd->getHandleListView(), LVM_INSERTITEM, 0, (LPARAM)&lvItem);
 
-	if (lvIndex == -1) {
+	SendMessage(this->hMainWnd->getHandleListView(), LVM_SETITEMSTATE, projectIndex, (LPARAM)&lvItem);
+
+	if (projectIndex == -1) {
 		delete[] fileSizeStr;
 		delete[] fileCreatedStr;
 		delete[] fileModifiedStr;
@@ -403,7 +448,18 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 		return false;
 	}
 
-	this->openProjects[this->openProjects.size() - 1].first = lvIndex;
+	++this->numberOfOpenProjects;
+
+	this->openProjects[this->numberOfOpenProjects - 1].first = projectIndex;
+	this->openProjects[this->numberOfOpenProjects - 1].second.second = std::make_unique<VisComponent>();
+	
+	this->projectsThreads[projectIndex] = std::thread(
+		&VisComponent::run,
+		this->openProjects[this->numberOfOpenProjects - 1].second.second.get(),
+		this->hCurrentInst, this->hAccelTable, projectIndex, fileAbsolutePath, visPoints.size(), visPoints.data()
+	);
+
+	EnableWindow(this->hMainWnd->getHandleBtnCloseAll(), TRUE);
 
 	return true;
 }
@@ -424,4 +480,49 @@ DWORD App::utf8CharacterCounter(LPCH fileBinaryContent) {
 
 LPWSTR App::getListViewString(int itemIndex, int subitemIndex) {
 	return this->openProjects[itemIndex].second.first[subitemIndex];
+}
+
+
+int App::retrieveValidProjectIndex(int projectKnownId) {
+	int index = 0;
+	for (; index < this->numberOfOpenProjects; ++index) {
+		if (this->openProjects[index].first == projectKnownId) {
+			break;
+		}
+	}
+	return index;
+}
+
+
+void App::closeProject(int projectKnownId) {
+	int index = this->retrieveValidProjectIndex(projectKnownId);
+
+	this->projectsThreads[index].join();
+	this->projectsThreads.erase(index);
+
+
+	this->hMainWnd->deleteListViewItem(index);
+
+
+	--this->numberOfOpenProjects;
+
+	if (! this->numberOfOpenProjects) {
+		EnableWindow(this->hMainWnd->getHandleBtnCloseSel(), FALSE);
+		EnableWindow(this->hMainWnd->getHandleBtnCloseAll(), FALSE);
+	}
+
+	for (LPWSTR fiEl : this->openProjects[index].second.first) {
+		delete[] fiEl;
+	}
+	this->openProjects.erase(this->openProjects.begin() + index);
+}
+
+
+void App::closeAllProjects() {
+	for (auto it = this->projectsThreads.begin(); it != this->projectsThreads.end(); ++it) {
+		PostThreadMessage(
+			GetThreadId(it->second.native_handle()),
+			WM_QUIT, 0, 0
+		);
+	}
 }
