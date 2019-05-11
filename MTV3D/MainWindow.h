@@ -31,11 +31,7 @@ private:
 	HWND hBtnCloseSel;
 	HWND hBtnCloseAll;
 	HWND hWndListView;
-
-	HWND hWndListOfProjects;
-	HWND hWndProjectDetails;
 public:
-	MainWindow() = default;
 	MainWindow(HINSTANCE hInst);
 	~MainWindow() = default;
 

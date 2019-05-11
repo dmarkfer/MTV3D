@@ -46,7 +46,7 @@ private:
 	std::unique_ptr<VisMergedWindow> hVisMerWnd;
 public:
 	VisComponent() = default;
-	~VisComponent();
+	~VisComponent() = default;
 
 	void run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectIndex, LPWSTR fileAbsolutePath, int n, Point* visPoints);
 	static LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

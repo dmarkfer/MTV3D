@@ -26,11 +26,6 @@
 DWORD VisComponent::mainThreadId = 0;
 
 
-VisComponent::~VisComponent() {
-	delete[] this->windowTitle;
-}
-
-
 void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId, LPWSTR fileAbsolutePath, int n, Point* visPoints) {
 	this->hCurrentInst = hCurrentInst;
 	this->hAccelTable = hAccelTable;
@@ -59,6 +54,8 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			DispatchMessage(&msg);
 		}
 	}
+
+	delete[] this->windowTitle;
 	
 	int* customLParam = new int;
 	*customLParam = this->projectId;

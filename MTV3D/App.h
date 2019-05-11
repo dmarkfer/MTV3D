@@ -42,6 +42,9 @@ private:
 	std::vector<std::pair<int, std::pair<std::vector<LPWSTR>, std::unique_ptr<VisComponent>>>> openProjects;
 	int numberOfOpenProjects;
 	std::vector<std::pair<int, std::thread>> projectsThreads;
+
+	Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice;
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext> d3dDeviceContext;
 public:
 	App();
 	~App() = default;
@@ -49,6 +52,7 @@ public:
 	int run(HINSTANCE hInstance, int& nCmdShow);
 	static LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 private:
+	void createDirect3DDevice();
 	int giveNewProjectId();
 	void createWndClasses();
 	bool loadFile(LPWSTR fileAbsolutePath);

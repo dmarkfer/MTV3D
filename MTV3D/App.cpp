@@ -43,6 +43,9 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
 int App::run(HINSTANCE hInstance, int& nCmdShow) {
 	this->hCurrentInst = hInstance;
+
+	this->createDirect3DDevice();
+
 	this->createWndClasses();
 
 	this->hSplashWnd = std::make_unique<SplashWindow>(this->hCurrentInst);
@@ -67,6 +70,22 @@ int App::run(HINSTANCE hInstance, int& nCmdShow) {
 	}
 
 	return (int)msg.wParam;
+}
+
+
+void App::createDirect3DDevice() {
+	D3D11CreateDevice(
+		nullptr,
+		D3D_DRIVER_TYPE_HARDWARE,
+		nullptr,
+		0,
+		nullptr,
+		0,
+		D3D11_SDK_VERSION,
+		&this->d3dDevice,
+		nullptr,
+		&this->d3dDeviceContext
+	);
 }
 
 

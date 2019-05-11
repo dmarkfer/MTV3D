@@ -10,6 +10,11 @@
 #pragma comment(lib, "comctl32.lib")
 #include <commdlg.h>
 
+#include <wrl/client.h>
+
+#include <d3d11.h>
+#pragma comment(lib, "d3d11.lib")
+
 
 #include <tchar.h>
 #include <memory>
