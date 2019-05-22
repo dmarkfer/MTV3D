@@ -28,7 +28,8 @@ WndClass::Type WndClass::typeByWndClassName(const std::wstring& wndClassName) {
 	if (wndClassName == L"Main") return WndClass::Type::MAIN;
 	if (wndClassName == L"VisMerged") return WndClass::Type::VIS_MERGED;
 	if (wndClassName == L"VisResult") return WndClass::Type::VIS_RESULT;
-	return WndClass::Type::VIS_RELERR;
+	if (wndClassName == L"VisRelErr") return WndClass::Type::VIS_RELERR;
+	return WndClass::Type::VIS_DISPLAY;
 }
 
 

@@ -25,9 +25,17 @@
 class VisMergedWindow {
 private:
 	HWND hWnd;
+	HWND hResultDisplay;
+	HWND hResultDisplaySmall;
+	HWND hRelErrDisplay;
+	HWND hRelErrDisplaySmall;
 public:
 	VisMergedWindow(HINSTANCE hInst, LPWSTR windowTitle);
 	~VisMergedWindow() = default;
 
 	HWND getHandle();
+	HWND getResultDisplay();
+	HWND getResultDisplaySmall();
+	HWND getRelErrDisplay();
+	HWND getRelErrDisplaySmall();
 };

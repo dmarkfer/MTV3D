@@ -31,7 +31,8 @@ public:
 		MAIN,
 		VIS_MERGED,
 		VIS_RESULT,
-		VIS_RELERR
+		VIS_RELERR,
+		VIS_DISPLAY
 	};
 
 	static Type typeByWndClassName(const std::wstring& wndClassName);

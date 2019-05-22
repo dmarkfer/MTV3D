@@ -19,6 +19,9 @@
     <Filter Include="Resource Files\Bitmaps">
       <UniqueIdentifier>{739f9b2b-d79e-4d99-9379-0b5341aada14}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{63658d70-21c4-46ea-a4f8-ca66f7f7239c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -114,5 +117,13 @@
     <Image Include="UniZg_logo.bmp">
       <Filter>Resource Files\Bitmaps</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="PixelShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="VertexShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

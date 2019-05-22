@@ -24,6 +24,15 @@
 
 
 DWORD VisComponent::mainThreadId = 0;
+LPWSTR VisComponent::appRootDir = nullptr;
+
+
+VisComponent::VisComponent(
+	Microsoft::WRL::ComPtr<ID3D11Device>& d3dDevice,
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext>& d3dDeviceContext
+): d3dDevice(d3dDevice), d3dDeviceContext(d3dDeviceContext) {
+	this->d3dDevice.As(&this->dxgiDevice);
+}
 
 
 void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId, LPWSTR fileAbsolutePath, int n, Point* visPoints) {
@@ -32,9 +41,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	this->projectId = projectId;
 	this->fileAbsolutePath = fileAbsolutePath;
 	this->windowTitle = new WCHAR[WCHAR_ARR_MAX];
-	swprintf_s(this->windowTitle, WCHAR_ARR_MAX - 1, L"MTV3D - %s\0", this->fileAbsolutePath);
-	
-	this->createWndClasses();
+	swprintf_s(this->windowTitle, WCHAR_ARR_MAX - 1, L"MTV3D - %s", this->fileAbsolutePath);
 
 	for (int i = 0; i < n; ++i) {
 		this->visPoints.push_back(visPoints[i]);
@@ -45,6 +52,14 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	this->hVisMerWnd = std::make_unique<VisMergedWindow>(this->hCurrentInst, this->windowTitle);
 	ShowWindow(this->hVisMerWnd->getHandle(), SW_SHOWMAXIMIZED);
 
+	this->initDirect3D();
+	
+	Microsoft::WRL::ComPtr<ID3D11Resource> backBuffer;
+	this->swapChain->GetBuffer(0, __uuidof(ID3D11Resource), &backBuffer);
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTarget;
+	this->d3dDevice->CreateRenderTargetView(backBuffer.Get(), nullptr, &renderTarget);
+	float color[] = { 1.f, 0.f, 0.f, 1.f };
+
 
 	MSG msg;
 
@@ -53,6 +68,94 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
+
+		this->d3dDeviceContext->ClearRenderTargetView(renderTarget.Get(), color);
+
+
+		struct Vertex {
+			float x, y;
+			float r, g, b;
+		};
+		const Vertex vertices[] = {
+			{ 0.0f, std::sqrt(3.f)/2.f-0.5f, 1.0f, 0.0f, 0.0f },
+			{ 0.5f, -0.5f, 0.0f, 1.0f, 0.0f },
+			{ -0.5f, -0.5f, 0.0f, 0.0f, 1.0f }
+		};
+
+		Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
+		D3D11_BUFFER_DESC bufferDesc;
+		ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
+		bufferDesc.ByteWidth = sizeof(vertices);
+		bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		bufferDesc.CPUAccessFlags = 0;
+		bufferDesc.MiscFlags = 0;
+		bufferDesc.StructureByteStride = sizeof(Vertex);
+
+		D3D11_SUBRESOURCE_DATA subresourceData;
+		ZeroMemory(&subresourceData, sizeof(D3D11_SUBRESOURCE_DATA));
+		subresourceData.pSysMem = vertices;
+		subresourceData.SysMemPitch = 0;
+		subresourceData.SysMemSlicePitch = 0;
+
+		this->d3dDevice->CreateBuffer(&bufferDesc, &subresourceData, &vertexBuffer);
+		const UINT stride = sizeof(Vertex);
+		const UINT offset = 0;
+		this->d3dDeviceContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+
+
+		std::ifstream ifStreamShader((std::wstring(VisComponent::appRootDir) + L"\\VertexShader.cso"), std::ifstream::in | std::ifstream::binary);
+		ifStreamShader.seekg(0, std::ios::end);
+		unsigned shaderFileSize = (unsigned)ifStreamShader.tellg();
+		std::unique_ptr<char[]> shaderBlob = std::make_unique<char[]>(shaderFileSize);
+		ifStreamShader.seekg(0, std::ios::beg);
+		ifStreamShader.read(shaderBlob.get(), shaderFileSize);
+		ifStreamShader.close();
+
+		Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
+		this->d3dDevice->CreateVertexShader(shaderBlob.get(), shaderFileSize, nullptr, &vertexShader);
+		this->d3dDeviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
+
+		Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
+		const D3D11_INPUT_ELEMENT_DESC inputElementDesc[] = {
+			{ "Position", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "Color", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		};
+		this->d3dDevice->CreateInputLayout(inputElementDesc, (UINT)std::size(inputElementDesc), shaderBlob.get(), shaderFileSize, &inputLayout);
+		this->d3dDeviceContext->IASetInputLayout(inputLayout.Get());
+
+		ifStreamShader.open((std::wstring(VisComponent::appRootDir) + L"\\PixelShader.cso"), std::ifstream::in | std::ifstream::binary);
+		ifStreamShader.seekg(0, std::ios::end);
+		shaderFileSize = (unsigned)ifStreamShader.tellg();
+		shaderBlob = std::make_unique<char[]>(shaderFileSize);
+		ifStreamShader.seekg(0, std::ios::beg);
+		ifStreamShader.read(shaderBlob.get(), shaderFileSize);
+		ifStreamShader.close();
+
+		Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
+		this->d3dDevice->CreatePixelShader(shaderBlob.get(), shaderFileSize, nullptr, &pixelShader);
+		this->d3dDeviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
+
+
+
+		this->d3dDeviceContext->OMSetRenderTargets(1, renderTarget.GetAddressOf(), nullptr);
+
+		this->d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+
+		D3D11_VIEWPORT viewport;
+		ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
+		viewport.TopLeftX = 0;
+		viewport.TopLeftY = 0;
+		viewport.Width = 300;
+		viewport.Height = 300;
+		viewport.MinDepth = 0;
+		viewport.MaxDepth = 1;
+		this->d3dDeviceContext->RSSetViewports(1, &viewport);
+
+
+		this->d3dDeviceContext->Draw((UINT)std::size(vertices), 0);
+		this->swapChain->Present(1, 0);
 	}
 
 	delete[] this->windowTitle;
@@ -66,6 +169,16 @@ LRESULT CALLBACK VisComponent::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 	WndClass::Type wcType = WndClass::typeByWndHandle(hWnd);
 
 	switch (message) {
+	case WM_SETCURSOR: {
+		if (wcType == WndClass::Type::VIS_DISPLAY) {
+			SetCursor(LoadCursor(nullptr, IDC_HAND));
+		}
+		else {
+			SetCursor(LoadCursor(nullptr, IDC_ARROW));
+		}
+		return true;
+		break;
+	}
 	case WM_DESTROY: {
 		switch (wcType) {
 		case WndClass::Type::VIS_RESULT: {
@@ -85,56 +198,31 @@ LRESULT CALLBACK VisComponent::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 }
 
 
-void VisComponent::createWndClasses() {
-	this->wndClassTypeStruct.clear();
+void VisComponent::initDirect3D() {
+	ZeroMemory(&this->swapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
 
-	this->wndClassTypeStruct[WndClass::Type::VIS_MERGED] = {
-		sizeof(WNDCLASSEXW),
-		CS_HREDRAW | CS_VREDRAW,
-		VisComponent::wndProc,
-		0,
-		0,
-		this->hCurrentInst,
-		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D)),
-		LoadCursor(this->hCurrentInst, IDC_ARROW),
-		CreateSolidBrush(DARK_GRAY),
-		MAKEINTRESOURCEW(IDC_MTV3D_VIS),
-		L"VisMerged",
-		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D))
-	};
+	this->swapChainDesc.BufferDesc.Width = 0;
+	this->swapChainDesc.BufferDesc.Height = 0;
+	this->swapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
+	this->swapChainDesc.BufferDesc.RefreshRate.Denominator = 0;
+	this->swapChainDesc.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+	this->swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+	this->swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 
-	this->wndClassTypeStruct[WndClass::Type::VIS_RESULT] = {
-		sizeof(WNDCLASSEXW),
-		CS_HREDRAW | CS_VREDRAW,
-		VisComponent::wndProc,
-		0,
-		0,
-		this->hCurrentInst,
-		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D)),
-		LoadCursor(this->hCurrentInst, IDC_ARROW),
-		CreateSolidBrush(DARK_GRAY),
-		MAKEINTRESOURCEW(IDC_MTV3D_VIS),
-		L"VisResult",
-		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D))
-	};
+	this->swapChainDesc.SampleDesc.Count = 1;
+	this->swapChainDesc.SampleDesc.Quality = 0;
 
-	this->wndClassTypeStruct[WndClass::Type::VIS_RELERR] = {
-		sizeof(WNDCLASSEXW),
-		CS_HREDRAW | CS_VREDRAW,
-		VisComponent::wndProc,
-		0,
-		0,
-		this->hCurrentInst,
-		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D)),
-		LoadCursor(this->hCurrentInst, IDC_ARROW),
-		CreateSolidBrush(DARK_GRAY),
-		MAKEINTRESOURCEW(IDC_MTV3D_VIS),
-		L"VisRelErr",
-		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D))
-	};
+	this->swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	this->swapChainDesc.BufferCount = 1;
+
+	this->swapChainDesc.OutputWindow = this->hVisMerWnd->getResultDisplay();
+	this->swapChainDesc.Windowed = TRUE;
+	this->swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+	this->swapChainDesc.Flags = 0;
 
 
-	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_MERGED]);
-	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_RESULT]);
-	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_RELERR]);
+	this->dxgiDevice->GetAdapter(&this->dxgiAdapter);
+	this->dxgiAdapter->GetParent(IID_PPV_ARGS(&this->dxgiFactory));
+
+	dxgiFactory->CreateSwapChain(dxgiDevice.Get(), &this->swapChainDesc, &this->swapChain);
 }

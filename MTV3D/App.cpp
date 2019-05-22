@@ -35,6 +35,13 @@ App::App() {
 	this->numberOfOpenProjects = 0;
 
 	VisComponent::mainThreadId = GetCurrentThreadId();
+	VisComponent::appRootDir = new WCHAR[FILEPATH_MAX_LENGTH];
+	GetCurrentDirectory(FILEPATH_MAX_LENGTH, VisComponent::appRootDir);
+}
+
+
+App::~App() {
+	delete[] VisComponent::appRootDir;
 }
 
 
@@ -64,8 +71,9 @@ int App::run(HINSTANCE hInstance, int& nCmdShow) {
 				this->closeProject(*projectId);
 				delete projectId;
 			}
-
-			DispatchMessage(&msg);
+			else {
+				DispatchMessage(&msg);
+			}
 		}
 	}
 
@@ -86,6 +94,29 @@ void App::createDirect3DDevice() {
 		nullptr,
 		&this->d3dDeviceContext
 	);
+}
+
+
+void App::createD3DShaders() {
+	/*Microsoft::WRL::ComPtr<ID3DBlob> shaderBlob;
+
+	D3DReadFileToBlob((std::wstring(this->currentAppDir) + L"\\VertexShader.cso").c_str(), &shaderBlob);
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
+	this->d3dDevice->CreateVertexShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), nullptr, &vertexShader);
+	this->d3dDeviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
+
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
+	const D3D11_INPUT_ELEMENT_DESC inputElementDesc[] = {
+		{ "Position", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "Color", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+	this->d3dDevice->CreateInputLayout(inputElementDesc, (UINT)std::size(inputElementDesc), shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), &inputLayout);
+	this->d3dDeviceContext->IASetInputLayout(inputLayout.Get());
+
+	D3DReadFileToBlob((std::wstring(this->currentAppDir) + L"\\PixelShader.cso").c_str(), &shaderBlob);
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
+	this->d3dDevice->CreatePixelShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), nullptr, &pixelShader);
+	this->d3dDeviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);*/
 }
 
 
@@ -329,10 +360,74 @@ void App::createWndClasses() {
 		L"Main",
 		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D))
 	};
-	
+
+	this->wndClassTypeStruct[WndClass::Type::VIS_MERGED] = {
+		sizeof(WNDCLASSEXW),
+		CS_HREDRAW | CS_VREDRAW,
+		VisComponent::wndProc,
+		0,
+		0,
+		this->hCurrentInst,
+		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D)),
+		LoadCursor(this->hCurrentInst, IDC_ARROW),
+		CreateSolidBrush(DARK_GRAY),
+		MAKEINTRESOURCEW(IDC_MTV3D_VIS),
+		L"VisMerged",
+		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D))
+	};
+
+	this->wndClassTypeStruct[WndClass::Type::VIS_RESULT] = {
+		sizeof(WNDCLASSEXW),
+		CS_HREDRAW | CS_VREDRAW,
+		VisComponent::wndProc,
+		0,
+		0,
+		this->hCurrentInst,
+		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D)),
+		LoadCursor(this->hCurrentInst, IDC_ARROW),
+		CreateSolidBrush(DARK_GRAY),
+		MAKEINTRESOURCEW(IDC_MTV3D_VIS),
+		L"VisResult",
+		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D))
+	};
+
+	this->wndClassTypeStruct[WndClass::Type::VIS_RELERR] = {
+		sizeof(WNDCLASSEXW),
+		CS_HREDRAW | CS_VREDRAW,
+		VisComponent::wndProc,
+		0,
+		0,
+		this->hCurrentInst,
+		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D)),
+		LoadCursor(this->hCurrentInst, IDC_ARROW),
+		CreateSolidBrush(DARK_GRAY),
+		MAKEINTRESOURCEW(IDC_MTV3D_VIS),
+		L"VisRelErr",
+		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D))
+	};
+
+	this->wndClassTypeStruct[WndClass::Type::VIS_DISPLAY] = {
+		sizeof(WNDCLASSEXW),
+		CS_HREDRAW | CS_VREDRAW,
+		VisComponent::wndProc,
+		0,
+		0,
+		this->hCurrentInst,
+		nullptr,
+		LoadCursor(this->hCurrentInst, IDC_HAND),
+		CreateSolidBrush(WHITE),
+		nullptr,
+		L"VisDisplay",
+		nullptr
+	};
+
 
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::SPLASH]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::MAIN]);
+	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_MERGED]);
+	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_RESULT]);
+	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_RELERR]);
+	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_DISPLAY]);
 }
 
 
@@ -342,9 +437,7 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 	if (hFile == INVALID_HANDLE_VALUE) {
 		return false;
 	}
-	
-	BY_HANDLE_FILE_INFORMATION fileInfo;
-	GetFileInformationByHandle(hFile, &fileInfo);
+
 
 	DWORD fileSize;
 	fileSize = GetFileSize(hFile, nullptr);
@@ -355,10 +448,17 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 	}
 
 
-	LPCH fileBinaryContent = new char[fileSize + 1];
+	BY_HANDLE_FILE_INFORMATION fileInfo;
+	if (! GetFileInformationByHandle(hFile, &fileInfo)) {
+		CloseHandle(hFile);
+		return false;
+	}
+
+
+	LPCH fileRawContent = new char[fileSize + 1];
 	DWORD bytesRead;
 
-	BOOL retVal = ReadFile(hFile, fileBinaryContent, fileSize, &bytesRead, nullptr);
+	BOOL retVal = ReadFile(hFile, fileRawContent, fileSize, &bytesRead, nullptr);
 	CloseHandle(hFile);
 
 	if(! retVal) {
@@ -366,26 +466,26 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 	}
 	
 	
-	fileBinaryContent[fileSize] = '\0';
+	fileRawContent[fileSize] = '\0';
 
-	DWORD numberOfUTF8Characters = utf8CharacterCounter(fileBinaryContent);
+	DWORD numberOfUTF8Characters = utf8CharacterCounter(fileRawContent);
 	LPWSTR fileUTF8Content = new WCHAR[numberOfUTF8Characters + 1];
 
 	try {
 		MultiByteToWideChar(
 			CP_UTF8, 0,
-			fileBinaryContent, fileSize,
+			fileRawContent, fileSize,
 			fileUTF8Content, numberOfUTF8Characters
 		);
 	}
 	catch (...) {
-		delete[] fileBinaryContent;
+		delete[] fileRawContent;
 		delete[] fileUTF8Content;
 		return false;
 	}
 
 	fileUTF8Content[numberOfUTF8Characters] = '\0';
-	delete[] fileBinaryContent;
+	delete[] fileRawContent;
 	std::wistringstream fileContentStringStream(fileUTF8Content);
 	delete[] fileUTF8Content;
 
@@ -409,20 +509,22 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 
 	
 	std::vector<VisComponent::Point> visPoints;
-	VisComponent::Point point;
-	/*LPCWSTR fileLineWCStr;
+	/*VisComponent::Point point;
+	LPCWSTR fileLineWCStr;
 
-	while (std::getline(fileContentStringStream, fileLine)) {
-		fileLineWCStr = fileLine.c_str();
-
-		if (isPhoton) {
+	if (isPhoton) {
+		while (std::getline(fileContentStringStream, fileLine)) {
+			fileLineWCStr = fileLine.c_str();
 			swscanf_s(fileLineWCStr, L"%*s %lf %lf %lf %lf %lf", &point.x, &point.y, &point.z, &point.value, &point.relError);
+			visPoints.push_back(point);
 		}
-		else {
+	}
+	else {
+		while (std::getline(fileContentStringStream, fileLine)) {
+			fileLineWCStr = fileLine.c_str();
 			swscanf_s(fileLineWCStr, L"%lf %lf %lf %lf %lf", &point.x, &point.y, &point.z, &point.value, &point.relError);
+			visPoints.push_back(point);
 		}
-
-		visPoints.push_back(point);
 	}*/
 
 
@@ -430,17 +532,17 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 	LPWSTR fileCreatedStr = new WCHAR[WCHAR_ARR_MAX];
 	LPWSTR fileModifiedStr = new WCHAR[WCHAR_ARR_MAX];
 
-	swprintf_s(fileSizeStr, 20, L"%d\0", fileSize);
+	swprintf_s(fileSizeStr, 20, L"%d", fileSize);
 
 	SYSTEMTIME stUTC, stLocal;
 
 	FileTimeToSystemTime(&fileInfo.ftCreationTime, &stUTC);
 	SystemTimeToTzSpecificLocalTime(nullptr, &stUTC, &stLocal);
-	swprintf_s(fileCreatedStr, 20, L"%02d/%02d/%d  %02d:%02d\0", stLocal.wMonth, stLocal.wDay, stLocal.wYear, stLocal.wHour, stLocal.wMinute);
+	swprintf_s(fileCreatedStr, 20, L"%02d/%02d/%d  %02d:%02d", stLocal.wMonth, stLocal.wDay, stLocal.wYear, stLocal.wHour, stLocal.wMinute);
 
 	FileTimeToSystemTime(&fileInfo.ftLastWriteTime, &stUTC);
 	SystemTimeToTzSpecificLocalTime(nullptr, &stUTC, &stLocal);
-	swprintf_s(fileModifiedStr, 20, L"%02d/%02d/%d  %02d:%02d\0", stLocal.wMonth, stLocal.wDay, stLocal.wYear, stLocal.wHour, stLocal.wMinute);
+	swprintf_s(fileModifiedStr, 20, L"%02d/%02d/%d  %02d:%02d", stLocal.wMonth, stLocal.wDay, stLocal.wYear, stLocal.wHour, stLocal.wMinute);
 
 	std::vector<LPWSTR> lvData { fileAbsolutePath, fileSizeStr, fileCreatedStr, fileModifiedStr };
 	int newProjectId = this->giveNewProjectId();
@@ -458,7 +560,7 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 
 	++this->numberOfOpenProjects;
 	
-	this->openProjects[this->numberOfOpenProjects - 1].second.second = std::make_unique<VisComponent>();
+	this->openProjects[this->numberOfOpenProjects - 1].second.second = std::make_unique<VisComponent>(this->d3dDevice, this->d3dDeviceContext);
 
 	this->projectsThreads.push_back(
 		std::make_pair(
@@ -477,11 +579,11 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 }
 
 
-DWORD App::utf8CharacterCounter(LPCH fileBinaryContent) {
+DWORD App::utf8CharacterCounter(LPCH fileRawContent) {
 	DWORD counter = 0;
 
-	for (int i = 0; fileBinaryContent[i] != '\0'; ++i) {
-		if ((fileBinaryContent[i] & 0xC0) != 0x80) {
+	for (int i = 0; fileRawContent[i] != '\0'; ++i) {
+		if ((fileRawContent[i] & 0xC0) != 0x80) {
 			++counter;
 		}
 	}

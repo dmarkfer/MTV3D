@@ -47,16 +47,17 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> d3dDeviceContext;
 public:
 	App();
-	~App() = default;
+	~App();
 
 	int run(HINSTANCE hInstance, int& nCmdShow);
 	static LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 private:
 	void createDirect3DDevice();
+	void createD3DShaders();
 	int giveNewProjectId();
 	void createWndClasses();
 	bool loadFile(LPWSTR fileAbsolutePath);
-	DWORD utf8CharacterCounter(LPCH fileBinaryContent);
+	DWORD utf8CharacterCounter(LPCH fileRawContent);
 	LPWSTR getListViewString(int itemIndex, int subitemIndex);
 	int retrieveProjectIndexWithinContainer(int projectId);
 	void closeProject(int projectId);

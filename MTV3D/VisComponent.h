@@ -34,7 +34,10 @@ public:
 	};
 
 	static DWORD mainThreadId;
+	static LPWSTR appRootDir;
 private:
+	static std::mutex mtx;
+
 	HINSTANCE hCurrentInst;
 	HACCEL hAccelTable;
 
@@ -42,14 +45,22 @@ private:
 	LPWSTR fileAbsolutePath;
 	LPWSTR windowTitle;
 	std::vector<Point> visPoints;
-	std::map<WndClass::Type, WNDCLASSEXW> wndClassTypeStruct;
+	
+	Microsoft::WRL::ComPtr<ID3D11Device>& d3dDevice;
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext>& d3dDeviceContext;
+	Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
+	Microsoft::WRL::ComPtr<IDXGIAdapter> dxgiAdapter;
+	Microsoft::WRL::ComPtr<IDXGIFactory> dxgiFactory;
+	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain;
+	DXGI_SWAP_CHAIN_DESC swapChainDesc;
+
 	std::unique_ptr<VisMergedWindow> hVisMerWnd;
 public:
-	VisComponent() = default;
+	VisComponent(Microsoft::WRL::ComPtr<ID3D11Device>& d3dDevice, Microsoft::WRL::ComPtr<ID3D11DeviceContext>& d3dDeviceContext);
 	~VisComponent() = default;
 
 	void run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectIndex, LPWSTR fileAbsolutePath, int n, Point* visPoints);
 	static LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 private:
-	void createWndClasses();
+	void initDirect3D();
 };
