@@ -23,6 +23,7 @@
 #include "App.h"
 
 
+bool App::quitFlag = false;
 App* App::appPointer = nullptr;
 PAINTSTRUCT App::ps = {};
 HDC App::hdc = nullptr;
@@ -63,7 +64,7 @@ int App::run(HINSTANCE hInstance, int& nCmdShow) {
 	MSG msg;
 
 	while(GetMessage(&msg, nullptr, 0, 0)) {
-		if(!TranslateAccelerator(msg.hwnd, this->hAccelTable, &msg)) {
+		if(! TranslateAccelerator(msg.hwnd, this->hAccelTable, &msg)) {
 			TranslateMessage(&msg);
 
 			if (msg.message == WM_THREAD_DONE) {
@@ -292,12 +293,19 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 	}
 	case WM_DESTROY: {
 		switch (wcType) {
-		case WndClass::Type::SPLASH: {
+		case WndClass::Type::MAIN: {
+			if (App::appPointer->numberOfOpenProjects) {
+				App::quitFlag = true;
+				App::appPointer->closeAllProjects();
+			}
+			else {
+				PostQuitMessage(0);
+			}
+
 			break;
 		}
-		case WndClass::Type::MAIN: {
-			App::appPointer->closeAllProjects();
-			PostQuitMessage(0);
+		default: {
+			break;
 		}
 		}
 	}
@@ -623,6 +631,12 @@ void App::closeProject(int projectId) {
 
 
 	this->recreateListView();
+
+	if (App::quitFlag) {
+		if (! this->numberOfOpenProjects) {
+			PostQuitMessage(0);
+		}
+	}
 }
 
 

@@ -28,6 +28,7 @@
 
 class App {
 private:
+	static bool quitFlag;
 	HINSTANCE hCurrentInst;
 	HACCEL hAccelTable;
 	static App* appPointer;
