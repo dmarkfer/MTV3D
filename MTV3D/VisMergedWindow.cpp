@@ -32,18 +32,18 @@ VisMergedWindow::VisMergedWindow(HINSTANCE hInst, LPWSTR windowTitle) {
 
 	RECT wndRect;
 	GetClientRect(this->hWnd, &wndRect);
-	int displayDim = (wndRect.right - 300) / 2;
-	int smallDisplayDim = wndRect.bottom - displayDim;
+	this->displayDim = (wndRect.right - 300) / 2;
+	int smallDisplayDim = wndRect.bottom - this->displayDim;
 
 	this->hResultDisplay = CreateWindowEx(WS_EX_TOOLWINDOW, L"VisDisplay", nullptr, WS_VISIBLE | WS_CHILD,
-		0, 0, displayDim, displayDim,
+		0, 0, this->displayDim, this->displayDim,
 		this->hWnd, nullptr, hInst, nullptr);
 	LONG displayStyle = GetWindowLong(this->hResultDisplay, GWL_STYLE);
 	displayStyle &= ~(WS_BORDER | WS_CAPTION | WS_SYSMENU);
 	SetWindowLong(this->hResultDisplay, GWL_STYLE, displayStyle);
 
 	this->hResultDisplaySmall = CreateWindowEx(WS_EX_TOOLWINDOW, L"VisDisplay", nullptr, WS_VISIBLE | WS_CHILD,
-		0, displayDim, smallDisplayDim, smallDisplayDim,
+		0, this->displayDim, smallDisplayDim, smallDisplayDim,
 		this->hWnd, nullptr, hInst, nullptr);
 	displayStyle = GetWindowLong(this->hResultDisplaySmall, GWL_STYLE);
 	displayStyle &= ~(WS_BORDER | WS_CAPTION | WS_SYSMENU);
@@ -51,7 +51,7 @@ VisMergedWindow::VisMergedWindow(HINSTANCE hInst, LPWSTR windowTitle) {
 
 
 	this->hRelErrDisplay = CreateWindowEx(WS_EX_TOOLWINDOW, L"VisDisplay", nullptr, WS_VISIBLE | WS_CHILD,
-		wndRect.right - displayDim, 0, displayDim, displayDim,
+		wndRect.right - this->displayDim, 0, this->displayDim, this->displayDim,
 		this->hWnd, nullptr, hInst, nullptr);
 	displayStyle = GetWindowLong(this->hRelErrDisplay, GWL_STYLE);
 	displayStyle &= ~(WS_BORDER | WS_CAPTION | WS_SYSMENU);
@@ -88,4 +88,9 @@ HWND VisMergedWindow::getRelErrDisplay() {
 
 HWND VisMergedWindow::getRelErrDisplaySmall() {
 	return this->hRelErrDisplaySmall;
+}
+
+
+int VisMergedWindow::getDisplayDim() {
+	return this->displayDim;
 }

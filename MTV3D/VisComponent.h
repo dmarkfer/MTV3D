@@ -35,6 +35,12 @@ public:
 
 	static DWORD mainThreadId;
 	static LPWSTR appRootDir;
+
+	static unsigned vertexShaderFileSize;
+	static char* vertexShaderBlob;
+	static const D3D11_INPUT_ELEMENT_DESC inputElementDesc[];
+	static unsigned pixelShaderFileSize;
+	static char* pixelShaderBlob;
 private:
 	static std::mutex mtx;
 

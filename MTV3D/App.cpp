@@ -42,6 +42,9 @@ App::App() {
 
 
 App::~App() {
+	delete[] VisComponent::vertexShaderBlob;
+	delete[] VisComponent::pixelShaderBlob;
+
 	delete[] VisComponent::appRootDir;
 }
 
@@ -53,6 +56,7 @@ int App::run(HINSTANCE hInstance, int& nCmdShow) {
 	this->hCurrentInst = hInstance;
 
 	this->createDirect3DDevice();
+	this->createD3DShaders();
 
 	this->createWndClasses();
 
@@ -99,25 +103,21 @@ void App::createDirect3DDevice() {
 
 
 void App::createD3DShaders() {
-	/*Microsoft::WRL::ComPtr<ID3DBlob> shaderBlob;
+	std::ifstream ifStreamShader((std::wstring(VisComponent::appRootDir) + L"\\VertexShader.cso"), std::ifstream::in | std::ifstream::binary);
+	ifStreamShader.seekg(0, std::ios::end);
+	VisComponent::vertexShaderFileSize = (unsigned)ifStreamShader.tellg();
+	VisComponent::vertexShaderBlob = new char[VisComponent::vertexShaderFileSize];
+	ifStreamShader.seekg(0, std::ios::beg);
+	ifStreamShader.read(VisComponent::vertexShaderBlob, VisComponent::vertexShaderFileSize);
+	ifStreamShader.close();
 
-	D3DReadFileToBlob((std::wstring(this->currentAppDir) + L"\\VertexShader.cso").c_str(), &shaderBlob);
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
-	this->d3dDevice->CreateVertexShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), nullptr, &vertexShader);
-	this->d3dDeviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
-
-	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
-	const D3D11_INPUT_ELEMENT_DESC inputElementDesc[] = {
-		{ "Position", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "Color", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	};
-	this->d3dDevice->CreateInputLayout(inputElementDesc, (UINT)std::size(inputElementDesc), shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), &inputLayout);
-	this->d3dDeviceContext->IASetInputLayout(inputLayout.Get());
-
-	D3DReadFileToBlob((std::wstring(this->currentAppDir) + L"\\PixelShader.cso").c_str(), &shaderBlob);
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
-	this->d3dDevice->CreatePixelShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), nullptr, &pixelShader);
-	this->d3dDeviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);*/
+	ifStreamShader.open((std::wstring(VisComponent::appRootDir) + L"\\PixelShader.cso"), std::ifstream::in | std::ifstream::binary);
+	ifStreamShader.seekg(0, std::ios::end);
+	VisComponent::pixelShaderFileSize = (unsigned)ifStreamShader.tellg();
+	VisComponent::pixelShaderBlob = new char[VisComponent::pixelShaderFileSize];
+	ifStreamShader.seekg(0, std::ios::beg);
+	ifStreamShader.read(VisComponent::pixelShaderBlob, VisComponent::pixelShaderFileSize);
+	ifStreamShader.close();
 }
 
 

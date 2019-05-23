@@ -25,6 +25,14 @@
 
 DWORD VisComponent::mainThreadId = 0;
 LPWSTR VisComponent::appRootDir = nullptr;
+unsigned VisComponent::vertexShaderFileSize = 0;
+char* VisComponent::vertexShaderBlob = nullptr;
+const D3D11_INPUT_ELEMENT_DESC VisComponent::inputElementDesc[] = {
+	{ "Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "Color", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+};
+unsigned VisComponent::pixelShaderFileSize = 0;
+char* VisComponent::pixelShaderBlob = nullptr;
 
 
 VisComponent::VisComponent(
@@ -189,37 +197,17 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDevice->CreateBuffer(&constBufferDesc, &constBufferSubresourceData, &constBuffer);
 		this->d3dDeviceContext->VSSetConstantBuffers(0, 1, constBuffer.GetAddressOf());
 
-
-		std::ifstream ifStreamShader((std::wstring(VisComponent::appRootDir) + L"\\VertexShader.cso"), std::ifstream::in | std::ifstream::binary);
-		ifStreamShader.seekg(0, std::ios::end);
-		unsigned shaderFileSize = (unsigned)ifStreamShader.tellg();
-		std::unique_ptr<char[]> shaderBlob = std::make_unique<char[]>(shaderFileSize);
-		ifStreamShader.seekg(0, std::ios::beg);
-		ifStreamShader.read(shaderBlob.get(), shaderFileSize);
-		ifStreamShader.close();
-
+		
 		Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
-		this->d3dDevice->CreateVertexShader(shaderBlob.get(), shaderFileSize, nullptr, &vertexShader);
+		this->d3dDevice->CreateVertexShader(VisComponent::vertexShaderBlob, VisComponent::vertexShaderFileSize, nullptr, &vertexShader);
 		this->d3dDeviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
 
 		Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
-		const D3D11_INPUT_ELEMENT_DESC inputElementDesc[] = {
-			{ "Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "Color", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-		};
-		this->d3dDevice->CreateInputLayout(inputElementDesc, (UINT)std::size(inputElementDesc), shaderBlob.get(), shaderFileSize, &inputLayout);
+		this->d3dDevice->CreateInputLayout(VisComponent::inputElementDesc, (UINT)std::size(VisComponent::inputElementDesc), VisComponent::vertexShaderBlob, VisComponent::vertexShaderFileSize, &inputLayout);
 		this->d3dDeviceContext->IASetInputLayout(inputLayout.Get());
 
-		ifStreamShader.open((std::wstring(VisComponent::appRootDir) + L"\\PixelShader.cso"), std::ifstream::in | std::ifstream::binary);
-		ifStreamShader.seekg(0, std::ios::end);
-		shaderFileSize = (unsigned)ifStreamShader.tellg();
-		shaderBlob = std::make_unique<char[]>(shaderFileSize);
-		ifStreamShader.seekg(0, std::ios::beg);
-		ifStreamShader.read(shaderBlob.get(), shaderFileSize);
-		ifStreamShader.close();
-
 		Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
-		this->d3dDevice->CreatePixelShader(shaderBlob.get(), shaderFileSize, nullptr, &pixelShader);
+		this->d3dDevice->CreatePixelShader(VisComponent::pixelShaderBlob, VisComponent::pixelShaderFileSize, nullptr, &pixelShader);
 		this->d3dDeviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
 
 
@@ -229,8 +217,8 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 
 		D3D11_VIEWPORT vp;
-		vp.Width = 800;
-		vp.Height = 600;
+		vp.Width = this->hVisMerWnd->getDisplayDim();
+		vp.Height = this->hVisMerWnd->getDisplayDim();
 		vp.MinDepth = 0;
 		vp.MaxDepth = 1;
 		vp.TopLeftX = 0;

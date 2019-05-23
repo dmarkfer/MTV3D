@@ -29,6 +29,8 @@ private:
 	HWND hResultDisplaySmall;
 	HWND hRelErrDisplay;
 	HWND hRelErrDisplaySmall;
+
+	int displayDim;
 public:
 	VisMergedWindow(HINSTANCE hInst, LPWSTR windowTitle);
 	~VisMergedWindow() = default;
@@ -38,4 +40,5 @@ public:
 	HWND getResultDisplaySmall();
 	HWND getRelErrDisplay();
 	HWND getRelErrDisplaySmall();
+	int getDisplayDim();
 };
