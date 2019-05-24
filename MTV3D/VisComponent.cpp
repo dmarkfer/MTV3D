@@ -24,21 +24,20 @@
 
 
 DWORD VisComponent::mainThreadId = 0;
-LPWSTR VisComponent::appRootDir = nullptr;
-unsigned VisComponent::vertexShaderFileSize = 0;
-char* VisComponent::vertexShaderBlob = nullptr;
-const D3D11_INPUT_ELEMENT_DESC VisComponent::inputElementDesc[] = {
-	{ "Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "Color", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-};
-unsigned VisComponent::pixelShaderFileSize = 0;
-char* VisComponent::pixelShaderBlob = nullptr;
 
 
 VisComponent::VisComponent(
 	Microsoft::WRL::ComPtr<ID3D11Device>& d3dDevice,
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext>& d3dDeviceContext
-): d3dDevice(d3dDevice), d3dDeviceContext(d3dDeviceContext) {
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext>& d3dDeviceContext,
+	Microsoft::WRL::ComPtr<ID3D11VertexShader>& vertexShader,
+	Microsoft::WRL::ComPtr<ID3D11InputLayout>& inputLayout,
+	Microsoft::WRL::ComPtr<ID3D11PixelShader>& pixelShader
+) :		d3dDevice(d3dDevice),
+		d3dDeviceContext(d3dDeviceContext),
+		vertexShader(vertexShader),
+		inputLayout(inputLayout),
+		pixelShader(pixelShader)
+{
 	this->d3dDevice.As(&this->dxgiDevice);
 }
 
@@ -197,18 +196,10 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDevice->CreateBuffer(&constBufferDesc, &constBufferSubresourceData, &constBuffer);
 		this->d3dDeviceContext->VSSetConstantBuffers(0, 1, constBuffer.GetAddressOf());
 
-		
-		Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
-		this->d3dDevice->CreateVertexShader(VisComponent::vertexShaderBlob, VisComponent::vertexShaderFileSize, nullptr, &vertexShader);
-		this->d3dDeviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
 
-		Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
-		this->d3dDevice->CreateInputLayout(VisComponent::inputElementDesc, (UINT)std::size(VisComponent::inputElementDesc), VisComponent::vertexShaderBlob, VisComponent::vertexShaderFileSize, &inputLayout);
-		this->d3dDeviceContext->IASetInputLayout(inputLayout.Get());
-
-		Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
-		this->d3dDevice->CreatePixelShader(VisComponent::pixelShaderBlob, VisComponent::pixelShaderFileSize, nullptr, &pixelShader);
-		this->d3dDeviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
+		this->d3dDeviceContext->VSSetShader(this->vertexShader.Get(), nullptr, 0);
+		this->d3dDeviceContext->IASetInputLayout(this->inputLayout.Get());
+		this->d3dDeviceContext->PSSetShader(this->pixelShader.Get(), nullptr, 0);
 
 
 		this->d3dDeviceContext->OMSetRenderTargets(1u, renderTarget.GetAddressOf(), nullptr);

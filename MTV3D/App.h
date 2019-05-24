@@ -46,9 +46,12 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> d3dDeviceContext;
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
 public:
 	App();
-	~App();
+	~App() = default;
 
 	int run(HINSTANCE hInstance, int& nCmdShow);
 	static LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

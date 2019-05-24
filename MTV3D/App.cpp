@@ -36,16 +36,6 @@ App::App() {
 	this->numberOfOpenProjects = 0;
 
 	VisComponent::mainThreadId = GetCurrentThreadId();
-	VisComponent::appRootDir = new WCHAR[FILEPATH_MAX_LENGTH];
-	GetCurrentDirectory(FILEPATH_MAX_LENGTH, VisComponent::appRootDir);
-}
-
-
-App::~App() {
-	delete[] VisComponent::vertexShaderBlob;
-	delete[] VisComponent::pixelShaderBlob;
-
-	delete[] VisComponent::appRootDir;
 }
 
 
@@ -103,21 +93,32 @@ void App::createDirect3DDevice() {
 
 
 void App::createD3DShaders() {
-	std::ifstream ifStreamShader((std::wstring(VisComponent::appRootDir) + L"\\VertexShader.cso"), std::ifstream::in | std::ifstream::binary);
+	std::ifstream ifStreamShader(L"VertexShader.cso", std::ifstream::in | std::ifstream::binary);
 	ifStreamShader.seekg(0, std::ios::end);
-	VisComponent::vertexShaderFileSize = (unsigned)ifStreamShader.tellg();
-	VisComponent::vertexShaderBlob = new char[VisComponent::vertexShaderFileSize];
+	unsigned shaderFileSize = (unsigned)ifStreamShader.tellg();
+	std::unique_ptr<char[]> shaderBlob = std::make_unique<char[]>(shaderFileSize);
 	ifStreamShader.seekg(0, std::ios::beg);
-	ifStreamShader.read(VisComponent::vertexShaderBlob, VisComponent::vertexShaderFileSize);
+	ifStreamShader.read(shaderBlob.get(), shaderFileSize);
 	ifStreamShader.close();
 
-	ifStreamShader.open((std::wstring(VisComponent::appRootDir) + L"\\PixelShader.cso"), std::ifstream::in | std::ifstream::binary);
+	this->d3dDevice->CreateVertexShader(shaderBlob.get(), shaderFileSize, nullptr, &this->vertexShader);
+
+
+	const D3D11_INPUT_ELEMENT_DESC inputElementDesc[] = {
+		{ "Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "Color", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+	this->d3dDevice->CreateInputLayout(inputElementDesc, (UINT)std::size(inputElementDesc), shaderBlob.get(), shaderFileSize, &this->inputLayout);
+
+	ifStreamShader.open(L"PixelShader.cso", std::ifstream::in | std::ifstream::binary);
 	ifStreamShader.seekg(0, std::ios::end);
-	VisComponent::pixelShaderFileSize = (unsigned)ifStreamShader.tellg();
-	VisComponent::pixelShaderBlob = new char[VisComponent::pixelShaderFileSize];
+	shaderFileSize = (unsigned)ifStreamShader.tellg();
+	shaderBlob = std::make_unique<char[]>(shaderFileSize);
 	ifStreamShader.seekg(0, std::ios::beg);
-	ifStreamShader.read(VisComponent::pixelShaderBlob, VisComponent::pixelShaderFileSize);
+	ifStreamShader.read(shaderBlob.get(), shaderFileSize);
 	ifStreamShader.close();
+
+	this->d3dDevice->CreatePixelShader(shaderBlob.get(), shaderFileSize, nullptr, &this->pixelShader);
 }
 
 
@@ -568,7 +569,7 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 
 	++this->numberOfOpenProjects;
 	
-	this->openProjects[this->numberOfOpenProjects - 1].second.second = std::make_unique<VisComponent>(this->d3dDevice, this->d3dDeviceContext);
+	this->openProjects[this->numberOfOpenProjects - 1].second.second = std::make_unique<VisComponent>(this->d3dDevice, this->d3dDeviceContext, this->vertexShader, this->inputLayout, this->pixelShader);
 
 	this->projectsThreads.push_back(
 		std::make_pair(
