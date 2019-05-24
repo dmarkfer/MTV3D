@@ -34,9 +34,13 @@ public:
 	};
 
 	static DWORD mainThreadId;
-private:
-	static std::mutex mtx;
 
+	static unsigned vertexShaderFileSize;
+	static char* vertexShaderBlob;
+	static const D3D11_INPUT_ELEMENT_DESC inputElementDesc[];
+	static unsigned pixelShaderFileSize;
+	static char* pixelShaderBlob;
+private:
 	HINSTANCE hCurrentInst;
 	HACCEL hAccelTable;
 
@@ -44,27 +48,15 @@ private:
 	LPWSTR fileAbsolutePath;
 	LPWSTR windowTitle;
 	std::vector<Point> visPoints;
-	
-	Microsoft::WRL::ComPtr<ID3D11Device>& d3dDevice;
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext>& d3dDeviceContext;
-	Microsoft::WRL::ComPtr<ID3D11VertexShader>& vertexShader;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout>& inputLayout;
-	Microsoft::WRL::ComPtr<ID3D11PixelShader>& pixelShader;
-	Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
-	Microsoft::WRL::ComPtr<IDXGIAdapter> dxgiAdapter;
-	Microsoft::WRL::ComPtr<IDXGIFactory> dxgiFactory;
+
+	Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice;
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext> d3dDeviceContext;
 	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChainResultDisplay;
 	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChainRelErrDisplay;
 
 	std::unique_ptr<VisMergedWindow> hVisMerWnd;
 public:
-	VisComponent(
-		Microsoft::WRL::ComPtr<ID3D11Device>& d3dDevice,
-		Microsoft::WRL::ComPtr<ID3D11DeviceContext>& d3dDeviceContext,
-		Microsoft::WRL::ComPtr<ID3D11VertexShader>& vertexShader,
-		Microsoft::WRL::ComPtr<ID3D11InputLayout>& inputLayout,
-		Microsoft::WRL::ComPtr<ID3D11PixelShader>& pixelShader
-	);
+	VisComponent() = default;
 	~VisComponent() = default;
 
 	void run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectIndex, LPWSTR fileAbsolutePath, int n, Point* visPoints);

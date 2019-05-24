@@ -43,21 +43,14 @@ private:
 	std::vector<std::pair<int, std::pair<std::vector<LPWSTR>, std::unique_ptr<VisComponent>>>> openProjects;
 	int numberOfOpenProjects;
 	std::vector<std::pair<int, std::thread>> projectsThreads;
-
-	Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice;
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext> d3dDeviceContext;
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
 public:
 	App();
-	~App() = default;
+	~App();
 
 	int run(HINSTANCE hInstance, int& nCmdShow);
 	static LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 private:
-	void createDirect3DDevice();
-	void createD3DShaders();
+	void readD3DShaders();
 	int giveNewProjectId();
 	void createWndClasses();
 	bool loadFile(LPWSTR fileAbsolutePath);

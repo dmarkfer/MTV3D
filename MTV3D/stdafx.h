@@ -26,7 +26,6 @@
 #include <map>
 #include <utility>
 #include <thread>
-#include <mutex>
 
 
 #define BLACK		RGB(0, 0, 0)

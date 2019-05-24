@@ -24,22 +24,14 @@
 
 
 DWORD VisComponent::mainThreadId = 0;
-
-
-VisComponent::VisComponent(
-	Microsoft::WRL::ComPtr<ID3D11Device>& d3dDevice,
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext>& d3dDeviceContext,
-	Microsoft::WRL::ComPtr<ID3D11VertexShader>& vertexShader,
-	Microsoft::WRL::ComPtr<ID3D11InputLayout>& inputLayout,
-	Microsoft::WRL::ComPtr<ID3D11PixelShader>& pixelShader
-) :		d3dDevice(d3dDevice),
-		d3dDeviceContext(d3dDeviceContext),
-		vertexShader(vertexShader),
-		inputLayout(inputLayout),
-		pixelShader(pixelShader)
-{
-	this->d3dDevice.As(&this->dxgiDevice);
-}
+unsigned VisComponent::vertexShaderFileSize = 0;
+char* VisComponent::vertexShaderBlob = nullptr;
+const D3D11_INPUT_ELEMENT_DESC VisComponent::inputElementDesc[] = {
+	{ "Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "Color", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+};
+unsigned VisComponent::pixelShaderFileSize = 0;
+char* VisComponent::pixelShaderBlob = nullptr;
 
 
 void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId, LPWSTR fileAbsolutePath, int n, Point* visPoints) {
@@ -61,6 +53,10 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 	this->initDirect3D();
 
+
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
 
 	D3D11_VIEWPORT vp;
 	vp.Width = this->hVisMerWnd->getDisplayDim();
@@ -214,9 +210,12 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDevice->CreateBuffer(&constBufferDesc, &constBufferSubresourceData, &constBuffer);
 		this->d3dDeviceContext->VSSetConstantBuffers(0, 1, constBuffer.GetAddressOf());
 
-		this->d3dDeviceContext->VSSetShader(this->vertexShader.Get(), nullptr, 0);
-		this->d3dDeviceContext->IASetInputLayout(this->inputLayout.Get());
-		this->d3dDeviceContext->PSSetShader(this->pixelShader.Get(), nullptr, 0);
+		this->d3dDevice->CreateVertexShader(VisComponent::vertexShaderBlob, VisComponent::vertexShaderFileSize, nullptr, &vertexShader);
+		this->d3dDeviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
+		this->d3dDevice->CreateInputLayout(VisComponent::inputElementDesc, (UINT)std::size(VisComponent::inputElementDesc), VisComponent::vertexShaderBlob, VisComponent::vertexShaderFileSize, &inputLayout);
+		this->d3dDeviceContext->IASetInputLayout(inputLayout.Get());
+		this->d3dDevice->CreatePixelShader(VisComponent::pixelShaderBlob, VisComponent::pixelShaderFileSize, nullptr, &pixelShader);
+		this->d3dDeviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
 
 		this->d3dDeviceContext->OMSetRenderTargets(1u, renderTargetResultDisplay.GetAddressOf(), nullptr);
 		this->d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -233,9 +232,9 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDeviceContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
 		this->d3dDeviceContext->VSSetConstantBuffers(0, 1, constBuffer.GetAddressOf());
 
-		this->d3dDeviceContext->VSSetShader(this->vertexShader.Get(), nullptr, 0);
-		this->d3dDeviceContext->IASetInputLayout(this->inputLayout.Get());
-		this->d3dDeviceContext->PSSetShader(this->pixelShader.Get(), nullptr, 0);
+		this->d3dDeviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
+		this->d3dDeviceContext->IASetInputLayout(inputLayout.Get());
+		this->d3dDeviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
 
 		this->d3dDeviceContext->OMSetRenderTargets(1u, renderTargetRelErrDisplay.GetAddressOf(), nullptr);
 		this->d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -245,13 +244,6 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 		this->swapChainRelErrDisplay->Present(1, 0);
 	}
-
-	DWORD errorMessageID = ::GetLastError();
-	LPSTR messageBuffer = nullptr;
-	size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
-	OutputDebugStringA(messageBuffer);
-	LocalFree(messageBuffer);
 
 	delete[] this->windowTitle;
 	
@@ -294,6 +286,20 @@ LRESULT CALLBACK VisComponent::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 
 
 void VisComponent::initDirect3D() {
+	D3D11CreateDevice(
+		nullptr,
+		D3D_DRIVER_TYPE_HARDWARE,
+		nullptr,
+		0,
+		nullptr,
+		0,
+		D3D11_SDK_VERSION,
+		&this->d3dDevice,
+		nullptr,
+		&this->d3dDeviceContext
+	);
+
+
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;
 	ZeroMemory(&swapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
 
@@ -317,13 +323,16 @@ void VisComponent::initDirect3D() {
 	swapChainDesc.Flags = 0;
 
 
-	this->dxgiDevice->GetAdapter(&this->dxgiAdapter);
-	this->dxgiAdapter->GetParent(IID_PPV_ARGS(&this->dxgiFactory));
+	Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
+	Microsoft::WRL::ComPtr<IDXGIAdapter> dxgiAdapter;
+	Microsoft::WRL::ComPtr<IDXGIFactory> dxgiFactory;
+
+	this->d3dDevice.As(&dxgiDevice);
+	dxgiDevice->GetAdapter(&dxgiAdapter);
+	dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory));
 
 	dxgiFactory->CreateSwapChain(dxgiDevice.Get(), &swapChainDesc, &this->swapChainResultDisplay);
 
-
 	swapChainDesc.OutputWindow = this->hVisMerWnd->getRelErrDisplay();
-
 	dxgiFactory->CreateSwapChain(dxgiDevice.Get(), &swapChainDesc, &this->swapChainRelErrDisplay);
 }
