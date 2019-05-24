@@ -53,8 +53,8 @@ private:
 	Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
 	Microsoft::WRL::ComPtr<IDXGIAdapter> dxgiAdapter;
 	Microsoft::WRL::ComPtr<IDXGIFactory> dxgiFactory;
-	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain;
-	DXGI_SWAP_CHAIN_DESC swapChainDesc;
+	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChainResultDisplay;
+	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChainRelErrDisplay;
 
 	std::unique_ptr<VisMergedWindow> hVisMerWnd;
 public:

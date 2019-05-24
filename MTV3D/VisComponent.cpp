@@ -60,11 +60,94 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	ShowWindow(this->hVisMerWnd->getHandle(), SW_SHOWMAXIMIZED);
 
 	this->initDirect3D();
+
+
+	D3D11_VIEWPORT vp;
+	vp.Width = this->hVisMerWnd->getDisplayDim();
+	vp.Height = this->hVisMerWnd->getDisplayDim();
+	vp.MinDepth = 0;
+	vp.MaxDepth = 1;
+	vp.TopLeftX = 0;
+	vp.TopLeftY = 0;
+
 	
-	Microsoft::WRL::ComPtr<ID3D11Resource> backBuffer;
-	this->swapChain->GetBuffer(0, __uuidof(ID3D11Resource), &backBuffer);
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTarget;
-	this->d3dDevice->CreateRenderTargetView(backBuffer.Get(), nullptr, &renderTarget);
+	Microsoft::WRL::ComPtr<ID3D11Resource> backBufferResultDisplay;
+	this->swapChainResultDisplay->GetBuffer(0, __uuidof(ID3D11Resource), &backBufferResultDisplay);
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetResultDisplay;
+	this->d3dDevice->CreateRenderTargetView(backBufferResultDisplay.Get(), nullptr, &renderTargetResultDisplay);
+
+	Microsoft::WRL::ComPtr<ID3D11Resource> backBufferRelErrDisplay;
+	this->swapChainRelErrDisplay->GetBuffer(0, __uuidof(ID3D11Resource), &backBufferRelErrDisplay);
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetRelErrDisplay;
+	this->d3dDevice->CreateRenderTargetView(backBufferRelErrDisplay.Get(), nullptr, &renderTargetRelErrDisplay);
+
+
+	struct Vertex {
+		float x, y, z;
+		unsigned char r, g, b, a;
+	};
+
+	const Vertex vertices[] = {
+			{ -1.f, -1.f, -1.f,   255, 255,   0, 1. },
+			{ 1.f, -1.f, -1.f,      0, 255,   0, 1. },
+			{ -1.f, 1.f, -1.f,      0,   0, 255, 1. },
+			{ 1.f, 1.f, -1.f,     255, 255,   0, 1. },
+			{ -1.f, -1.f, 1.f,    255,   0, 255, 1. },
+			{ 1.f, -1.f, 1.f,       0, 255, 255, 1. },
+			{ -1.f, 1.f, 1.f,       0,   0,   0, 1. },
+			{ 1.f, 1.f, 1.f,      255, 255, 255, 1. }
+	};
+
+	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
+	D3D11_BUFFER_DESC vertexBufferDesc;
+	ZeroMemory(&vertexBufferDesc, sizeof(D3D11_BUFFER_DESC));
+	vertexBufferDesc.ByteWidth = sizeof(vertices);
+	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexBufferDesc.CPUAccessFlags = 0;
+	vertexBufferDesc.MiscFlags = 0;
+	vertexBufferDesc.StructureByteStride = sizeof(Vertex);
+
+	D3D11_SUBRESOURCE_DATA vertexSubresourceData;
+	ZeroMemory(&vertexSubresourceData, sizeof(D3D11_SUBRESOURCE_DATA));
+	vertexSubresourceData.pSysMem = vertices;
+	vertexSubresourceData.SysMemPitch = 0;
+	vertexSubresourceData.SysMemSlicePitch = 0;
+
+	this->d3dDevice->CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
+
+	const UINT stride = sizeof(Vertex);
+	const UINT offset = 0;
+
+
+	const unsigned short indices[] = {
+			0,2,1, 2,3,1,
+			1,3,5, 3,7,5,
+			2,6,3, 3,6,7,
+			4,5,7, 4,7,6,
+			0,4,2, 2,4,6,
+			0,1,4, 1,5,4
+	};
+
+	Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
+
+	D3D11_BUFFER_DESC indexBufferDesc;
+	ZeroMemory(&indexBufferDesc, sizeof(D3D11_BUFFER_DESC));
+	indexBufferDesc.ByteWidth = sizeof(indices);
+	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	indexBufferDesc.CPUAccessFlags = 0;
+	indexBufferDesc.MiscFlags = 0;
+	indexBufferDesc.StructureByteStride = sizeof(unsigned short);
+
+	D3D11_SUBRESOURCE_DATA indexSubresourceData;
+	ZeroMemory(&indexSubresourceData, sizeof(D3D11_SUBRESOURCE_DATA));
+	indexSubresourceData.pSysMem = indices;
+	indexSubresourceData.SysMemPitch = 0;
+	indexSubresourceData.SysMemSlicePitch = 0;
+
+	this->d3dDevice->CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
+
 
 
 	MSG msg;
@@ -92,73 +175,8 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		float c = std::sin(angle) / 2.f + 0.5f;
 		float color[] = { c, c, 1.f, 1.f };
 
-		this->d3dDeviceContext->ClearRenderTargetView(renderTarget.Get(), color);
-
-		struct Vertex {
-			float x, y, z;
-			unsigned char r, g, b, a;
-		};
-
-		const Vertex vertices[] = {
-			{ -1.f, -1.f, -1.f,   255, 255,   0, 1. },
-			{ 1.f, -1.f, -1.f,      0, 255,   0, 1. },
-			{ -1.f, 1.f, -1.f,      0,   0, 255, 1. },
-			{ 1.f, 1.f, -1.f,     255, 255,   0, 1. },
-			{ -1.f, -1.f, 1.f,    255,   0, 255, 1. },
-			{ 1.f, -1.f, 1.f,       0, 255, 255, 1. },
-			{ -1.f, 1.f, 1.f,       0,   0,   0, 1. },
-			{ 1.f, 1.f, 1.f,      255, 255, 255, 1. }
-		};
-
-		Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
-		D3D11_BUFFER_DESC vertexBufferDesc;
-		ZeroMemory(&vertexBufferDesc, sizeof(D3D11_BUFFER_DESC));
-		vertexBufferDesc.ByteWidth = sizeof(vertices);
-		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		vertexBufferDesc.CPUAccessFlags = 0;
-		vertexBufferDesc.MiscFlags = 0;
-		vertexBufferDesc.StructureByteStride = sizeof(Vertex);
-
-		D3D11_SUBRESOURCE_DATA vertexSubresourceData;
-		ZeroMemory(&vertexSubresourceData, sizeof(D3D11_SUBRESOURCE_DATA));
-		vertexSubresourceData.pSysMem = vertices;
-		vertexSubresourceData.SysMemPitch = 0;
-		vertexSubresourceData.SysMemSlicePitch = 0;
-
-		this->d3dDevice->CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
-		const UINT stride = sizeof(Vertex);
-		const UINT offset = 0;
+		this->d3dDeviceContext->ClearRenderTargetView(renderTargetResultDisplay.Get(), color);
 		this->d3dDeviceContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
-
-
-		const unsigned short indices[] = {
-			0,2,1, 2,3,1,
-			1,3,5, 3,7,5,
-			2,6,3, 3,6,7,
-			4,5,7, 4,7,6,
-			0,4,2, 2,4,6,
-			0,1,4, 1,5,4
-		};
-
-		Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
-
-		D3D11_BUFFER_DESC indexBufferDesc;
-		ZeroMemory(&indexBufferDesc, sizeof(D3D11_BUFFER_DESC));
-		indexBufferDesc.ByteWidth = sizeof(indices);
-		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-		indexBufferDesc.CPUAccessFlags = 0;
-		indexBufferDesc.MiscFlags = 0;
-		indexBufferDesc.StructureByteStride = sizeof(unsigned short);
-
-		D3D11_SUBRESOURCE_DATA indexSubresourceData;
-		ZeroMemory(&indexSubresourceData, sizeof(D3D11_SUBRESOURCE_DATA));
-		indexSubresourceData.pSysMem = indices;
-		indexSubresourceData.SysMemPitch = 0;
-		indexSubresourceData.SysMemSlicePitch = 0;
-
-		this->d3dDevice->CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
 		this->d3dDeviceContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
 
 
@@ -196,31 +214,44 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDevice->CreateBuffer(&constBufferDesc, &constBufferSubresourceData, &constBuffer);
 		this->d3dDeviceContext->VSSetConstantBuffers(0, 1, constBuffer.GetAddressOf());
 
+		this->d3dDeviceContext->VSSetShader(this->vertexShader.Get(), nullptr, 0);
+		this->d3dDeviceContext->IASetInputLayout(this->inputLayout.Get());
+		this->d3dDeviceContext->PSSetShader(this->pixelShader.Get(), nullptr, 0);
+
+		this->d3dDeviceContext->OMSetRenderTargets(1u, renderTargetResultDisplay.GetAddressOf(), nullptr);
+		this->d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		this->d3dDeviceContext->RSSetViewports(1u, &vp);
+
+		this->d3dDeviceContext->DrawIndexed((UINT)std::size(indices), 0u, 0u);
+		
+		this->swapChainResultDisplay->Present(1, 0);
+
+
+
+		this->d3dDeviceContext->ClearRenderTargetView(renderTargetRelErrDisplay.Get(), color);
+		this->d3dDeviceContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+		this->d3dDeviceContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+		this->d3dDeviceContext->VSSetConstantBuffers(0, 1, constBuffer.GetAddressOf());
 
 		this->d3dDeviceContext->VSSetShader(this->vertexShader.Get(), nullptr, 0);
 		this->d3dDeviceContext->IASetInputLayout(this->inputLayout.Get());
 		this->d3dDeviceContext->PSSetShader(this->pixelShader.Get(), nullptr, 0);
 
-
-		this->d3dDeviceContext->OMSetRenderTargets(1u, renderTarget.GetAddressOf(), nullptr);
-
+		this->d3dDeviceContext->OMSetRenderTargets(1u, renderTargetRelErrDisplay.GetAddressOf(), nullptr);
 		this->d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-
-		D3D11_VIEWPORT vp;
-		vp.Width = this->hVisMerWnd->getDisplayDim();
-		vp.Height = this->hVisMerWnd->getDisplayDim();
-		vp.MinDepth = 0;
-		vp.MaxDepth = 1;
-		vp.TopLeftX = 0;
-		vp.TopLeftY = 0;
 		this->d3dDeviceContext->RSSetViewports(1u, &vp);
 
-
 		this->d3dDeviceContext->DrawIndexed((UINT)std::size(indices), 0u, 0u);
-		
-		this->swapChain->Present(1, 0);
+
+		this->swapChainRelErrDisplay->Present(1, 0);
 	}
+
+	DWORD errorMessageID = ::GetLastError();
+	LPSTR messageBuffer = nullptr;
+	size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+	OutputDebugStringA(messageBuffer);
+	LocalFree(messageBuffer);
 
 	delete[] this->windowTitle;
 	
@@ -263,30 +294,36 @@ LRESULT CALLBACK VisComponent::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 
 
 void VisComponent::initDirect3D() {
-	ZeroMemory(&this->swapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
+	DXGI_SWAP_CHAIN_DESC swapChainDesc;
+	ZeroMemory(&swapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
 
-	this->swapChainDesc.BufferDesc.Width = 0;
-	this->swapChainDesc.BufferDesc.Height = 0;
-	this->swapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
-	this->swapChainDesc.BufferDesc.RefreshRate.Denominator = 0;
-	this->swapChainDesc.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-	this->swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	this->swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+	swapChainDesc.BufferDesc.Width = 0;
+	swapChainDesc.BufferDesc.Height = 0;
+	swapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
+	swapChainDesc.BufferDesc.RefreshRate.Denominator = 0;
+	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+	swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+	swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 
-	this->swapChainDesc.SampleDesc.Count = 1;
-	this->swapChainDesc.SampleDesc.Quality = 0;
+	swapChainDesc.SampleDesc.Count = 1;
+	swapChainDesc.SampleDesc.Quality = 0;
 
-	this->swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	this->swapChainDesc.BufferCount = 1;
+	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swapChainDesc.BufferCount = 1;
 
-	this->swapChainDesc.OutputWindow = this->hVisMerWnd->getResultDisplay();
-	this->swapChainDesc.Windowed = TRUE;
-	this->swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-	this->swapChainDesc.Flags = 0;
+	swapChainDesc.OutputWindow = this->hVisMerWnd->getResultDisplay();
+	swapChainDesc.Windowed = TRUE;
+	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+	swapChainDesc.Flags = 0;
 
 
 	this->dxgiDevice->GetAdapter(&this->dxgiAdapter);
 	this->dxgiAdapter->GetParent(IID_PPV_ARGS(&this->dxgiFactory));
 
-	dxgiFactory->CreateSwapChain(dxgiDevice.Get(), &this->swapChainDesc, &this->swapChain);
+	dxgiFactory->CreateSwapChain(dxgiDevice.Get(), &swapChainDesc, &this->swapChainResultDisplay);
+
+
+	swapChainDesc.OutputWindow = this->hVisMerWnd->getRelErrDisplay();
+
+	dxgiFactory->CreateSwapChain(dxgiDevice.Get(), &swapChainDesc, &this->swapChainRelErrDisplay);
 }
