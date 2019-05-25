@@ -34,6 +34,8 @@ public:
 	};
 
 	static DWORD mainThreadId;
+	static HCURSOR cursorHandNoGrab;
+	static HCURSOR cursorHandGrab;
 
 	static unsigned vertexShaderFileSize;
 	static char* vertexShaderBlob;

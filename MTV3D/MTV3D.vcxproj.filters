@@ -22,6 +22,9 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{63658d70-21c4-46ea-a4f8-ca66f7f7239c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Cursors">
+      <UniqueIdentifier>{3003dc1f-282e-4a63-8cb8-568e00fa868f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -125,5 +128,13 @@
     <FxCompile Include="VertexShader.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Hand Move Grab v2.cur">
+      <Filter>Resource Files\Cursors</Filter>
+    </None>
+    <None Include="Hand Move No Grab v2.cur">
+      <Filter>Resource Files\Cursors</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -50,6 +50,9 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
 int App::run(HINSTANCE hInstance, int& nCmdShow) {
 	this->hCurrentInst = hInstance;
+
+	VisComponent::cursorHandNoGrab = LoadCursorFromFile(L"Hand Move No Grab v2.cur");
+	VisComponent::cursorHandGrab = LoadCursorFromFile(L"Hand Move Grab v2.cur");
 	
 	this->readD3DShaders();
 

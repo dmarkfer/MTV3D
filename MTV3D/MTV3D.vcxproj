@@ -386,6 +386,10 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='RDRel|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
     </FxCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Hand Move Grab v2.cur" />
+    <None Include="Hand Move No Grab v2.cur" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

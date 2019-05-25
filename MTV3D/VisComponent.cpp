@@ -24,6 +24,9 @@
 
 
 DWORD VisComponent::mainThreadId = 0;
+HCURSOR VisComponent::cursorHandNoGrab = nullptr;
+HCURSOR VisComponent::cursorHandGrab = nullptr;
+
 unsigned VisComponent::vertexShaderFileSize = 0;
 char* VisComponent::vertexShaderBlob = nullptr;
 const D3D11_INPUT_ELEMENT_DESC VisComponent::inputElementDesc[] = {
@@ -174,7 +177,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDeviceContext->ClearRenderTargetView(renderTargetResultDisplay.Get(), color);
 		this->d3dDeviceContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
 		this->d3dDeviceContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-
+		
 
 		struct ConstBufferStruct {
 			DirectX::XMMATRIX transform;
@@ -184,8 +187,8 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 				DirectX::XMMatrixTranspose(
 					DirectX::XMMatrixRotationZ(angle) *
 					DirectX::XMMatrixRotationX(angle) *
-					DirectX::XMMatrixTranslation(0.f, 0.f, 4.f) *
-					DirectX::XMMatrixPerspectiveLH(1.f, 3.f / 4.f, 0.5f, 10.f)
+					DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(5.f, 5.f, 5.f, 0.f), DirectX::XMVectorSet(0.f, 0.f, 0.f, 0.f), DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f)) *
+					DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(70), 1.f, 1.f, 10.f)
 				)
 			}
 		};
@@ -258,12 +261,15 @@ LRESULT CALLBACK VisComponent::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 	switch (message) {
 	case WM_SETCURSOR: {
 		if (wcType == WndClass::Type::VIS_DISPLAY) {
-			SetCursor(LoadCursor(nullptr, IDC_HAND));
+			SetCursor(VisComponent::cursorHandNoGrab);
 		}
 		else {
 			SetCursor(LoadCursor(nullptr, IDC_ARROW));
 		}
 		return true;
+		break;
+	}
+	case WM_LBUTTONDOWN: {
 		break;
 	}
 	case WM_DESTROY: {
