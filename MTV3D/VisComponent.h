@@ -27,6 +27,19 @@
 
 
 class VisComponent {
+private:
+	struct ScreenVector {
+		float x, y;
+	};
+
+	struct Vertex {
+		float x, y, z;
+		unsigned char r, g, b, a;
+	};
+
+	struct ConstBufferStruct {
+		DirectX::XMMATRIX transform;
+	};
 public:
 	struct Point {
 		double x, y, z;
@@ -36,6 +49,9 @@ public:
 	static DWORD mainThreadId;
 	static HCURSOR cursorHandNoGrab;
 	static HCURSOR cursorHandGrab;
+	static HWND cursorGrabInteractionProject;
+	static int clickPosX;
+	static int clickPosY;
 
 	static unsigned vertexShaderFileSize;
 	static char* vertexShaderBlob;

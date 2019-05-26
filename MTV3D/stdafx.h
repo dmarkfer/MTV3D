@@ -6,6 +6,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <windowsx.h>
 #include <CommCtrl.h>
 #pragma comment(lib, "comctl32.lib")
 #include <commdlg.h>
@@ -38,5 +39,7 @@
 
 #define WCHAR_ARR_MAX 256
 #define FILEPATH_MAX_LENGTH 1001
+
+#define PI_CONST 3.14159f
 
 #define WM_THREAD_DONE		WM_USER + 1

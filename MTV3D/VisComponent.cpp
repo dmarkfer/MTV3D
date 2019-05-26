@@ -26,6 +26,9 @@
 DWORD VisComponent::mainThreadId = 0;
 HCURSOR VisComponent::cursorHandNoGrab = nullptr;
 HCURSOR VisComponent::cursorHandGrab = nullptr;
+HWND VisComponent::cursorGrabInteractionProject = nullptr;
+int VisComponent::clickPosX = 0;
+int VisComponent::clickPosY = 0;
 
 unsigned VisComponent::vertexShaderFileSize = 0;
 char* VisComponent::vertexShaderBlob = nullptr;
@@ -50,7 +53,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	}
 	delete[] visPoints;
 
-
+	
 	this->hVisMerWnd = std::make_unique<VisMergedWindow>(this->hCurrentInst, this->windowTitle);
 	ShowWindow(this->hVisMerWnd->getHandle(), SW_SHOWMAXIMIZED);
 
@@ -80,11 +83,6 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetRelErrDisplay;
 	this->d3dDevice->CreateRenderTargetView(backBufferRelErrDisplay.Get(), nullptr, &renderTargetRelErrDisplay);
 
-
-	struct Vertex {
-		float x, y, z;
-		unsigned char r, g, b, a;
-	};
 
 	const Vertex vertices[] = {
 			{ -1.f, -1.f, -1.f,   255, 255,   0, 1. },
@@ -148,6 +146,11 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	this->d3dDevice->CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
 
 
+	DirectX::XMVECTOR eyePosition = DirectX::XMVectorSet(5.f, 5.f, 5.f, 0.f);
+	DirectX::XMVECTOR focusPosition = DirectX::XMVectorSet(0.f, 0.f, 0.f, 0.f);
+	DirectX::XMVECTOR upDirection = DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f);
+	DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationX(0.f);
+
 
 	MSG msg;
 	bool quitFlag = false;
@@ -169,25 +172,123 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			break;
 		}
 
-		std::chrono::steady_clock::time_point last;
-		float angle = std::chrono::duration<float>(std::chrono::steady_clock::now() - last).count();
-		float c = std::sin(angle) / 2.f + 0.5f;
-		float color[] = { c, c, 1.f, 1.f };
+
+		float color[] = { 0.f, 0.f, 0.f, 1.f };
 
 		this->d3dDeviceContext->ClearRenderTargetView(renderTargetResultDisplay.Get(), color);
 		this->d3dDeviceContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
 		this->d3dDeviceContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-		
 
-		struct ConstBufferStruct {
-			DirectX::XMMATRIX transform;
-		};
+
+		if (VisComponent::cursorGrabInteractionProject) {
+			POINT cursorPosition;
+			GetCursorPos(&cursorPosition);
+			ScreenToClient(this->hVisMerWnd->getResultDisplay(), &cursorPosition);
+			RECT wndClientArea;
+			GetClientRect(this->hVisMerWnd->getResultDisplay(), &wndClientArea);
+
+			ScreenVector clickScreenVector = {
+				VisComponent::clickPosX - wndClientArea.right / 2.f,
+				- (VisComponent::clickPosY - wndClientArea.bottom / 2.f)
+			};
+			ScreenVector cursorScreenVector = {
+				cursorPosition.x - wndClientArea.right / 2.f,
+				- (cursorPosition.y - wndClientArea.bottom / 2.f)
+			};
+
+			float clickScreenVectorLength = std::sqrt(clickScreenVector.x * clickScreenVector.x + clickScreenVector.y * clickScreenVector.y);
+			float cursorScreenVectorLength = std::sqrt(cursorScreenVector.x * cursorScreenVector.x + cursorScreenVector.y * cursorScreenVector.y);
+			float rotationAngle = DirectX::XMConvertToRadians(360) * (cursorScreenVectorLength - clickScreenVectorLength) / (this->hVisMerWnd->getDisplayDim() / 2.f);
+
+			DirectX::XMVECTOR clickVector = DirectX::XMVectorSet(clickScreenVector.x, clickScreenVector.y, 0.f, 0.f);
+			DirectX::XMVECTOR cursorVector = DirectX::XMVectorSet(cursorScreenVector.x, cursorScreenVector.y, 0.f, 0.f);
+			int angleSign = 1;
+			float clickScreenVectorDirectionQuotient = clickScreenVector.y / (float)clickScreenVector.x;
+			float cursorScreenVectorDirectionQuotient = cursorScreenVector.y / (float)cursorScreenVector.x;
+
+			if (clickScreenVector.x >= 0.f && clickScreenVector.y >= 0.f) {
+				if (cursorScreenVector.x >= 0 && cursorScreenVector.y >= 0) {
+					if (cursorScreenVectorDirectionQuotient > clickScreenVectorDirectionQuotient) {
+						angleSign = -angleSign;
+					}
+				}
+				else if (cursorScreenVector.x >= 0.f && cursorScreenVector.y < 0.f) {
+					angleSign = -angleSign;
+				}
+				else if (cursorScreenVector.x < 0.f && cursorScreenVector.y < 0.f) {
+					if (cursorScreenVectorDirectionQuotient < clickScreenVectorDirectionQuotient) {
+						angleSign = -angleSign;
+					}
+				}
+			}
+			else if (clickScreenVector.x < 0.f && clickScreenVector.y >= 0.f) {
+				if (cursorScreenVector.x < 0.f && cursorScreenVector.y >= 0.f) {
+					if (cursorScreenVectorDirectionQuotient > clickScreenVectorDirectionQuotient) {
+						angleSign = -angleSign;
+					}
+				}
+				else if (cursorScreenVector.x < 0.f && cursorScreenVector.y < 0.f) {
+					angleSign = -angleSign;
+				}
+				else if (cursorScreenVector.x >= 0.f && cursorScreenVector.y < 0.f) {
+					if (cursorScreenVectorDirectionQuotient < clickScreenVectorDirectionQuotient) {
+						angleSign = -angleSign;
+					}
+				}
+			}
+			else if (clickScreenVector.x < 0.f && clickScreenVector.y < 0.f) {
+				if (cursorScreenVector.x < 0.f && cursorScreenVector.y < 0.f) {
+					if (cursorScreenVectorDirectionQuotient > clickScreenVectorDirectionQuotient) {
+						angleSign = -angleSign;
+					}
+				}
+				else if (cursorScreenVector.x >= 0.f && cursorScreenVector.y < 0.f) {
+					angleSign = -angleSign;
+				}
+				else if (cursorScreenVector.x >= 0.f && cursorScreenVector.y >= 0.f) {
+					if (cursorScreenVectorDirectionQuotient < clickScreenVectorDirectionQuotient) {
+						angleSign = -angleSign;
+					}
+				}
+			}
+			else if (clickScreenVector.x >= 0.f && clickScreenVector.y < 0.f) {
+				if (cursorScreenVector.x >= 0.f && cursorScreenVector.y < 0.f) {
+					if (cursorScreenVectorDirectionQuotient > clickScreenVectorDirectionQuotient) {
+						angleSign = -angleSign;
+					}
+				}
+				else if (cursorScreenVector.x >= 0.f && cursorScreenVector.y >= 0.f) {
+					angleSign = -angleSign;
+				}
+				else if (cursorScreenVector.x < 0.f && cursorScreenVector.y >= 0.f) {
+					if (cursorScreenVectorDirectionQuotient < clickScreenVectorDirectionQuotient) {
+						angleSign = -angleSign;
+					}
+				}
+			}
+
+			float angleClickToCurrentCursor = angleSign * DirectX::XMVector2AngleBetweenVectors(clickVector, cursorVector).m128_f32[0];
+
+			DirectX::XMVECTOR crossProd = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(eyePosition, upDirection));
+			DirectX::XMVECTOR screenUpDirection = DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f);
+			float screenAzimut = DirectX::XMVector2AngleBetweenVectors(screenUpDirection, cursorVector).m128_f32[0];
+			if (cursorScreenVector.x >= 0) {
+				screenAzimut = DirectX::XMConvertToRadians(360) - screenAzimut;
+			}
+			DirectX::XMVECTOR rotQuat = DirectX::XMQuaternionRotationAxis(eyePosition, - screenAzimut);
+			DirectX::XMVECTOR rotationAxis = DirectX::XMVector3Rotate(crossProd, rotQuat);
+
+			rotationMatrix *= DirectX::XMMatrixRotationAxis(eyePosition, angleClickToCurrentCursor) * DirectX::XMMatrixRotationAxis(rotationAxis, rotationAngle);
+
+			VisComponent::clickPosX = cursorPosition.x;
+			VisComponent::clickPosY = cursorPosition.y;
+		}
+
 		const ConstBufferStruct cb = {
 			{
 				DirectX::XMMatrixTranspose(
-					DirectX::XMMatrixRotationZ(angle) *
-					DirectX::XMMatrixRotationX(angle) *
-					DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(5.f, 5.f, 5.f, 0.f), DirectX::XMVectorSet(0.f, 0.f, 0.f, 0.f), DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f)) *
+					rotationMatrix *
+					DirectX::XMMatrixLookAtLH(eyePosition, focusPosition, upDirection) *
 					DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(70), 1.f, 1.f, 10.f)
 				)
 			}
@@ -261,15 +362,29 @@ LRESULT CALLBACK VisComponent::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 	switch (message) {
 	case WM_SETCURSOR: {
 		if (wcType == WndClass::Type::VIS_DISPLAY) {
-			SetCursor(VisComponent::cursorHandNoGrab);
+			SetCursor(VisComponent::cursorGrabInteractionProject == hWnd ? VisComponent::cursorHandGrab : VisComponent::cursorHandNoGrab);
 		}
 		else {
+			VisComponent::cursorGrabInteractionProject = nullptr;
 			SetCursor(LoadCursor(nullptr, IDC_ARROW));
 		}
 		return true;
 		break;
 	}
 	case WM_LBUTTONDOWN: {
+		if (wcType == WndClass::Type::VIS_DISPLAY) {
+			VisComponent::cursorGrabInteractionProject = hWnd;
+			SetCursor(VisComponent::cursorHandGrab);
+			VisComponent::clickPosX = GET_X_LPARAM(lParam);
+			VisComponent::clickPosY = GET_Y_LPARAM(lParam);
+		}
+		break;
+	}
+	case WM_LBUTTONUP: {
+		if (wcType == WndClass::Type::VIS_DISPLAY) {
+			VisComponent::cursorGrabInteractionProject = nullptr;
+			SetCursor(VisComponent::cursorHandNoGrab);
+		}
 		break;
 	}
 	case WM_DESTROY: {
