@@ -61,6 +61,7 @@ public:
 	static HWND cursorGrabInteractionProject;
 	static int clickPosX;
 	static int clickPosY;
+	static float scaleBase;
 
 	static unsigned vertexShaderFileSize;
 	static char* vertexShaderBlob;

@@ -29,6 +29,7 @@ HCURSOR VisComponent::cursorHandGrab = nullptr;
 HWND VisComponent::cursorGrabInteractionProject = nullptr;
 int VisComponent::clickPosX = 0;
 int VisComponent::clickPosY = 0;
+float VisComponent::scaleBase = 1.f;
 
 unsigned VisComponent::vertexShaderFileSize = 0;
 char* VisComponent::vertexShaderBlob = nullptr;
@@ -41,6 +42,8 @@ char* VisComponent::pixelShaderBlob = nullptr;
 
 
 void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId, LPWSTR fileAbsolutePath, int visPointsDataSize, Point* visPointsData) {
+	VisComponent::scaleBase = 1.f;
+
 	this->hCurrentInst = hCurrentInst;
 	this->hAccelTable = hAccelTable;
 	this->projectId = projectId;
@@ -541,6 +544,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			{
 				DirectX::XMMatrixTranspose(
 					rotationMatrix *
+					DirectX::XMMatrixScaling(VisComponent::scaleBase, VisComponent::scaleBase, VisComponent::scaleBase) *
 					DirectX::XMMatrixLookAtLH(eyePosition, focusPosition, upDirection) *
 					DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(70), 1.f, 1.f, 3.f * diagonal3DLength)
 				)
@@ -613,6 +617,23 @@ LRESULT CALLBACK VisComponent::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 	WndClass::Type wcType = WndClass::typeByWndHandle(hWnd);
 
 	switch (message) {
+	case WM_MOUSEWHEEL: {
+		OutputDebugString(L"wheel\n");
+		WORD fwKeys = GET_KEYSTATE_WPARAM(wParam);
+		WORD zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+		WORD xPos = GET_X_LPARAM(lParam);
+		WORD yPos = GET_Y_LPARAM(lParam);
+
+		if (zDelta == 120) {
+			scaleBase *= 1.05f;
+		}
+		else {
+			scaleBase *= 0.95f;
+		}
+
+		return 0;
+		break;
+	}
 	case WM_SETCURSOR: {
 		if (wcType == WndClass::Type::VIS_DISPLAY) {
 			SetCursor(VisComponent::cursorGrabInteractionProject == hWnd ? VisComponent::cursorHandGrab : VisComponent::cursorHandNoGrab);
