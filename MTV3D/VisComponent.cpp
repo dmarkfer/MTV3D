@@ -34,13 +34,13 @@ unsigned VisComponent::vertexShaderFileSize = 0;
 char* VisComponent::vertexShaderBlob = nullptr;
 const D3D11_INPUT_ELEMENT_DESC VisComponent::inputElementDesc[] = {
 	{ "Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "Color", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	{ "Color", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 };
 unsigned VisComponent::pixelShaderFileSize = 0;
 char* VisComponent::pixelShaderBlob = nullptr;
 
 
-void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId, LPWSTR fileAbsolutePath, int n, Point* visPoints) {
+void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId, LPWSTR fileAbsolutePath, int visPointsDataSize, Point* visPointsData) {
 	this->hCurrentInst = hCurrentInst;
 	this->hAccelTable = hAccelTable;
 	this->projectId = projectId;
@@ -48,17 +48,105 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	this->windowTitle = new WCHAR[WCHAR_ARR_MAX];
 	swprintf_s(this->windowTitle, WCHAR_ARR_MAX - 1, L"MTV3D - %s", this->fileAbsolutePath);
 
-	for (int i = 0; i < n; ++i) {
-		this->visPoints.push_back(visPoints[i]);
-	}
-	delete[] visPoints;
-
-	
 	this->hVisMerWnd = std::make_unique<VisMergedWindow>(this->hCurrentInst, this->windowTitle);
 	ShowWindow(this->hVisMerWnd->getHandle(), SW_SHOWMAXIMIZED);
 
-	this->initDirect3D();
 
+	std::set<float> axisXValues;
+	std::set<float> axisYValues;
+	std::set<float> axisZValues;
+	
+	std::vector<std::vector<std::vector<VisComponent::Point>>> vis3DDataModel;
+	std::vector<std::vector<VisComponent::Point>> visPlaneModel;
+	std::vector<VisComponent::Point> visLineModel;
+
+	long double resultMinValue = 0.L, resultMaxValue = 0.L, relerrMinValue = 0.L, relerrMaxValue = 0.L;
+
+	for (unsigned i = 0; i < visPointsDataSize; ++i) {
+		axisXValues.insert(visPointsData[i].x);
+		axisYValues.insert(visPointsData[i].y);
+		axisZValues.insert(visPointsData[i].z);
+
+		VisComponent::Point visPoint = {
+			visPointsData[i].x, visPointsData[i].y, visPointsData[i].z,
+			visPointsData[i].value, visPointsData[i].relError
+		};
+
+		if (i > 0) {
+			if (visPointsData[i].y != visPointsData[i - 1].y) {
+				visPlaneModel.push_back(visLineModel);
+
+				visLineModel.clear();
+			}
+			if (visPointsData[i].x != visPointsData[i - 1].x) {
+				vis3DDataModel.push_back(visPlaneModel);
+
+				visPlaneModel.clear();
+			}
+
+			if (visPoint.value > 0.) {
+				if (visPoint.value < resultMinValue) resultMinValue = visPoint.value;
+				if (visPoint.value > resultMaxValue) resultMaxValue = visPoint.value;
+				if (visPoint.relError < relerrMinValue) relerrMinValue = visPoint.relError;
+				if (visPoint.relError > relerrMaxValue) relerrMaxValue = visPoint.relError;
+			}
+		}
+		else {
+			resultMinValue = visPoint.value;
+			resultMaxValue = visPoint.value;
+			relerrMinValue = visPoint.relError;
+			relerrMaxValue = visPoint.relError;
+		}
+
+		visLineModel.push_back(visPoint);
+	}
+	visPlaneModel.push_back(visLineModel);
+	vis3DDataModel.push_back(visPlaneModel);
+	visPlaneModel.clear();
+	visLineModel.clear();
+	delete[] visPointsData;
+
+
+	long double resultMinValueLog10 = std::log10(resultMinValue);
+	long double resultMaxValueLog10 = std::log10(resultMaxValue);
+	long double resultLogFifth = (resultMaxValueLog10 - resultMinValueLog10) / 5.L;
+	if (resultLogFifth < 0.L) {
+		resultLogFifth = -resultLogFifth;
+	}
+
+	this->resultLegend.push_back({ 1.f, 0.f, 1.f, resultMinValue });
+	this->resultLegend.push_back({ 0.f, 0.f, 1.f, std::pow(10, resultMinValueLog10 + resultLogFifth) });
+	this->resultLegend.push_back({ 0.f, 1.f, 1.f, std::pow(10, resultMinValueLog10 + 2. * resultLogFifth) });
+	this->resultLegend.push_back({ 0.f, 1.f, 0.f, std::pow(10, resultMinValueLog10 + 3. * resultLogFifth) });
+	this->resultLegend.push_back({ 1.f, 1.f, 0.f, std::pow(10, resultMinValueLog10 + 4. * resultLogFifth) });
+	this->resultLegend.push_back({ 1.f, 1.f, 0.f, resultMaxValue });
+
+
+	long double relerrMinValueLog10 = std::log10(relerrMinValue);
+	long double relerrMaxValueLog10 = std::log10(relerrMaxValue);
+	long double relerrLogHalf = (relerrMaxValueLog10 - relerrMinValueLog10) / 2.L;
+
+	this->relerrLegend.push_back({ 0.f, 0.f, 1.f, relerrMinValue });
+	this->relerrLegend.push_back({ 1.f, 0.f, 1.f, std::pow(10, relerrMinValueLog10 + relerrLogHalf) });
+	this->relerrLegend.push_back({ 1.f, 0.f, 0.f, relerrMaxValue });
+
+
+	int axisXSize = axisXValues.size();
+	int axisYSize = axisYValues.size();
+	int axisZSize = axisZValues.size();
+
+	float modelAbscissaLength = std::abs(vis3DDataModel[axisXSize - 1][axisYSize - 1][axisZSize - 1].x - vis3DDataModel[0][0][0].x);
+	float modelOrdinateLength = std::abs(vis3DDataModel[axisXSize - 1][axisYSize - 1][axisZSize - 1].y - vis3DDataModel[0][0][0].y);
+	float modelApplicateLength = std::abs(vis3DDataModel[axisXSize - 1][axisYSize - 1][axisZSize - 1].z - vis3DDataModel[0][0][0].z);
+
+	float modelAbscissaCenter = std::vector<float>(axisXValues.begin(), axisXValues.end())[axisXSize / 2];
+	float modelOrdinateCenter = std::vector<float>(axisYValues.begin(), axisYValues.end())[axisYSize / 2];
+	float modelApplicateCenter = std::vector<float>(axisZValues.begin(), axisZValues.end())[axisZSize / 2];
+
+	float diagonal3DLength = std::sqrt(modelAbscissaLength * modelAbscissaLength + modelOrdinateLength * modelOrdinateLength + modelApplicateLength * modelApplicateLength);
+
+
+	this->initDirect3D();
 
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
@@ -84,21 +172,20 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	this->d3dDevice->CreateRenderTargetView(backBufferRelErrDisplay.Get(), nullptr, &renderTargetRelErrDisplay);
 
 
-	const Vertex vertices[] = {
-			{ -1.f, -1.f, -1.f,   255, 255,   0, 1. },
-			{ 1.f, -1.f, -1.f,      0, 255,   0, 1. },
-			{ -1.f, 1.f, -1.f,      0,   0, 255, 1. },
-			{ 1.f, 1.f, -1.f,     255, 255,   0, 1. },
-			{ -1.f, -1.f, 1.f,    255,   0, 255, 1. },
-			{ 1.f, -1.f, 1.f,       0, 255, 255, 1. },
-			{ -1.f, 1.f, 1.f,       0,   0,   0, 1. },
-			{ 1.f, 1.f, 1.f,      255, 255, 255, 1. }
-	};
+	std::vector<Vertex> vertices;
+	vertices.push_back({ -1.f, -1.f, -1.f,   1.f, 1.f, 0.f });
+	vertices.push_back({ 1.f, -1.f, -1.f, 0.f, 1.f, 0.f });
+	vertices.push_back({ -1.f, 1.f, -1.f,      0.f,   0.f, 1.f });
+	vertices.push_back({ 1.f, 1.f, -1.f,     1.f, 1.f,   0.f });
+	vertices.push_back({ -1.f, -1.f, 1.f,    1.f,   0.f, 1.f });
+	vertices.push_back({ 1.f, -1.f, 1.f,       0.f, 1.f, 1.f });
+	vertices.push_back({ -1.f, 1.f, 1.f,       0.f,   0.f,   0.f });
+	vertices.push_back({ 1.f, 1.f, 1.f,      1.f, 1.f, 1.f });
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
 	D3D11_BUFFER_DESC vertexBufferDesc;
 	ZeroMemory(&vertexBufferDesc, sizeof(D3D11_BUFFER_DESC));
-	vertexBufferDesc.ByteWidth = sizeof(vertices);
+	vertexBufferDesc.ByteWidth = sizeof(vertices) * vertices.size();
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = 0;
@@ -107,7 +194,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 	D3D11_SUBRESOURCE_DATA vertexSubresourceData;
 	ZeroMemory(&vertexSubresourceData, sizeof(D3D11_SUBRESOURCE_DATA));
-	vertexSubresourceData.pSysMem = vertices;
+	vertexSubresourceData.pSysMem = &vertices[0];
 	vertexSubresourceData.SysMemPitch = 0;
 	vertexSubresourceData.SysMemSlicePitch = 0;
 
@@ -117,20 +204,50 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	const UINT offset = 0;
 
 
-	const unsigned short indices[] = {
-			0,2,1, 2,3,1,
-			1,3,5, 3,7,5,
-			2,6,3, 3,6,7,
-			4,5,7, 4,7,6,
-			0,4,2, 2,4,6,
-			0,1,4, 1,5,4
-	};
+	std::vector<unsigned short> indices;
+	indices.push_back(0);
+	indices.push_back(2);
+	indices.push_back(1);
+	indices.push_back(2);
+	indices.push_back(3);
+	indices.push_back(1);
+	indices.push_back(1);
+	indices.push_back(3);
+	indices.push_back(5);
+	indices.push_back(3);
+	indices.push_back(7);
+	indices.push_back(5);
+	indices.push_back(2);
+	indices.push_back(6);
+	indices.push_back(3);
+	indices.push_back(3);
+	indices.push_back(6);
+	indices.push_back(7);
+	indices.push_back(4);
+	indices.push_back(5);
+	indices.push_back(7);
+	indices.push_back(4);
+	indices.push_back(7);
+	indices.push_back(6);
+	indices.push_back(0);
+	indices.push_back(4);
+	indices.push_back(2);
+	indices.push_back(2);
+	indices.push_back(4);
+	indices.push_back(6);
+	indices.push_back(0);
+	indices.push_back(1);
+	indices.push_back(4);
+	indices.push_back(1);
+	indices.push_back(5);
+	indices.push_back(4);
+
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
 
 	D3D11_BUFFER_DESC indexBufferDesc;
 	ZeroMemory(&indexBufferDesc, sizeof(D3D11_BUFFER_DESC));
-	indexBufferDesc.ByteWidth = sizeof(indices);
+	indexBufferDesc.ByteWidth = sizeof(indices) * indices.size();
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.CPUAccessFlags = 0;
@@ -139,7 +256,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 	D3D11_SUBRESOURCE_DATA indexSubresourceData;
 	ZeroMemory(&indexSubresourceData, sizeof(D3D11_SUBRESOURCE_DATA));
-	indexSubresourceData.pSysMem = indices;
+	indexSubresourceData.pSysMem = &indices[0];
 	indexSubresourceData.SysMemPitch = 0;
 	indexSubresourceData.SysMemSlicePitch = 0;
 
@@ -325,7 +442,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		this->d3dDeviceContext->RSSetViewports(1u, &vp);
 
-		this->d3dDeviceContext->DrawIndexed((UINT)std::size(indices), 0u, 0u);
+		this->d3dDeviceContext->DrawIndexed(indices.size(), 0u, 0u);
 		
 		this->swapChainResultDisplay->Present(1, 0);
 
@@ -344,7 +461,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		this->d3dDeviceContext->RSSetViewports(1u, &vp);
 
-		this->d3dDeviceContext->DrawIndexed((UINT)std::size(indices), 0u, 0u);
+		this->d3dDeviceContext->DrawIndexed(indices.size(), 0u, 0u);
 
 		this->swapChainRelErrDisplay->Present(1, 0);
 	}
@@ -456,4 +573,46 @@ void VisComponent::initDirect3D() {
 
 	swapChainDesc.OutputWindow = this->hVisMerWnd->getRelErrDisplay();
 	dxgiFactory->CreateSwapChain(dxgiDevice.Get(), &swapChainDesc, &this->swapChainRelErrDisplay);
+}
+
+
+VisComponent::CustomColor VisComponent::getResultColor(long double resultValue) {
+	long double valLog = std::log10(resultValue);
+	float levelColor;
+
+	if (valLog <= std::log10(this->resultLegend[1].value)) {
+		levelColor = std::abs(valLog - std::log10(this->resultLegend[0].value)) / std::abs(std::log10(this->resultLegend[1].value) - std::log10(this->resultLegend[0].value));
+		return { 1.f - levelColor, 0.f, 1.f };
+	}
+	else if (valLog <= std::log10(this->resultLegend[2].value)) {
+		levelColor = std::abs(valLog - std::log10(this->resultLegend[1].value)) / std::abs(std::log10(this->resultLegend[2].value) - std::log10(this->resultLegend[1].value));
+		return { 0.f, levelColor, 1.f };
+	}
+	else if (valLog <= std::log10(this->resultLegend[3].value)) {
+		levelColor = std::abs(valLog - std::log10(this->resultLegend[2].value)) / std::abs(std::log10(this->resultLegend[3].value) - std::log10(this->resultLegend[2].value));
+		return { 0.f, 1.f, 1.f - levelColor };
+	}
+	else if (valLog <= std::log10(this->resultLegend[4].value)) {
+		levelColor = std::abs(valLog - std::log10(this->resultLegend[3].value)) / std::abs(std::log10(this->resultLegend[4].value) - std::log10(this->resultLegend[3].value));
+		return { levelColor, 1.f, 0.f };
+	}
+	else {
+		levelColor = std::abs(valLog - std::log10(this->resultLegend[4].value)) / std::abs(std::log10(this->resultLegend[5].value) - std::log10(this->resultLegend[4].value));
+		return { 1.f, 1.f - levelColor, 0.f };
+	}
+}
+
+
+VisComponent::CustomColor VisComponent::getRelErrColor(long double relerrValue) {
+	long double valLog = std::log10(relerrValue);
+	unsigned levelColor;
+
+	if (valLog <= std::log10(this->relerrLegend[1].value)) {
+		levelColor = std::abs(valLog - std::log10(this->relerrLegend[0].value)) / std::abs(std::log10(this->relerrLegend[1].value) - std::log10(this->relerrLegend[0].value));
+		return { levelColor, 0.f, 1.f };
+	}
+	else {
+		levelColor = std::abs(valLog - std::log10(this->relerrLegend[1].value)) / std::abs(std::log10(this->relerrLegend[2].value) - std::log10(this->relerrLegend[1].value));
+		return { 1.f, 0.f, levelColor };
+	}
 }

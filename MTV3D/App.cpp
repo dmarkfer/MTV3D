@@ -494,6 +494,9 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 				isPhoton = true;
 				break;
 			}
+			else {
+				break;
+			}
 		}
 	}
 
@@ -505,14 +508,14 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 	if (isPhoton) {
 		while (std::getline(fileContentStringStream, fileLine)) {
 			fileLineWCStr = fileLine.c_str();
-			swscanf_s(fileLineWCStr, L"%*s %lf %lf %lf %lf %lf", &point.x, &point.y, &point.z, &point.value, &point.relError);
+			swscanf_s(fileLineWCStr, L"%*s %f %f %f %lf %lf", &point.x, &point.y, &point.z, &point.value, &point.relError);
 			visPoints.push_back(point);
 		}
 	}
 	else {
 		while (std::getline(fileContentStringStream, fileLine)) {
 			fileLineWCStr = fileLine.c_str();
-			swscanf_s(fileLineWCStr, L"%lf %lf %lf %lf %lf", &point.x, &point.y, &point.z, &point.value, &point.relError);
+			swscanf_s(fileLineWCStr, L"%f %f %f %lf %lf", &point.x, &point.y, &point.z, &point.value, &point.relError);
 			visPoints.push_back(point);
 		}
 	}*/

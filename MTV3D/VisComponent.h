@@ -28,13 +28,22 @@
 
 class VisComponent {
 private:
+	struct CustomColor {
+		float r, g, b;
+	};
+
+	struct LegendColorLevel {
+		CustomColor color;
+		long double value;
+	};
+
 	struct ScreenVector {
 		float x, y;
 	};
 
 	struct Vertex {
 		float x, y, z;
-		unsigned char r, g, b, a;
+		CustomColor color;
 	};
 
 	struct ConstBufferStruct {
@@ -42,7 +51,7 @@ private:
 	};
 public:
 	struct Point {
-		double x, y, z;
+		float x, y, z;
 		long double value, relError;
 	};
 
@@ -73,12 +82,17 @@ private:
 	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChainRelErrDisplay;
 
 	std::unique_ptr<VisMergedWindow> hVisMerWnd;
+
+	std::vector<LegendColorLevel> resultLegend;
+	std::vector<LegendColorLevel> relerrLegend;
 public:
 	VisComponent() = default;
 	~VisComponent() = default;
 
-	void run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectIndex, LPWSTR fileAbsolutePath, int n, Point* visPoints);
+	void run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectIndex, LPWSTR fileAbsolutePath, int visPointsDataSize, Point* visPoints);
 	static LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 private:
 	void initDirect3D();
+	CustomColor getResultColor(long double resultValue);
+	CustomColor getRelErrColor(long double relerrValue);
 };
