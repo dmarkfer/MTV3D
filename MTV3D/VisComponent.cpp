@@ -51,6 +51,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	this->hVisMerWnd = std::make_unique<VisMergedWindow>(this->hCurrentInst, this->windowTitle);
 	ShowWindow(this->hVisMerWnd->getHandle(), SW_SHOWMAXIMIZED);
 
+	SetCursor(LoadCursor(nullptr, IDC_WAIT));
 
 	std::set<float> axisXValues;
 	std::set<float> axisYValues;
@@ -62,7 +63,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 	long double resultMinValue = 0.L, resultMaxValue = 0.L, relerrMinValue = 0.L, relerrMaxValue = 0.L;
 
-	for (unsigned i = 0; i < visPointsDataSize; ++i) {
+	for (int i = 0; i < visPointsDataSize; ++i) {
 		axisXValues.insert(visPointsData[i].x);
 		axisYValues.insert(visPointsData[i].y);
 		axisZValues.insert(visPointsData[i].z);
@@ -145,6 +146,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 	float diagonal3DLength = std::sqrt(modelAbscissaLength * modelAbscissaLength + modelOrdinateLength * modelOrdinateLength + modelApplicateLength * modelApplicateLength);
 
+	SetCursor(LoadCursor(nullptr, IDC_ARROW));
 
 	this->initDirect3D();
 
@@ -153,12 +155,12 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
 
 	D3D11_VIEWPORT vp;
-	vp.Width = this->hVisMerWnd->getDisplayDim();
-	vp.Height = this->hVisMerWnd->getDisplayDim();
-	vp.MinDepth = 0;
-	vp.MaxDepth = 1;
-	vp.TopLeftX = 0;
-	vp.TopLeftY = 0;
+	vp.Width = (float)this->hVisMerWnd->getDisplayDim();
+	vp.Height = (float)this->hVisMerWnd->getDisplayDim();
+	vp.MinDepth = 0.f;
+	vp.MaxDepth = 1.f;
+	vp.TopLeftX = 0.f;
+	vp.TopLeftY = 0.f;
 
 	
 	Microsoft::WRL::ComPtr<ID3D11Resource> backBufferResultDisplay;
@@ -173,19 +175,192 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 
 	std::vector<Vertex> vertices;
-	vertices.push_back({ -1.f, -1.f, -1.f,   1.f, 1.f, 0.f });
-	vertices.push_back({ 1.f, -1.f, -1.f, 0.f, 1.f, 0.f });
-	vertices.push_back({ -1.f, 1.f, -1.f,      0.f,   0.f, 1.f });
-	vertices.push_back({ 1.f, 1.f, -1.f,     1.f, 1.f,   0.f });
-	vertices.push_back({ -1.f, -1.f, 1.f,    1.f,   0.f, 1.f });
-	vertices.push_back({ 1.f, -1.f, 1.f,       0.f, 1.f, 1.f });
-	vertices.push_back({ -1.f, 1.f, 1.f,       0.f,   0.f,   0.f });
-	vertices.push_back({ 1.f, 1.f, 1.f,      1.f, 1.f, 1.f });
+	std::vector<unsigned short> indices;
+
+
+	for (int i = 0; i < axisXSize; ++i) {
+		for (int j = 0; j < axisYSize; ++j) {
+			Point visp = vis3DDataModel[i][j][0];
+			visp.x -= modelAbscissaCenter;
+			visp.y -= modelOrdinateCenter;
+			visp.z -= modelApplicateCenter;
+			vertices.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
+
+			if (i > 0 && j > 0) {
+				indices.push_back((i - 1) * axisXSize + j - 1);
+				indices.push_back((i - 1) * axisXSize + j);
+				indices.push_back(i * axisXSize + j - 1);
+
+				indices.push_back((i - 1) * axisXSize + j - 1);
+				indices.push_back(i * axisXSize + j - 1);
+				indices.push_back((i - 1) * axisXSize + j);
+
+				indices.push_back((i - 1) * axisXSize + j);
+				indices.push_back(i * axisXSize + j);
+				indices.push_back(i * axisXSize + j - 1);
+
+				indices.push_back((i - 1) * axisXSize + j);
+				indices.push_back(i * axisXSize + j - 1);
+				indices.push_back(i * axisXSize + j);
+			}
+		}
+	}
+
+	/*int startIndex = vertices.size();
+
+	for (int i = 0; i < axisXSize; ++i) {
+		for (int j = 0; j < axisYSize; ++j) {
+			Point visp = vis3DDataModel[i][j][axisZSize - 1];
+			visp.x -= modelAbscissaCenter;
+			visp.y -= modelOrdinateCenter;
+			visp.z -= modelApplicateCenter;
+			vertices.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
+
+			if (i > 0 && j > 0) {
+				indices.push_back(startIndex + (i - 1) * axisXSize + j - 1);
+				indices.push_back(startIndex + (i - 1) * axisXSize + j);
+				indices.push_back(startIndex + i * axisXSize + j - 1);
+
+				indices.push_back(startIndex + (i - 1) * axisXSize + j - 1);
+				indices.push_back(startIndex + i * axisXSize + j - 1);
+				indices.push_back(startIndex + (i - 1) * axisXSize + j);
+
+				indices.push_back(startIndex + (i - 1) * axisXSize + j);
+				indices.push_back(startIndex + i * axisXSize + j);
+				indices.push_back(startIndex + i * axisXSize + j - 1);
+
+				indices.push_back(startIndex + (i - 1) * axisXSize + j);
+				indices.push_back(startIndex + i * axisXSize + j - 1);
+				indices.push_back(startIndex + i * axisXSize + j);
+			}
+		}
+	}
+
+	startIndex = vertices.size();
+
+	for (int k = 0; k < axisZSize; ++k) {
+		for (int i = 0; i < axisXSize; ++i) {
+			Point visp = vis3DDataModel[i][0][k];
+			visp.x -= modelAbscissaCenter;
+			visp.y -= modelOrdinateCenter;
+			visp.z -= modelApplicateCenter;
+			vertices.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
+
+			if (k > 0 && i > 0) {
+				indices.push_back(startIndex + (k - 1) * axisXSize + i - 1);
+				indices.push_back(startIndex + (k - 1) * axisXSize + i);
+				indices.push_back(startIndex + k * axisXSize + i - 1);
+
+				indices.push_back(startIndex + (k - 1) * axisXSize + i - 1);
+				indices.push_back(startIndex + k * axisXSize + i - 1);
+				indices.push_back(startIndex + (k - 1) * axisXSize + i);
+
+				indices.push_back(startIndex + (k - 1) * axisXSize + i);
+				indices.push_back(startIndex + k * axisXSize + i);
+				indices.push_back(startIndex + k * axisXSize + i - 1);
+
+				indices.push_back(startIndex + (k - 1) * axisXSize + i);
+				indices.push_back(startIndex + k * axisXSize + i - 1);
+				indices.push_back(startIndex + k * axisXSize + i);
+			}
+		}
+	}
+
+	startIndex = vertices.size();
+
+	for (int k = 0; k < axisZSize; ++k) {
+		for (int i = 0; i < axisXSize; ++i) {
+			Point visp = vis3DDataModel[i][axisYSize - 1][k];
+			visp.x -= modelAbscissaCenter;
+			visp.y -= modelOrdinateCenter;
+			visp.z -= modelApplicateCenter;
+			vertices.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
+
+			if (k > 0 && i > 0) {
+				indices.push_back(startIndex + (k - 1) * axisXSize + i - 1);
+				indices.push_back(startIndex + (k - 1) * axisXSize + i);
+				indices.push_back(startIndex + k * axisXSize + i - 1);
+
+				indices.push_back(startIndex + (k - 1) * axisXSize + i - 1);
+				indices.push_back(startIndex + k * axisXSize + i - 1);
+				indices.push_back(startIndex + (k - 1) * axisXSize + i);
+
+				indices.push_back(startIndex + (k - 1) * axisXSize + i);
+				indices.push_back(startIndex + k * axisXSize + i);
+				indices.push_back(startIndex + k * axisXSize + i - 1);
+
+				indices.push_back(startIndex + (k - 1) * axisXSize + i);
+				indices.push_back(startIndex + k * axisXSize + i - 1);
+				indices.push_back(startIndex + k * axisXSize + i);
+			}
+		}
+	}
+
+	startIndex = vertices.size();
+
+	for (int j = 0; j < axisYSize; ++j) {
+		for (int k = 0; k < axisZSize; ++k) {
+			Point visp = vis3DDataModel[0][j][k];
+			visp.x -= modelAbscissaCenter;
+			visp.y -= modelOrdinateCenter;
+			visp.z -= modelApplicateCenter;
+			vertices.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
+
+			if (j > 0 && k > 0) {
+				indices.push_back(startIndex + (j - 1) * axisXSize + k - 1);
+				indices.push_back(startIndex + (j - 1) * axisXSize + k);
+				indices.push_back(startIndex + j * axisXSize + k - 1);
+
+				indices.push_back(startIndex + (j - 1) * axisXSize + k - 1);
+				indices.push_back(startIndex + j * axisXSize + k - 1);
+				indices.push_back(startIndex + (j - 1) * axisXSize + k);
+
+				indices.push_back(startIndex + (j - 1) * axisXSize + k);
+				indices.push_back(startIndex + j * axisXSize + k);
+				indices.push_back(startIndex + j * axisXSize + k - 1);
+
+				indices.push_back(startIndex + (j - 1) * axisXSize + k);
+				indices.push_back(startIndex + j * axisXSize + k - 1);
+				indices.push_back(startIndex + j * axisXSize + k);
+			}
+		}
+	}
+
+	startIndex = vertices.size();
+
+	for (int j = 0; j < axisYSize; ++j) {
+		for (int k = 0; k < axisZSize; ++k) {
+			Point visp = vis3DDataModel[axisXSize - 1][j][k];
+			visp.x -= modelAbscissaCenter;
+			visp.y -= modelOrdinateCenter;
+			visp.z -= modelApplicateCenter;
+			vertices.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
+
+			if (j > 0 && k > 0) {
+				indices.push_back(startIndex + (j - 1) * axisXSize + k - 1);
+				indices.push_back(startIndex + (j - 1) * axisXSize + k);
+				indices.push_back(startIndex + j * axisXSize + k - 1);
+
+				indices.push_back(startIndex + (j - 1) * axisXSize + k - 1);
+				indices.push_back(startIndex + j * axisXSize + k - 1);
+				indices.push_back(startIndex + (j - 1) * axisXSize + k);
+
+				indices.push_back(startIndex + (j - 1) * axisXSize + k);
+				indices.push_back(startIndex + j * axisXSize + k);
+				indices.push_back(startIndex + j * axisXSize + k - 1);
+
+				indices.push_back(startIndex + (j - 1) * axisXSize + k);
+				indices.push_back(startIndex + j * axisXSize + k - 1);
+				indices.push_back(startIndex + j * axisXSize + k);
+			}
+		}
+	}*/
+
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
 	D3D11_BUFFER_DESC vertexBufferDesc;
 	ZeroMemory(&vertexBufferDesc, sizeof(D3D11_BUFFER_DESC));
-	vertexBufferDesc.ByteWidth = sizeof(vertices) * vertices.size();
+	vertexBufferDesc.ByteWidth = sizeof(Vertex) * vertices.size();
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = 0;
@@ -204,50 +379,11 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	const UINT offset = 0;
 
 
-	std::vector<unsigned short> indices;
-	indices.push_back(0);
-	indices.push_back(2);
-	indices.push_back(1);
-	indices.push_back(2);
-	indices.push_back(3);
-	indices.push_back(1);
-	indices.push_back(1);
-	indices.push_back(3);
-	indices.push_back(5);
-	indices.push_back(3);
-	indices.push_back(7);
-	indices.push_back(5);
-	indices.push_back(2);
-	indices.push_back(6);
-	indices.push_back(3);
-	indices.push_back(3);
-	indices.push_back(6);
-	indices.push_back(7);
-	indices.push_back(4);
-	indices.push_back(5);
-	indices.push_back(7);
-	indices.push_back(4);
-	indices.push_back(7);
-	indices.push_back(6);
-	indices.push_back(0);
-	indices.push_back(4);
-	indices.push_back(2);
-	indices.push_back(2);
-	indices.push_back(4);
-	indices.push_back(6);
-	indices.push_back(0);
-	indices.push_back(1);
-	indices.push_back(4);
-	indices.push_back(1);
-	indices.push_back(5);
-	indices.push_back(4);
-
-
 	Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
 
 	D3D11_BUFFER_DESC indexBufferDesc;
 	ZeroMemory(&indexBufferDesc, sizeof(D3D11_BUFFER_DESC));
-	indexBufferDesc.ByteWidth = sizeof(indices) * indices.size();
+	indexBufferDesc.ByteWidth = sizeof(unsigned short) * indices.size();
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.CPUAccessFlags = 0;
@@ -263,7 +399,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	this->d3dDevice->CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
 
 
-	DirectX::XMVECTOR eyePosition = DirectX::XMVectorSet(5.f, 5.f, 5.f, 0.f);
+	DirectX::XMVECTOR eyePosition = DirectX::XMVectorSet(diagonal3DLength, diagonal3DLength, diagonal3DLength, 0.f);
 	DirectX::XMVECTOR focusPosition = DirectX::XMVectorSet(0.f, 0.f, 0.f, 0.f);
 	DirectX::XMVECTOR upDirection = DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f);
 	DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationX(0.f);
@@ -406,7 +542,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 				DirectX::XMMatrixTranspose(
 					rotationMatrix *
 					DirectX::XMMatrixLookAtLH(eyePosition, focusPosition, upDirection) *
-					DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(70), 1.f, 1.f, 10.f)
+					DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(70), 1.f, 1.f, 3.f * diagonal3DLength)
 				)
 			}
 		};
@@ -577,42 +713,46 @@ void VisComponent::initDirect3D() {
 
 
 VisComponent::CustomColor VisComponent::getResultColor(long double resultValue) {
+	if (resultValue == 0.L) {
+		return { 1.f, 1.f, 1.f };
+	}
+
 	long double valLog = std::log10(resultValue);
-	float levelColor;
+	long double levelColor;
 
 	if (valLog <= std::log10(this->resultLegend[1].value)) {
 		levelColor = std::abs(valLog - std::log10(this->resultLegend[0].value)) / std::abs(std::log10(this->resultLegend[1].value) - std::log10(this->resultLegend[0].value));
-		return { 1.f - levelColor, 0.f, 1.f };
+		return { 1.f - (float)levelColor, 0.f, 1.f };
 	}
 	else if (valLog <= std::log10(this->resultLegend[2].value)) {
 		levelColor = std::abs(valLog - std::log10(this->resultLegend[1].value)) / std::abs(std::log10(this->resultLegend[2].value) - std::log10(this->resultLegend[1].value));
-		return { 0.f, levelColor, 1.f };
+		return { 0.f, (float)levelColor, 1.f };
 	}
 	else if (valLog <= std::log10(this->resultLegend[3].value)) {
 		levelColor = std::abs(valLog - std::log10(this->resultLegend[2].value)) / std::abs(std::log10(this->resultLegend[3].value) - std::log10(this->resultLegend[2].value));
-		return { 0.f, 1.f, 1.f - levelColor };
+		return { 0.f, 1.f, 1.f - (float)levelColor };
 	}
 	else if (valLog <= std::log10(this->resultLegend[4].value)) {
 		levelColor = std::abs(valLog - std::log10(this->resultLegend[3].value)) / std::abs(std::log10(this->resultLegend[4].value) - std::log10(this->resultLegend[3].value));
-		return { levelColor, 1.f, 0.f };
+		return { (float)levelColor, 1.f, 0.f };
 	}
 	else {
 		levelColor = std::abs(valLog - std::log10(this->resultLegend[4].value)) / std::abs(std::log10(this->resultLegend[5].value) - std::log10(this->resultLegend[4].value));
-		return { 1.f, 1.f - levelColor, 0.f };
+		return { 1.f, 1.f - (float)levelColor, 0.f };
 	}
 }
 
 
 VisComponent::CustomColor VisComponent::getRelErrColor(long double relerrValue) {
 	long double valLog = std::log10(relerrValue);
-	unsigned levelColor;
+	long double levelColor;
 
 	if (valLog <= std::log10(this->relerrLegend[1].value)) {
 		levelColor = std::abs(valLog - std::log10(this->relerrLegend[0].value)) / std::abs(std::log10(this->relerrLegend[1].value) - std::log10(this->relerrLegend[0].value));
-		return { levelColor, 0.f, 1.f };
+		return { (float)levelColor, 0.f, 1.f };
 	}
 	else {
 		levelColor = std::abs(valLog - std::log10(this->relerrLegend[1].value)) / std::abs(std::log10(this->relerrLegend[2].value) - std::log10(this->relerrLegend[1].value));
-		return { 1.f, 0.f, levelColor };
+		return { 1.f, 0.f, (float)levelColor };
 	}
 }

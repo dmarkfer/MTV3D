@@ -502,7 +502,7 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 
 	
 	std::vector<VisComponent::Point> visPoints;
-	/*VisComponent::Point point;
+	VisComponent::Point point;
 	LPCWSTR fileLineWCStr;
 
 	if (isPhoton) {
@@ -518,7 +518,11 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 			swscanf_s(fileLineWCStr, L"%f %f %f %lf %lf", &point.x, &point.y, &point.z, &point.value, &point.relError);
 			visPoints.push_back(point);
 		}
-	}*/
+	}
+
+	int visPointsDataSize = visPoints.size();
+	VisComponent::Point* visPointsData = new VisComponent::Point[visPointsDataSize];
+	memcpy(visPointsData, visPoints.data(), visPointsDataSize * sizeof(VisComponent::Point));
 
 
 	LPWSTR fileSizeStr = new WCHAR[WCHAR_ARR_MAX];
@@ -561,7 +565,7 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 			std::thread(
 				&VisComponent::run,
 				this->openProjects[this->numberOfOpenProjects - 1].second.second.get(),
-				this->hCurrentInst, this->hAccelTable, newProjectId, fileAbsolutePath, visPoints.size(), visPoints.data()
+				this->hCurrentInst, this->hAccelTable, newProjectId, fileAbsolutePath, visPointsDataSize, visPointsData
 			)
 		)
 	);
