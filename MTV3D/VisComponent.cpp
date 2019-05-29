@@ -727,6 +727,9 @@ LRESULT CALLBACK VisComponent::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 		if (wcType == WndClass::Type::VIS_DISPLAY) {
 			SetCursor(VisComponent::cursorGrabInteractionProject == hWnd ? VisComponent::cursorHandGrab : VisComponent::cursorHandNoGrab);
 		}
+		else if (wcType == WndClass::Type::EDITABLE) {
+			SetCursor(LoadCursor(nullptr, IDC_IBEAM));
+		}
 		else {
 			VisComponent::cursorGrabInteractionProject = nullptr;
 			SetCursor(LoadCursor(nullptr, IDC_ARROW));
@@ -758,6 +761,13 @@ LRESULT CALLBACK VisComponent::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 		}
 		break;
 	}
+	/*case WM_CTLCOLORSTATIC: {
+		SetBkColor((HDC)wParam, DARK_GRAY);
+		SetTextColor((HDC)wParam, WHITE);
+
+		return (BOOL)GetSysColorBrush(COLOR_MENU);
+		break;
+	}*/
 	case WM_DESTROY: {
 		switch (wcType) {
 		case WndClass::Type::VIS_RESULT: {

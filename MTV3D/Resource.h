@@ -17,6 +17,7 @@
 #define BUTTON_NEW_PROJ		1
 #define BUTTON_CLOSE_SEL	2
 #define BUTTON_CLOSE_ALL	3
+#define BUTTON_CREATE_PLANE 4
 
 #define ID_LISTVIEW  70
 

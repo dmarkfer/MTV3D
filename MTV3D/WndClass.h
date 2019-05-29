@@ -33,7 +33,9 @@ public:
 		VIS_RESULT,
 		VIS_RELERR,
 		VIS_DISPLAY,
-		VIS_LEGEND
+		VIS_LEGEND,
+		EDITABLE,
+		OTHER
 	};
 
 	static Type typeByWndClassName(const std::wstring& wndClassName);

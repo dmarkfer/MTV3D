@@ -419,10 +419,25 @@ void App::createWndClasses() {
 		0,
 		this->hCurrentInst,
 		nullptr,
-		LoadCursor(this->hCurrentInst, IDC_HAND),
+		LoadCursor(this->hCurrentInst, IDC_ARROW),
 		CreateSolidBrush(WHITE),
 		nullptr,
 		L"VisLegend",
+		nullptr
+	};
+
+	this->wndClassTypeStruct[WndClass::Type::EDITABLE] = {
+		sizeof(WNDCLASSEXW),
+		CS_HREDRAW | CS_VREDRAW,
+		VisComponent::wndProc,
+		0,
+		0,
+		this->hCurrentInst,
+		nullptr,
+		LoadCursor(this->hCurrentInst, IDC_IBEAM),
+		CreateSolidBrush(WHITE),
+		nullptr,
+		L"Editable",
 		nullptr
 	};
 
@@ -434,6 +449,7 @@ void App::createWndClasses() {
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_RELERR]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_DISPLAY]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_LEGEND]);
+	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::EDITABLE]);
 }
 
 

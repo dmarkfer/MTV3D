@@ -32,6 +32,16 @@ private:
 	HWND hResultLegend;
 	HWND hRelErrLegend;
 
+	HWND hPlanePreviewSelection;
+	HWND hOrthAxisGroup;
+	HWND radioButtonX;
+	HWND radioButtonY;
+	HWND radioButtonZ;
+	HWND hEnterAxisVal;
+	HWND hAxisValueBoxContainer;
+	HWND hAxisValueBox;
+	HWND hBtnCreatePlane;
+
 	int displayDim;
 public:
 	VisMergedWindow(HINSTANCE hInst, LPWSTR windowTitle);

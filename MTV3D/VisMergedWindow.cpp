@@ -78,6 +78,46 @@ VisMergedWindow::VisMergedWindow(HINSTANCE hInst, LPWSTR windowTitle) {
 	displayStyle = GetWindowLong(this->hRelErrDisplaySmall, GWL_STYLE);
 	displayStyle &= ~(WS_BORDER | WS_CAPTION | WS_SYSMENU);
 	SetWindowLong(this->hRelErrDisplaySmall, GWL_STYLE, displayStyle);
+
+
+	this->hPlanePreviewSelection = CreateWindow(L"BUTTON", L"Select plane", WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
+		wndRect.right / 4, this->displayDim + 10, wndRect.right / 2, wndRect.bottom - this->displayDim - 20,
+		this->hWnd, nullptr, hInst, nullptr);
+
+	this->hOrthAxisGroup = CreateWindow(L"BUTTON", L"Orthogonal to axis: ", WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
+		wndRect.right / 4 + 50, this->displayDim + 40, 220, 70,
+		this->hWnd, nullptr, hInst, nullptr);
+	this->radioButtonX = CreateWindow(L"BUTTON", L"X", WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
+		wndRect.right / 4 + 80, this->displayDim + 70, 40, 20,
+		this->hWnd, nullptr, hInst, nullptr);
+	this->radioButtonY = CreateWindow(L"BUTTON", L"Y", WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
+		wndRect.right / 4 + 140, this->displayDim + 70, 40, 20,
+		this->hWnd, nullptr, hInst, nullptr);
+	this->radioButtonZ = CreateWindow(L"BUTTON", L"Z", WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
+		wndRect.right / 4 + 200, this->displayDim + 70, 40, 20,
+		this->hWnd, nullptr, hInst, nullptr);
+	SendMessage(radioButtonZ, BM_SETCHECK, BST_CHECKED, 0);
+
+
+	this->hEnterAxisVal = CreateWindow(L"STATIC", L"Enter axis value: ", WS_VISIBLE | WS_CHILD,
+		wndRect.right / 4 + 320, this->displayDim + 50, 120, 20,
+		this->hWnd, nullptr, hInst, nullptr);
+
+	this->hAxisValueBoxContainer = CreateWindowEx(WS_EX_TOOLWINDOW, L"Editable", nullptr, WS_VISIBLE | WS_CHILD,
+		wndRect.right / 4 + 480, this->displayDim + 50, 120, 20,
+		this->hWnd, nullptr, hInst, nullptr);
+	displayStyle = GetWindowLong(this->hAxisValueBoxContainer, GWL_STYLE);
+	displayStyle &= ~(WS_BORDER | WS_CAPTION | WS_SYSMENU);
+	SetWindowLong(this->hAxisValueBoxContainer, GWL_STYLE, displayStyle);
+
+	this->hAxisValueBox = CreateWindow(L"EDIT", nullptr, WS_VISIBLE | WS_CHILD | WS_TABSTOP | WS_BORDER | ES_CENTER,
+		0, 0, 120, 20,
+		this->hAxisValueBoxContainer, nullptr, hInst, nullptr);
+
+	this->hBtnCreatePlane = CreateWindow(L"BUTTON", L"Create plane preview",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | WS_DISABLED,
+		wndRect.right / 4 + 450, this->displayDim + 90, 180, 30,
+		this->hWnd, (HMENU)BUTTON_CREATE_PLANE, hInst, nullptr);
 }
 
 
