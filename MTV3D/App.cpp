@@ -411,6 +411,21 @@ void App::createWndClasses() {
 		nullptr
 	};
 
+	this->wndClassTypeStruct[WndClass::Type::VIS_LEGEND] = {
+		sizeof(WNDCLASSEXW),
+		CS_HREDRAW | CS_VREDRAW,
+		VisComponent::wndProc,
+		0,
+		0,
+		this->hCurrentInst,
+		nullptr,
+		LoadCursor(this->hCurrentInst, IDC_HAND),
+		CreateSolidBrush(WHITE),
+		nullptr,
+		L"VisLegend",
+		nullptr
+	};
+
 
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::SPLASH]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::MAIN]);
@@ -418,6 +433,7 @@ void App::createWndClasses() {
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_RESULT]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_RELERR]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_DISPLAY]);
+	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_LEGEND]);
 }
 
 

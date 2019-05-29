@@ -76,6 +76,9 @@ private:
 	LPWSTR fileAbsolutePath;
 	LPWSTR windowTitle;
 	std::vector<Point> visPoints;
+	std::vector<std::vector<std::vector<VisComponent::Point>>> vis3DDataModel;
+	std::vector<Vertex> vertices;
+	std::vector<unsigned short> indices;
 
 	Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> d3dDeviceContext;
@@ -90,7 +93,7 @@ public:
 	VisComponent() = default;
 	~VisComponent() = default;
 
-	void run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectIndex, LPWSTR fileAbsolutePath, int visPointsDataSize, Point* visPoints);
+	void run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectIndex, LPWSTR fileAbsolutePath, int visPointsDataSize, Point* visPointsData);
 	static LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 private:
 	void initDirect3D();

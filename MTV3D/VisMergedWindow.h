@@ -29,6 +29,8 @@ private:
 	HWND hResultDisplaySmall;
 	HWND hRelErrDisplay;
 	HWND hRelErrDisplaySmall;
+	HWND hResultLegend;
+	HWND hRelErrLegend;
 
 	int displayDim;
 public:
@@ -40,5 +42,7 @@ public:
 	HWND getResultDisplaySmall();
 	HWND getRelErrDisplay();
 	HWND getRelErrDisplaySmall();
+	HWND getResultLegend();
+	HWND getRelErrLegend();
 	int getDisplayDim();
 };

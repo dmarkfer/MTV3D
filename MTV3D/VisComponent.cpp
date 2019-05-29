@@ -59,8 +59,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	std::set<float> axisXValues;
 	std::set<float> axisYValues;
 	std::set<float> axisZValues;
-	
-	std::vector<std::vector<std::vector<VisComponent::Point>>> vis3DDataModel;
+
 	std::vector<std::vector<VisComponent::Point>> visPlaneModel;
 	std::vector<VisComponent::Point> visLineModel;
 
@@ -123,7 +122,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	this->resultLegend.push_back({ 0.f, 1.f, 1.f, std::pow(10, resultMinValueLog10 + 2. * resultLogFifth) });
 	this->resultLegend.push_back({ 0.f, 1.f, 0.f, std::pow(10, resultMinValueLog10 + 3. * resultLogFifth) });
 	this->resultLegend.push_back({ 1.f, 1.f, 0.f, std::pow(10, resultMinValueLog10 + 4. * resultLogFifth) });
-	this->resultLegend.push_back({ 1.f, 1.f, 0.f, resultMaxValue });
+	this->resultLegend.push_back({ 1.f, 0.f, 0.f, resultMaxValue });
 
 
 	long double relerrMinValueLog10 = std::log10(relerrMinValue);
@@ -175,10 +174,6 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	this->swapChainRelErrDisplay->GetBuffer(0, __uuidof(ID3D11Resource), &backBufferRelErrDisplay);
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetRelErrDisplay;
 	this->d3dDevice->CreateRenderTargetView(backBufferRelErrDisplay.Get(), nullptr, &renderTargetRelErrDisplay);
-
-
-	std::vector<Vertex> vertices;
-	std::vector<unsigned short> indices;
 
 
 	for (int i = 0; i < axisXSize; ++i) {
@@ -429,6 +424,101 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		}
 
 
+		
+		HDC hdc = GetDC(this->hVisMerWnd->getResultLegend());
+
+		RECT fillRect;
+		GetClientRect(this->hVisMerWnd->getResultLegend(), &fillRect);
+
+		for (int i = 0; i < fillRect.bottom; ++i) {
+			CustomColor colHigh;
+			CustomColor colLow;
+			CustomColor fillCol;
+
+			if (i < fillRect.bottom / 5) {
+				colHigh = this->resultLegend[5].color;
+				colLow = this->resultLegend[4].color;
+
+				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom / 5 - i) / (fillRect.bottom / 5);
+				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom / 5 - i) / (fillRect.bottom / 5);
+				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom / 5 - i) / (fillRect.bottom / 5);
+			}
+			else if (i < fillRect.bottom * 2 / 5) {
+				colHigh = this->resultLegend[4].color;
+				colLow = this->resultLegend[3].color;
+
+				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom * 2 / 5 - i) / (fillRect.bottom / 5);
+				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom * 2 / 5 - i) / (fillRect.bottom / 5);
+				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom * 2 / 5 - i) / (fillRect.bottom / 5);
+			}
+			else if (i < fillRect.bottom * 3 / 5) {
+				colHigh = this->resultLegend[3].color;
+				colLow = this->resultLegend[2].color;
+
+				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom * 3 / 5 - i) / (fillRect.bottom / 5);
+				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom * 3 / 5 - i) / (fillRect.bottom / 5);
+				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom * 3 / 5 - i) / (fillRect.bottom / 5);
+			}
+			else if (i < fillRect.bottom * 4 / 5) {
+				colHigh = this->resultLegend[2].color;
+				colLow = this->resultLegend[1].color;
+
+				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom * 4 / 5 - i) / (fillRect.bottom / 5);
+				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom * 4 / 5 - i) / (fillRect.bottom / 5);
+				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom * 4 / 5 - i) / (fillRect.bottom / 5);
+			}
+			else {
+				colHigh = this->resultLegend[1].color;
+				colLow = this->resultLegend[0].color;
+
+				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom - i) / (fillRect.bottom / 5 + 1);
+				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom - i) / (fillRect.bottom / 5 + 1);
+				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom - i) / (fillRect.bottom / 5 + 1);
+			}
+
+			for (int j = 0; j < fillRect.right; ++j) {
+				SetPixel(hdc, j, i, RGB(fillCol.r * 255, fillCol.g * 255, fillCol.b * 255));
+			}
+		}
+
+		DeleteDC(hdc);
+
+
+		hdc = GetDC(this->hVisMerWnd->getRelErrLegend());
+
+		GetClientRect(this->hVisMerWnd->getRelErrLegend(), &fillRect);
+
+		for (int i = 0; i < fillRect.bottom; ++i) {
+			CustomColor colHigh;
+			CustomColor colLow;
+			CustomColor fillCol;
+
+			if (i < fillRect.bottom / 2) {
+				colHigh = this->relerrLegend[2].color;
+				colLow = this->relerrLegend[1].color;
+
+				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom / 2 - i) / (fillRect.bottom / 2);
+				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom / 2 - i) / (fillRect.bottom / 2);
+				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom / 2 - i) / (fillRect.bottom / 2);
+			}
+			else {
+				colHigh = this->relerrLegend[1].color;
+				colLow = this->relerrLegend[0].color;
+
+				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom - i) / (fillRect.bottom / 2 + 1);
+				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom - i) / (fillRect.bottom / 2 + 1);
+				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom - i) / (fillRect.bottom / 2 + 1);
+			}
+
+			for (int j = 0; j < fillRect.right; ++j) {
+				SetPixel(hdc, j, i, RGB(fillCol.r * 255, fillCol.g * 255, fillCol.b * 255));
+			}
+		}
+
+		DeleteDC(hdc);
+
+
+
 		float color[] = { 0.f, 0.f, 0.f, 1.f };
 
 		this->d3dDeviceContext->ClearRenderTargetView(renderTargetResultDisplay.Get(), color);
@@ -436,7 +526,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDeviceContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
 
 
-		if (VisComponent::cursorGrabInteractionProject) {
+		if (cursorGrabInteractionProject == this->hVisMerWnd->getResultDisplay() || cursorGrabInteractionProject == this->hVisMerWnd->getRelErrDisplay()) {
 			POINT cursorPosition;
 			GetCursorPos(&cursorPosition);
 			ScreenToClient(this->hVisMerWnd->getResultDisplay(), &cursorPosition);
@@ -618,7 +708,6 @@ LRESULT CALLBACK VisComponent::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 
 	switch (message) {
 	case WM_MOUSEWHEEL: {
-		OutputDebugString(L"wheel\n");
 		WORD fwKeys = GET_KEYSTATE_WPARAM(wParam);
 		WORD zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
 		WORD xPos = GET_X_LPARAM(lParam);
@@ -661,6 +750,14 @@ LRESULT CALLBACK VisComponent::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 		}
 		break;
 	}
+	case WM_PAINT: {
+		switch (wcType) {
+		case WndClass::Type::VIS_LEGEND: {
+			break;
+		}
+		}
+		break;
+	}
 	case WM_DESTROY: {
 		switch (wcType) {
 		case WndClass::Type::VIS_RESULT: {
@@ -694,6 +791,14 @@ void VisComponent::initDirect3D() {
 		&this->d3dDeviceContext
 	);
 
+	Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
+	Microsoft::WRL::ComPtr<IDXGIAdapter> dxgiAdapter;
+	Microsoft::WRL::ComPtr<IDXGIFactory> dxgiFactory;
+
+	this->d3dDevice.As(&dxgiDevice);
+	dxgiDevice->GetAdapter(&dxgiAdapter);
+	dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory));
+
 
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;
 	ZeroMemory(&swapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
@@ -717,16 +822,8 @@ void VisComponent::initDirect3D() {
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 	swapChainDesc.Flags = 0;
 
-
-	Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
-	Microsoft::WRL::ComPtr<IDXGIAdapter> dxgiAdapter;
-	Microsoft::WRL::ComPtr<IDXGIFactory> dxgiFactory;
-
-	this->d3dDevice.As(&dxgiDevice);
-	dxgiDevice->GetAdapter(&dxgiAdapter);
-	dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory));
-
 	dxgiFactory->CreateSwapChain(dxgiDevice.Get(), &swapChainDesc, &this->swapChainResultDisplay);
+
 
 	swapChainDesc.OutputWindow = this->hVisMerWnd->getRelErrDisplay();
 	dxgiFactory->CreateSwapChain(dxgiDevice.Get(), &swapChainDesc, &this->swapChainRelErrDisplay);
