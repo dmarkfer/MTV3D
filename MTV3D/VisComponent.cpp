@@ -176,6 +176,41 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	this->d3dDevice->CreateRenderTargetView(backBufferRelErrDisplay.Get(), nullptr, &renderTargetRelErrDisplay);
 
 
+	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
+	ZeroMemory(&depthStencilDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
+	depthStencilDesc.DepthEnable = true;
+	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> depthStencilState;
+	this->d3dDevice->CreateDepthStencilState(&depthStencilDesc, &depthStencilState);
+
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> depthStencil;
+	D3D11_TEXTURE2D_DESC depthDesc;
+	ZeroMemory(&depthDesc, sizeof(D3D11_TEXTURE2D_DESC));
+	depthDesc.Width = this->hVisMerWnd->getDisplayDim();
+	depthDesc.Height = this->hVisMerWnd->getDisplayDim();
+	depthDesc.MipLevels = 1u;
+	depthDesc.ArraySize = 1u;
+	depthDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	depthDesc.SampleDesc.Count = 1u;
+	depthDesc.SampleDesc.Quality = 0u;
+	depthDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+	this->d3dDevice->CreateTexture2D(&depthDesc, nullptr, &depthStencil);
+
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
+	ZeroMemory(&depthStencilViewDesc, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
+	depthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	depthStencilViewDesc.Texture2D.MipSlice = 0u;
+
+	this->d3dDevice->CreateDepthStencilView(depthStencil.Get(), &depthStencilViewDesc, &depthStencilView);
+
+
 	for (int i = 0; i < axisXSize; ++i) {
 		for (int j = 0; j < axisYSize; ++j) {
 			Point visp = vis3DDataModel[i][j][0];
@@ -204,7 +239,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		}
 	}
 
-	/*int startIndex = vertices.size();
+	int startIndex = vertices.size();
 
 	for (int i = 0; i < axisXSize; ++i) {
 		for (int j = 0; j < axisYSize; ++j) {
@@ -352,7 +387,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 				indices.push_back(startIndex + j * axisXSize + k);
 			}
 		}
-	}*/
+	}
 
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
@@ -522,6 +557,8 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		float color[] = { 0.f, 0.f, 0.f, 1.f };
 
 		this->d3dDeviceContext->ClearRenderTargetView(renderTargetResultDisplay.Get(), color);
+		this->d3dDeviceContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.f, 0u);
+
 		this->d3dDeviceContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
 		this->d3dDeviceContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
 
@@ -668,7 +705,8 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDevice->CreatePixelShader(VisComponent::pixelShaderBlob, VisComponent::pixelShaderFileSize, nullptr, &pixelShader);
 		this->d3dDeviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
 
-		this->d3dDeviceContext->OMSetRenderTargets(1u, renderTargetResultDisplay.GetAddressOf(), nullptr);
+		this->d3dDeviceContext->OMSetDepthStencilState(depthStencilState.Get(), 1u);
+		this->d3dDeviceContext->OMSetRenderTargets(1u, renderTargetResultDisplay.GetAddressOf(), depthStencilView.Get());
 		this->d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		this->d3dDeviceContext->RSSetViewports(1u, &vp);
 
