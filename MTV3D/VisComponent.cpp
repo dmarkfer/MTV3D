@@ -751,10 +751,11 @@ LRESULT CALLBACK VisComponent::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 		WORD xPos = GET_X_LPARAM(lParam);
 		WORD yPos = GET_Y_LPARAM(lParam);
 
-		if (zDelta == 120) {
+		// 2^16 = 65536
+		if (zDelta <= 32000) { //   0  to  2^16 / 2
 			scaleBase *= 1.05f;
 		}
-		else {
+		else { //   2^16 / 2  to  2^16
 			scaleBase *= 0.95f;
 		}
 
