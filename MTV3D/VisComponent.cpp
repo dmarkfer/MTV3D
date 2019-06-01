@@ -672,9 +672,9 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			{
 				DirectX::XMMatrixTranspose(
 					rotationMatrix *
-					DirectX::XMMatrixScaling(VisComponent::scaleBase, VisComponent::scaleBase, VisComponent::scaleBase) *
+					DirectX::XMMatrixScaling(scaleBase, scaleBase, scaleBase) *
 					DirectX::XMMatrixLookAtLH(eyePosition, focusPosition, upDirection) *
-					DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(70), 1.f, 1.f, 3.f * diagonal3DLength)
+					DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(70), 1.f, 1.f, scaleBase * 100.f * diagonal3DLength)
 				)
 			}
 		};
