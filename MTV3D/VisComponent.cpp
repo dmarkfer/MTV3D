@@ -87,7 +87,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 				visPlaneModel.clear();
 			}
 
-			if (visPoint.value > 0.) {
+			if (visPoint.value > 0.L) {
 				if (visPoint.value < resultMinValue) resultMinValue = visPoint.value;
 				if (visPoint.value > resultMaxValue) resultMaxValue = visPoint.value;
 				if (visPoint.relError < relerrMinValue) relerrMinValue = visPoint.relError;
@@ -220,21 +220,21 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			vertices.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
 
 			if (i > 0 && j > 0) {
-				indices.push_back((i - 1) * axisXSize + j - 1);
-				indices.push_back((i - 1) * axisXSize + j);
-				indices.push_back(i * axisXSize + j - 1);
+				indices.push_back((i - 1) * axisYSize + j - 1);
+				indices.push_back((i - 1) * axisYSize + j);
+				indices.push_back(i * axisYSize + j - 1);
 
-				indices.push_back((i - 1) * axisXSize + j - 1);
-				indices.push_back(i * axisXSize + j - 1);
-				indices.push_back((i - 1) * axisXSize + j);
+				indices.push_back((i - 1) * axisYSize + j - 1);
+				indices.push_back(i * axisYSize + j - 1);
+				indices.push_back((i - 1) * axisYSize + j);
 
-				indices.push_back((i - 1) * axisXSize + j);
-				indices.push_back(i * axisXSize + j);
-				indices.push_back(i * axisXSize + j - 1);
+				indices.push_back((i - 1) * axisYSize + j);
+				indices.push_back(i * axisYSize + j);
+				indices.push_back(i * axisYSize + j - 1);
 
-				indices.push_back((i - 1) * axisXSize + j);
-				indices.push_back(i * axisXSize + j - 1);
-				indices.push_back(i * axisXSize + j);
+				indices.push_back((i - 1) * axisYSize + j);
+				indices.push_back(i * axisYSize + j - 1);
+				indices.push_back(i * axisYSize + j);
 			}
 		}
 	}
@@ -250,21 +250,21 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			vertices.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
 
 			if (i > 0 && j > 0) {
-				indices.push_back(startIndex + (i - 1) * axisXSize + j - 1);
-				indices.push_back(startIndex + (i - 1) * axisXSize + j);
-				indices.push_back(startIndex + i * axisXSize + j - 1);
+				indices.push_back(startIndex + (i - 1) * axisYSize + j - 1);
+				indices.push_back(startIndex + (i - 1) * axisYSize + j);
+				indices.push_back(startIndex + i * axisYSize + j - 1);
 
-				indices.push_back(startIndex + (i - 1) * axisXSize + j - 1);
-				indices.push_back(startIndex + i * axisXSize + j - 1);
-				indices.push_back(startIndex + (i - 1) * axisXSize + j);
+				indices.push_back(startIndex + (i - 1) * axisYSize + j - 1);
+				indices.push_back(startIndex + i * axisYSize + j - 1);
+				indices.push_back(startIndex + (i - 1) * axisYSize + j);
 
-				indices.push_back(startIndex + (i - 1) * axisXSize + j);
-				indices.push_back(startIndex + i * axisXSize + j);
-				indices.push_back(startIndex + i * axisXSize + j - 1);
+				indices.push_back(startIndex + (i - 1) * axisYSize + j);
+				indices.push_back(startIndex + i * axisYSize + j);
+				indices.push_back(startIndex + i * axisYSize + j - 1);
 
-				indices.push_back(startIndex + (i - 1) * axisXSize + j);
-				indices.push_back(startIndex + i * axisXSize + j - 1);
-				indices.push_back(startIndex + i * axisXSize + j);
+				indices.push_back(startIndex + (i - 1) * axisYSize + j);
+				indices.push_back(startIndex + i * axisYSize + j - 1);
+				indices.push_back(startIndex + i * axisYSize + j);
 			}
 		}
 	}
@@ -283,15 +283,15 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 				indices.push_back(startIndex + (k - 1) * axisXSize + i - 1);
 				indices.push_back(startIndex + (k - 1) * axisXSize + i);
 				indices.push_back(startIndex + k * axisXSize + i - 1);
-
+				
 				indices.push_back(startIndex + (k - 1) * axisXSize + i - 1);
 				indices.push_back(startIndex + k * axisXSize + i - 1);
 				indices.push_back(startIndex + (k - 1) * axisXSize + i);
-
+				
 				indices.push_back(startIndex + (k - 1) * axisXSize + i);
 				indices.push_back(startIndex + k * axisXSize + i);
 				indices.push_back(startIndex + k * axisXSize + i - 1);
-
+				
 				indices.push_back(startIndex + (k - 1) * axisXSize + i);
 				indices.push_back(startIndex + k * axisXSize + i - 1);
 				indices.push_back(startIndex + k * axisXSize + i);
@@ -340,25 +340,25 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			vertices.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
 
 			if (j > 0 && k > 0) {
-				indices.push_back(startIndex + (j - 1) * axisXSize + k - 1);
-				indices.push_back(startIndex + (j - 1) * axisXSize + k);
-				indices.push_back(startIndex + j * axisXSize + k - 1);
+				indices.push_back(startIndex + (j - 1) * axisZSize + k - 1);
+				indices.push_back(startIndex + (j - 1) * axisZSize + k);
+				indices.push_back(startIndex + j * axisZSize + k - 1);
 
-				indices.push_back(startIndex + (j - 1) * axisXSize + k - 1);
-				indices.push_back(startIndex + j * axisXSize + k - 1);
-				indices.push_back(startIndex + (j - 1) * axisXSize + k);
+				indices.push_back(startIndex + (j - 1) * axisZSize + k - 1);
+				indices.push_back(startIndex + j * axisZSize + k - 1);
+				indices.push_back(startIndex + (j - 1) * axisZSize + k);
 
-				indices.push_back(startIndex + (j - 1) * axisXSize + k);
-				indices.push_back(startIndex + j * axisXSize + k);
-				indices.push_back(startIndex + j * axisXSize + k - 1);
+				indices.push_back(startIndex + (j - 1) * axisZSize + k);
+				indices.push_back(startIndex + j * axisZSize + k);
+				indices.push_back(startIndex + j * axisZSize + k - 1);
 
-				indices.push_back(startIndex + (j - 1) * axisXSize + k);
-				indices.push_back(startIndex + j * axisXSize + k - 1);
-				indices.push_back(startIndex + j * axisXSize + k);
+				indices.push_back(startIndex + (j - 1) * axisZSize + k);
+				indices.push_back(startIndex + j * axisZSize + k - 1);
+				indices.push_back(startIndex + j * axisZSize + k);
 			}
 		}
 	}
-
+	
 	startIndex = vertices.size();
 
 	for (int j = 0; j < axisYSize; ++j) {
@@ -370,21 +370,21 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			vertices.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
 
 			if (j > 0 && k > 0) {
-				indices.push_back(startIndex + (j - 1) * axisXSize + k - 1);
-				indices.push_back(startIndex + (j - 1) * axisXSize + k);
-				indices.push_back(startIndex + j * axisXSize + k - 1);
+				indices.push_back(startIndex + (j - 1) * axisZSize + k - 1);
+				indices.push_back(startIndex + (j - 1) * axisZSize + k);
+				indices.push_back(startIndex + j * axisZSize + k - 1);
 
-				indices.push_back(startIndex + (j - 1) * axisXSize + k - 1);
-				indices.push_back(startIndex + j * axisXSize + k - 1);
-				indices.push_back(startIndex + (j - 1) * axisXSize + k);
+				indices.push_back(startIndex + (j - 1) * axisZSize + k - 1);
+				indices.push_back(startIndex + j * axisZSize + k - 1);
+				indices.push_back(startIndex + (j - 1) * axisZSize + k);
 
-				indices.push_back(startIndex + (j - 1) * axisXSize + k);
-				indices.push_back(startIndex + j * axisXSize + k);
-				indices.push_back(startIndex + j * axisXSize + k - 1);
+				indices.push_back(startIndex + (j - 1) * axisZSize + k);
+				indices.push_back(startIndex + j * axisZSize + k);
+				indices.push_back(startIndex + j * axisZSize + k - 1);
 
-				indices.push_back(startIndex + (j - 1) * axisXSize + k);
-				indices.push_back(startIndex + j * axisXSize + k - 1);
-				indices.push_back(startIndex + j * axisXSize + k);
+				indices.push_back(startIndex + (j - 1) * axisZSize + k);
+				indices.push_back(startIndex + j * axisZSize + k - 1);
+				indices.push_back(startIndex + j * axisZSize + k);
 			}
 		}
 	}
@@ -416,12 +416,12 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 	D3D11_BUFFER_DESC indexBufferDesc;
 	ZeroMemory(&indexBufferDesc, sizeof(D3D11_BUFFER_DESC));
-	indexBufferDesc.ByteWidth = sizeof(unsigned short) * indices.size();
+	indexBufferDesc.ByteWidth = sizeof(unsigned) * indices.size();
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.CPUAccessFlags = 0;
 	indexBufferDesc.MiscFlags = 0;
-	indexBufferDesc.StructureByteStride = sizeof(unsigned short);
+	indexBufferDesc.StructureByteStride = sizeof(unsigned);
 
 	D3D11_SUBRESOURCE_DATA indexSubresourceData;
 	ZeroMemory(&indexSubresourceData, sizeof(D3D11_SUBRESOURCE_DATA));
@@ -560,7 +560,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDeviceContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.f, 0u);
 
 		this->d3dDeviceContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
-		this->d3dDeviceContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+		this->d3dDeviceContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 
 		if (cursorGrabInteractionProject == this->hVisMerWnd->getResultDisplay() || cursorGrabInteractionProject == this->hVisMerWnd->getRelErrDisplay()) {
@@ -667,6 +667,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			VisComponent::clickPosY = cursorPosition.y;
 		}
 
+
 		const ConstBufferStruct cb = {
 			{
 				DirectX::XMMatrixTranspose(
@@ -718,7 +719,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 		this->d3dDeviceContext->ClearRenderTargetView(renderTargetRelErrDisplay.Get(), color);
 		this->d3dDeviceContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
-		this->d3dDeviceContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+		this->d3dDeviceContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 		this->d3dDeviceContext->VSSetConstantBuffers(0, 1, constBuffer.GetAddressOf());
 
 		this->d3dDeviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
