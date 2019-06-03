@@ -42,6 +42,7 @@ private:
 	HWND hAxisValueBox;
 	HWND hBtnCreatePlane;
 
+	RECT wndRect;
 	int displayDim;
 public:
 	VisMergedWindow(HINSTANCE hInst, LPWSTR windowTitle);
@@ -54,5 +55,6 @@ public:
 	HWND getRelErrDisplaySmall();
 	HWND getResultLegend();
 	HWND getRelErrLegend();
+	RECT getWndRect();
 	int getDisplayDim();
 };

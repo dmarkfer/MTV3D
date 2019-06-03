@@ -28,6 +28,7 @@
 #include <set>
 #include <utility>
 #include <thread>
+#include <limits>
 
 
 #define BLACK		RGB(0, 0, 0)

@@ -30,7 +30,6 @@ VisMergedWindow::VisMergedWindow(HINSTANCE hInst, LPWSTR windowTitle) {
 		CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInst, nullptr);
 
 
-	RECT wndRect;
 	GetClientRect(this->hWnd, &wndRect);
 	this->displayDim = (wndRect.right - 300) / 2;
 	int smallDisplayDim = wndRect.bottom - this->displayDim;
@@ -156,6 +155,11 @@ HWND VisMergedWindow::getResultLegend() {
 
 HWND VisMergedWindow::getRelErrLegend() {
 	return this->hRelErrLegend;
+}
+
+
+RECT VisMergedWindow::getWndRect() {
+	return this->wndRect;
 }
 
 

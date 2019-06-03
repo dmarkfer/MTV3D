@@ -63,7 +63,10 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	std::vector<std::vector<VisComponent::Point>> visPlaneModel;
 	std::vector<VisComponent::Point> visLineModel;
 
-	long double resultMinValue = 0.L, resultMaxValue = 0.L, relerrMinValue = 0.L, relerrMaxValue = 0.L;
+	long double resultMinValue = std::numeric_limits<long double>::infinity();
+	long double resultMaxValue = 0.L;
+	long double relerrMinValue = std::numeric_limits<long double>::infinity();
+	long double relerrMaxValue = 0.L;
 
 	for (int i = 0; i < visPointsDataSize; ++i) {
 		axisXValues.insert(visPointsData[i].x);
@@ -94,12 +97,6 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 				if (visPoint.relError > relerrMaxValue) relerrMaxValue = visPoint.relError;
 			}
 		}
-		else {
-			resultMinValue = visPoint.value;
-			resultMaxValue = visPoint.value;
-			relerrMinValue = visPoint.relError;
-			relerrMaxValue = visPoint.relError;
-		}
 
 		visLineModel.push_back(visPoint);
 	}
@@ -119,19 +116,21 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 	this->resultLegend.push_back({ 1.f, 0.f, 1.f, resultMinValue });
 	this->resultLegend.push_back({ 0.f, 0.f, 1.f, std::pow(10, resultMinValueLog10 + resultLogFifth) });
-	this->resultLegend.push_back({ 0.f, 1.f, 1.f, std::pow(10, resultMinValueLog10 + 2. * resultLogFifth) });
-	this->resultLegend.push_back({ 0.f, 1.f, 0.f, std::pow(10, resultMinValueLog10 + 3. * resultLogFifth) });
-	this->resultLegend.push_back({ 1.f, 1.f, 0.f, std::pow(10, resultMinValueLog10 + 4. * resultLogFifth) });
+	this->resultLegend.push_back({ 0.f, 1.f, 1.f, std::pow(10, resultMinValueLog10 + 2.L * resultLogFifth) });
+	this->resultLegend.push_back({ 0.f, 1.f, 0.f, std::pow(10, resultMinValueLog10 + 3.L * resultLogFifth) });
+	this->resultLegend.push_back({ 1.f, 1.f, 0.f, std::pow(10, resultMinValueLog10 + 4.L * resultLogFifth) });
 	this->resultLegend.push_back({ 1.f, 0.f, 0.f, resultMaxValue });
 
 
 	long double relerrMinValueLog10 = std::log10(relerrMinValue);
 	long double relerrMaxValueLog10 = std::log10(relerrMaxValue);
-	long double relerrLogHalf = (relerrMaxValueLog10 - relerrMinValueLog10) / 2.L;
+	long double relerrLogQuarter = (relerrMaxValueLog10 - relerrMinValueLog10) / 4.L;
 
-	this->relerrLegend.push_back({ 0.f, 0.f, 1.f, relerrMinValue });
-	this->relerrLegend.push_back({ 1.f, 0.f, 1.f, std::pow(10, relerrMinValueLog10 + relerrLogHalf) });
-	this->relerrLegend.push_back({ 1.f, 0.f, 0.f, relerrMaxValue });
+	this->relerrLegend.push_back({ 0.f, 0.f, 1.f, relerrMaxValue });
+	this->relerrLegend.push_back({ 0.5f, 0.f, 1.f, std::pow(10, relerrMaxValueLog10 - relerrLogQuarter) });
+	this->relerrLegend.push_back({ 1.f, 0.f, 1.f, std::pow(10, relerrMaxValueLog10 - 2.L * relerrLogQuarter) });
+	this->relerrLegend.push_back({ 1.f, 0.f, 0.5f, std::pow(10, relerrMaxValueLog10 - 3.L * relerrLogQuarter) });
+	this->relerrLegend.push_back({ 1.f, 0.f, 0.f, relerrMinValue });
 
 
 	int axisXSize = axisXValues.size();
@@ -147,6 +146,43 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	float modelApplicateCenter = std::vector<float>(axisZValues.begin(), axisZValues.end())[axisZSize / 2];
 
 	float diagonal3DLength = std::sqrt(modelAbscissaLength * modelAbscissaLength + modelOrdinateLength * modelOrdinateLength + modelApplicateLength * modelApplicateLength);
+
+
+
+	CreateWindow(L"STATIC", L"Result", WS_VISIBLE | WS_CHILD,
+		this->hVisMerWnd->getWndRect().right / 2 - this->hVisMerWnd->getDisplayDim() / 25 - 110, 30, 120, 20,
+		this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+
+	CreateWindow(L"STATIC", L"Relative\nError", WS_VISIBLE | WS_CHILD,
+		this->hVisMerWnd->getWndRect().right / 2 + this->hVisMerWnd->getDisplayDim() / 25 + 30, 30, 120, 40,
+		this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+
+	WCHAR legendValue[101];
+
+	for (int i = 0; i <= 5; ++i) {
+		swprintf_s(legendValue, L"%1.5e", this->resultLegend[5 - i].value);
+
+		CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
+			this->hVisMerWnd->getWndRect().right / 2 - this->hVisMerWnd->getDisplayDim() / 25 - 110, 90 + int((this->hVisMerWnd->getDisplayDim() / 2.L) * i / 5.L), 120, 20,
+			this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+	}
+
+	swprintf_s(legendValue, L"%1.5e", 0.L);
+
+	CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
+		this->hVisMerWnd->getWndRect().right / 2 - this->hVisMerWnd->getDisplayDim() / 25 - 110, 90 + int(this->hVisMerWnd->getDisplayDim() / 2.L) + 60, 120, 20,
+		this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+
+
+	for (int i = 0; i <= 4; ++i) {
+		swprintf_s(legendValue, L"%1.5e", this->relerrLegend[4 - i].value);
+
+		CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
+			this->hVisMerWnd->getWndRect().right / 2 + this->hVisMerWnd->getDisplayDim() / 25 + 30, 90 + int((this->hVisMerWnd->getDisplayDim() / 2.L) * i / 4.L), 120, 20,
+			this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+	}
+
+
 
 	SetCursor(LoadCursor(nullptr, IDC_ARROW));
 
@@ -622,6 +658,16 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 		DeleteDC(hdc);
 
+		hdc = GetDC(this->hVisMerWnd->getHandle());
+
+		for (int i = 0; i < 20; ++i) {
+			for (int j = 0; j < fillRect.right; ++j) {
+				SetPixel(hdc, this->hVisMerWnd->getWndRect().right / 2 - this->hVisMerWnd->getDisplayDim() / 25 - 10 + j, 100 + this->hVisMerWnd->getDisplayDim() / 2 + 48 + i, RGB(255, 255, 255));
+			}
+		}
+
+		DeleteDC(hdc);
+
 
 		hdc = GetDC(this->hVisMerWnd->getRelErrLegend());
 
@@ -632,21 +678,37 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			CustomColor colLow;
 			CustomColor fillCol;
 
-			if (i < fillRect.bottom / 2) {
+			if (i < fillRect.bottom / 4) {
+				colHigh = this->relerrLegend[4].color;
+				colLow = this->relerrLegend[3].color;
+
+				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom / 4 - i) / (fillRect.bottom / 4);
+				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom / 4 - i) / (fillRect.bottom / 4);
+				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom / 4 - i) / (fillRect.bottom / 4);
+			}
+			else if(i < fillRect.bottom * 2 / 4) {
+				colHigh = this->relerrLegend[3].color;
+				colLow = this->relerrLegend[2].color;
+
+				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom * 2 / 4 - i) / (fillRect.bottom / 4);
+				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom * 2 / 4 - i) / (fillRect.bottom / 4);
+				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom * 2 / 4 - i) / (fillRect.bottom / 4);
+			}
+			else if (i < fillRect.bottom * 3 / 4) {
 				colHigh = this->relerrLegend[2].color;
 				colLow = this->relerrLegend[1].color;
 
-				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom / 2 - i) / (fillRect.bottom / 2);
-				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom / 2 - i) / (fillRect.bottom / 2);
-				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom / 2 - i) / (fillRect.bottom / 2);
+				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom * 3 / 4 - i) / (fillRect.bottom / 4);
+				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom * 3 / 4 - i) / (fillRect.bottom / 4);
+				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom * 3 / 4 - i) / (fillRect.bottom / 4);
 			}
 			else {
 				colHigh = this->relerrLegend[1].color;
 				colLow = this->relerrLegend[0].color;
 
-				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom - i) / (fillRect.bottom / 2 + 1);
-				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom - i) / (fillRect.bottom / 2 + 1);
-				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom - i) / (fillRect.bottom / 2 + 1);
+				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom - i) / (fillRect.bottom / 4 + 1);
+				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom - i) / (fillRect.bottom / 4 + 1);
+				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom - i) / (fillRect.bottom / 4 + 1);
 			}
 
 			for (int j = 0; j < fillRect.right; ++j) {
@@ -1036,12 +1098,20 @@ VisComponent::CustomColor VisComponent::getRelErrColor(long double relerrValue) 
 	long double valLog = std::log10(relerrValue);
 	long double levelColor;
 
-	if (valLog <= std::log10(this->relerrLegend[1].value)) {
-		levelColor = std::abs(valLog - std::log10(this->relerrLegend[0].value)) / std::abs(std::log10(this->relerrLegend[1].value) - std::log10(this->relerrLegend[0].value));
-		return { (float)levelColor, 0.f, 1.f };
+	if (valLog >= std::log10(this->relerrLegend[1].value)) {
+		levelColor = std::abs(std::log10(this->relerrLegend[0].value - valLog)) / std::abs(std::log10(this->relerrLegend[0].value) - std::log10(this->relerrLegend[1].value));
+		return { (float)levelColor * 0.5f, 0.f, 1.f };
+	}
+	else if (valLog >= std::log10(this->relerrLegend[2].value)) {
+		levelColor = std::abs(std::log10(this->relerrLegend[1].value - valLog)) / std::abs(std::log10(this->relerrLegend[1].value) - std::log10(this->relerrLegend[2].value));
+		return { (float)levelColor * 0.5f + 0.5f, 0.f, 1.f };
+	}
+	else if (valLog >= std::log10(this->relerrLegend[3].value)) {
+		levelColor = std::abs(std::log10(this->relerrLegend[2].value - valLog)) / std::abs(std::log10(this->relerrLegend[2].value) - std::log10(this->relerrLegend[3].value));
+		return { 1.f, 0.f, 1.f - (float)levelColor * 0.5f };
 	}
 	else {
-		levelColor = std::abs(valLog - std::log10(this->relerrLegend[1].value)) / std::abs(std::log10(this->relerrLegend[2].value) - std::log10(this->relerrLegend[1].value));
-		return { 1.f, 0.f, (float)levelColor };
+		levelColor = std::abs(std::log10(this->relerrLegend[3].value - valLog)) / std::abs(std::log10(this->relerrLegend[3].value) - std::log10(this->relerrLegend[4].value));
+		return { 1.f, 0.f, 0.5f - (float)levelColor * 0.5f };
 	}
 }
