@@ -922,13 +922,13 @@ LRESULT CALLBACK VisComponent::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 		}
 		break;
 	}
-	/*case WM_CTLCOLORSTATIC: {
-		SetBkColor((HDC)wParam, DARK_GRAY);
+	case WM_CTLCOLORSTATIC: {
 		SetTextColor((HDC)wParam, WHITE);
+		SetBkColor((HDC)wParam, DARK_GRAY);
 
-		return (BOOL)GetSysColorBrush(COLOR_MENU);
+		return (BOOL)GetStockObject(NULL_BRUSH);
 		break;
-	}*/
+	}
 	case WM_DESTROY: {
 		switch (wcType) {
 		case WndClass::Type::VIS_RESULT: {

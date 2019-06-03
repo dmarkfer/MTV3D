@@ -83,11 +83,11 @@ VisMergedWindow::VisMergedWindow(HINSTANCE hInst, LPWSTR windowTitle) {
 	int dialogWidth = wndRect.right / 2;
 	int dialogHeight = wndRect.bottom - this->displayDim - 20;
 
-	this->hPlanePreviewSelection = CreateWindow(L"BUTTON", L"Select plane", WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
+	this->hPlanePreviewSelection = CreateWindow(L"BUTTON", L" Select plane ", WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
 		wndRect.right / 4, this->displayDim + 10, dialogWidth, dialogHeight,
 		this->hWnd, nullptr, hInst, nullptr);
 
-	this->hOrthAxisGroup = CreateWindow(L"BUTTON", L"Orthogonal to axis: ", WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
+	this->hOrthAxisGroup = CreateWindow(L"BUTTON", L" Orthogonal to axis ", WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
 		wndRect.right / 4 + 50, this->displayDim + dialogHeight / 3, 220, 70,
 		this->hWnd, nullptr, hInst, nullptr);
 	this->radioButtonX = CreateWindow(L"BUTTON", L"X", WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
@@ -107,7 +107,7 @@ VisMergedWindow::VisMergedWindow(HINSTANCE hInst, LPWSTR windowTitle) {
 		this->hWnd, nullptr, hInst, nullptr);
 
 	this->hAxisValueBoxContainer = CreateWindowEx(WS_EX_TOOLWINDOW, L"Editable", nullptr, WS_VISIBLE | WS_CHILD,
-		wndRect.right / 4 + 480, this->displayDim + 10 + dialogHeight / 3, 120, 20,
+		wndRect.right / 4 + 450, this->displayDim + 10 + dialogHeight / 3, 120, 20,
 		this->hWnd, nullptr, hInst, nullptr);
 	displayStyle = GetWindowLong(this->hAxisValueBoxContainer, GWL_STYLE);
 	displayStyle &= ~(WS_BORDER | WS_CAPTION | WS_SYSMENU);
