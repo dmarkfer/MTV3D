@@ -77,7 +77,8 @@ private:
 	LPWSTR windowTitle;
 	std::vector<Point> visPoints;
 	std::vector<std::vector<std::vector<VisComponent::Point>>> vis3DDataModel;
-	std::vector<Vertex> vertices;
+	std::vector<Vertex> verticesResult;
+	std::vector<Vertex> verticesRelErr;
 	std::vector<unsigned> indices;
 
 	Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice;

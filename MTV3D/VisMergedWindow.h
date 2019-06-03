@@ -26,9 +26,7 @@ class VisMergedWindow {
 private:
 	HWND hWnd;
 	HWND hResultDisplay;
-	HWND hResultDisplaySmall;
 	HWND hRelErrDisplay;
-	HWND hRelErrDisplaySmall;
 	HWND hResultLegend;
 	HWND hRelErrLegend;
 
@@ -50,9 +48,7 @@ public:
 
 	HWND getHandle();
 	HWND getResultDisplay();
-	HWND getResultDisplaySmall();
 	HWND getRelErrDisplay();
-	HWND getRelErrDisplaySmall();
 	HWND getResultLegend();
 	HWND getRelErrLegend();
 	RECT getWndRect();

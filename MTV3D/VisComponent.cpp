@@ -65,7 +65,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 	long double resultMinValue = std::numeric_limits<long double>::infinity();
 	long double resultMaxValue = 0.L;
-	long double relerrMinValue = std::numeric_limits<long double>::infinity();
+	long double relerrMinValue = 1.L;
 	long double relerrMaxValue = 0.L;
 
 	for (int i = 0; i < visPointsDataSize; ++i) {
@@ -122,7 +122,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	this->resultLegend.push_back({ 1.f, 0.f, 0.f, resultMaxValue });
 
 
-	long double relerrMinValueLog10 = std::log10(relerrMinValue);
+	long double relerrMinValueLog10 =  (relerrMinValue > 0.L) ? std::log10(relerrMinValue) : std::numeric_limits<long double>::min_exponent10 ;
 	long double relerrMaxValueLog10 = std::log10(relerrMaxValue);
 	long double relerrLogQuarter = (relerrMaxValueLog10 - relerrMinValueLog10) / 4.L;
 
@@ -357,7 +357,8 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			visp.x -= modelAbscissaCenter;
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
-			vertices.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
+			verticesResult.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
+			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.value) });
 
 			if (i > 0 && j > 0) {
 				indices.push_back((i - 1) * axisYSize + j - 1);
@@ -379,7 +380,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		}
 	}
 
-	int startIndex = vertices.size();
+	int startIndex = verticesResult.size();
 
 	for (int i = 0; i < axisXSize; ++i) {
 		for (int j = 0; j < axisYSize; ++j) {
@@ -387,7 +388,8 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			visp.x -= modelAbscissaCenter;
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
-			vertices.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
+			verticesResult.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
+			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.value) });
 
 			if (i > 0 && j > 0) {
 				indices.push_back(startIndex + (i - 1) * axisYSize + j - 1);
@@ -409,7 +411,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		}
 	}
 
-	startIndex = vertices.size();
+	startIndex = verticesResult.size();
 
 	for (int k = 0; k < axisZSize; ++k) {
 		for (int i = 0; i < axisXSize; ++i) {
@@ -417,7 +419,8 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			visp.x -= modelAbscissaCenter;
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
-			vertices.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
+			verticesResult.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
+			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.value) });
 
 			if (k > 0 && i > 0) {
 				indices.push_back(startIndex + (k - 1) * axisXSize + i - 1);
@@ -439,7 +442,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		}
 	}
 
-	startIndex = vertices.size();
+	startIndex = verticesResult.size();
 
 	for (int k = 0; k < axisZSize; ++k) {
 		for (int i = 0; i < axisXSize; ++i) {
@@ -447,7 +450,8 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			visp.x -= modelAbscissaCenter;
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
-			vertices.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
+			verticesResult.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
+			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.value) });
 
 			if (k > 0 && i > 0) {
 				indices.push_back(startIndex + (k - 1) * axisXSize + i - 1);
@@ -469,7 +473,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		}
 	}
 
-	startIndex = vertices.size();
+	startIndex = verticesResult.size();
 
 	for (int j = 0; j < axisYSize; ++j) {
 		for (int k = 0; k < axisZSize; ++k) {
@@ -477,7 +481,8 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			visp.x -= modelAbscissaCenter;
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
-			vertices.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
+			verticesResult.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
+			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.value) });
 
 			if (j > 0 && k > 0) {
 				indices.push_back(startIndex + (j - 1) * axisZSize + k - 1);
@@ -499,7 +504,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		}
 	}
 	
-	startIndex = vertices.size();
+	startIndex = verticesResult.size();
 
 	for (int j = 0; j < axisYSize; ++j) {
 		for (int k = 0; k < axisZSize; ++k) {
@@ -507,7 +512,8 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			visp.x -= modelAbscissaCenter;
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
-			vertices.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
+			verticesResult.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
+			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.value) });
 
 			if (j > 0 && k > 0) {
 				indices.push_back(startIndex + (j - 1) * axisZSize + k - 1);
@@ -530,23 +536,43 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	}
 
 
-	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
-	D3D11_BUFFER_DESC vertexBufferDesc;
-	ZeroMemory(&vertexBufferDesc, sizeof(D3D11_BUFFER_DESC));
-	vertexBufferDesc.ByteWidth = sizeof(Vertex) * vertices.size();
-	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertexBufferDesc.CPUAccessFlags = 0;
-	vertexBufferDesc.MiscFlags = 0;
-	vertexBufferDesc.StructureByteStride = sizeof(Vertex);
+	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexResultBuffer;
+	D3D11_BUFFER_DESC vertexResultBufferDesc;
+	ZeroMemory(&vertexResultBufferDesc, sizeof(D3D11_BUFFER_DESC));
+	vertexResultBufferDesc.ByteWidth = sizeof(Vertex) * verticesResult.size();
+	vertexResultBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	vertexResultBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexResultBufferDesc.CPUAccessFlags = 0;
+	vertexResultBufferDesc.MiscFlags = 0;
+	vertexResultBufferDesc.StructureByteStride = sizeof(Vertex);
 
-	D3D11_SUBRESOURCE_DATA vertexSubresourceData;
-	ZeroMemory(&vertexSubresourceData, sizeof(D3D11_SUBRESOURCE_DATA));
-	vertexSubresourceData.pSysMem = &vertices[0];
-	vertexSubresourceData.SysMemPitch = 0;
-	vertexSubresourceData.SysMemSlicePitch = 0;
+	D3D11_SUBRESOURCE_DATA vertexResultSubresourceData;
+	ZeroMemory(&vertexResultSubresourceData, sizeof(D3D11_SUBRESOURCE_DATA));
+	vertexResultSubresourceData.pSysMem = &verticesResult[0];
+	vertexResultSubresourceData.SysMemPitch = 0;
+	vertexResultSubresourceData.SysMemSlicePitch = 0;
 
-	this->d3dDevice->CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
+	this->d3dDevice->CreateBuffer(&vertexResultBufferDesc, &vertexResultSubresourceData, &vertexResultBuffer);
+
+
+	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexRelErrBuffer;
+	D3D11_BUFFER_DESC vertexRelErrBufferDesc;
+	ZeroMemory(&vertexRelErrBufferDesc, sizeof(D3D11_BUFFER_DESC));
+	vertexRelErrBufferDesc.ByteWidth = sizeof(Vertex) * verticesRelErr.size();
+	vertexRelErrBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	vertexRelErrBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexRelErrBufferDesc.CPUAccessFlags = 0;
+	vertexRelErrBufferDesc.MiscFlags = 0;
+	vertexRelErrBufferDesc.StructureByteStride = sizeof(Vertex);
+
+	D3D11_SUBRESOURCE_DATA vertexRelErrSubresourceData;
+	ZeroMemory(&vertexRelErrSubresourceData, sizeof(D3D11_SUBRESOURCE_DATA));
+	vertexRelErrSubresourceData.pSysMem = &verticesRelErr[0];
+	vertexRelErrSubresourceData.SysMemPitch = 0;
+	vertexRelErrSubresourceData.SysMemSlicePitch = 0;
+
+	this->d3dDevice->CreateBuffer(&vertexRelErrBufferDesc, &vertexRelErrSubresourceData, &vertexRelErrBuffer);
+
 
 	const UINT stride = sizeof(Vertex);
 	const UINT offset = 0;
@@ -725,16 +751,16 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDeviceContext->ClearRenderTargetView(renderTargetResultDisplay.Get(), color);
 		this->d3dDeviceContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.f, 0u);
 
-		this->d3dDeviceContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+		this->d3dDeviceContext->IASetVertexBuffers(0, 1, vertexResultBuffer.GetAddressOf(), &stride, &offset);
 		this->d3dDeviceContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 
 		if (cursorGrabInteractionProject == this->hVisMerWnd->getResultDisplay() || cursorGrabInteractionProject == this->hVisMerWnd->getRelErrDisplay()) {
 			POINT cursorPosition;
 			GetCursorPos(&cursorPosition);
-			ScreenToClient(this->hVisMerWnd->getResultDisplay(), &cursorPosition);
+			ScreenToClient(cursorGrabInteractionProject, &cursorPosition);
 			RECT wndClientArea;
-			GetClientRect(this->hVisMerWnd->getResultDisplay(), &wndClientArea);
+			GetClientRect(cursorGrabInteractionProject, &wndClientArea);
 
 			ScreenVector clickScreenVector = {
 				VisComponent::clickPosX - wndClientArea.right / 2.f,
@@ -901,7 +927,8 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 
 		this->d3dDeviceContext->ClearRenderTargetView(renderTargetRelErrDisplay.Get(), color);
-		this->d3dDeviceContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+		this->d3dDeviceContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.f, 0u);
+		this->d3dDeviceContext->IASetVertexBuffers(0, 1, vertexRelErrBuffer.GetAddressOf(), &stride, &offset);
 		this->d3dDeviceContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 		this->d3dDeviceContext->VSSetConstantBuffers(0, 1, constBuffer.GetAddressOf());
 
@@ -909,11 +936,29 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDeviceContext->IASetInputLayout(inputLayout.Get());
 		this->d3dDeviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
 
-		this->d3dDeviceContext->OMSetRenderTargets(1u, renderTargetRelErrDisplay.GetAddressOf(), nullptr);
+		this->d3dDeviceContext->OMSetDepthStencilState(depthStencilState.Get(), 1u);
+		this->d3dDeviceContext->OMSetRenderTargets(1u, renderTargetRelErrDisplay.GetAddressOf(), depthStencilView.Get());
 		this->d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		this->d3dDeviceContext->RSSetViewports(1u, &vp);
 
 		this->d3dDeviceContext->DrawIndexed(indices.size(), 0u, 0u);
+
+
+		this->d3dDeviceContext->IASetVertexBuffers(0, 1, gridVertexBuffer.GetAddressOf(), &stride, &offset);
+		this->d3dDeviceContext->VSSetConstantBuffers(0, 1, constBuffer.GetAddressOf());
+
+		this->d3dDeviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
+		this->d3dDeviceContext->IASetInputLayout(inputLayout.Get());
+		this->d3dDeviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
+
+		this->d3dDeviceContext->OMSetDepthStencilState(depthStencilState.Get(), 1u);
+		this->d3dDeviceContext->OMSetRenderTargets(1u, renderTargetRelErrDisplay.GetAddressOf(), depthStencilView.Get());
+
+		this->d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+		this->d3dDeviceContext->RSSetViewports(1u, &vp);
+
+		this->d3dDeviceContext->Draw(gridLinesVertices.size(), 0u);
+
 
 		this->swapChainRelErrDisplay->Present(1, 0);
 	}
@@ -1098,20 +1143,20 @@ VisComponent::CustomColor VisComponent::getRelErrColor(long double relerrValue) 
 	long double valLog = std::log10(relerrValue);
 	long double levelColor;
 
-	if (valLog >= std::log10(this->relerrLegend[1].value)) {
+	if (valLog >= this->relerrLegend[1].value) {
 		levelColor = std::abs(std::log10(this->relerrLegend[0].value - valLog)) / std::abs(std::log10(this->relerrLegend[0].value) - std::log10(this->relerrLegend[1].value));
 		return { (float)levelColor * 0.5f, 0.f, 1.f };
 	}
-	else if (valLog >= std::log10(this->relerrLegend[2].value)) {
+	else if (valLog >= this->relerrLegend[2].value) {
 		levelColor = std::abs(std::log10(this->relerrLegend[1].value - valLog)) / std::abs(std::log10(this->relerrLegend[1].value) - std::log10(this->relerrLegend[2].value));
 		return { (float)levelColor * 0.5f + 0.5f, 0.f, 1.f };
 	}
-	else if (valLog >= std::log10(this->relerrLegend[3].value)) {
+	else if (valLog >= this->relerrLegend[3].value) {
 		levelColor = std::abs(std::log10(this->relerrLegend[2].value - valLog)) / std::abs(std::log10(this->relerrLegend[2].value) - std::log10(this->relerrLegend[3].value));
 		return { 1.f, 0.f, 1.f - (float)levelColor * 0.5f };
 	}
 	else {
-		levelColor = std::abs(std::log10(this->relerrLegend[3].value - valLog)) / std::abs(std::log10(this->relerrLegend[3].value) - std::log10(this->relerrLegend[4].value));
+		levelColor = std::abs(std::log10(this->relerrLegend[3].value - valLog)) / std::abs(std::log10(this->relerrLegend[3].value) - (this->relerrLegend[4].value > 0.L) ? std::log10(this->relerrLegend[4].value) : std::numeric_limits<long double>::min_exponent10 );
 		return { 1.f, 0.f, 0.5f - (float)levelColor * 0.5f };
 	}
 }
