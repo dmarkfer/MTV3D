@@ -36,7 +36,7 @@
 #define WHITE		RGB(255, 255, 255)
 
 #define SPLASH_DIM 384 // 768/2
-#define SPLASH_TTL 100 // ms
+#define SPLASH_TTL 3000 // ms
 
 #define WCHAR_ARR_MAX 256
 #define FILEPATH_MAX_LENGTH 1001

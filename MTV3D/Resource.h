@@ -8,11 +8,8 @@
 #define IDM_NEW_PROJ		11
 #define IDM_EXIT			12
 #define IDM_CLOSE_PROJ		13
-#define IDM_CHANGE_LANG		21
-#define IDM_UPDATE			22
 #define IDM_DOC				32
 #define IDM_ABOUT			31
-#define IDM_SPLIT_WND		41
 
 #define BUTTON_NEW_PROJ		1
 #define BUTTON_CLOSE_SEL	2

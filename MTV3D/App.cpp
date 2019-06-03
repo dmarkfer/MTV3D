@@ -228,14 +228,6 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			DestroyWindow(hWnd);
 			break;
 		}
-		case IDM_CHANGE_LANG: {
-			DialogBox(nullptr, L"Chage language", hWnd, nullptr);
-			break;
-		}
-		case IDM_UPDATE: {
-			DialogBox(nullptr, L"Update", hWnd, nullptr);
-			break;
-		}
 		case IDM_DOC: {
 			DialogBox(nullptr, L"Documentation", hWnd, nullptr);
 			break;
@@ -404,7 +396,7 @@ void App::createWndClasses() {
 		0,
 		this->hCurrentInst,
 		nullptr,
-		LoadCursor(this->hCurrentInst, IDC_HAND),
+		VisComponent::cursorHandNoGrab,
 		CreateSolidBrush(WHITE),
 		nullptr,
 		L"VisDisplay",

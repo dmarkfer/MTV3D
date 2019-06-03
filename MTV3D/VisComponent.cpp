@@ -211,6 +211,110 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	this->d3dDevice->CreateDepthStencilView(depthStencil.Get(), &depthStencilViewDesc, &depthStencilView);
 
 
+	std::vector<Vertex> gridLinesVertices;
+	constexpr float gridLineExtensionPerc = 0.1f;
+
+	for (int i = 0; i <= 10; ++i) {
+		Point visp = vis3DDataModel[0][axisYSize - 1][i * (axisZSize - 1) / 10];
+		visp.x -= modelAbscissaCenter;
+		visp.y -= modelOrdinateCenter;
+		visp.z -= modelApplicateCenter;
+		visp.x -= gridLineExtensionPerc * modelAbscissaLength;
+		visp.y += gridLineExtensionPerc * modelOrdinateLength;
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+
+		visp = vis3DDataModel[0][0][i * (axisZSize - 1) / 10];
+		visp.x -= modelAbscissaCenter;
+		visp.y -= modelOrdinateCenter;
+		visp.z -= modelApplicateCenter;
+		visp.x -= gridLineExtensionPerc * modelAbscissaLength;
+		visp.y -= gridLineExtensionPerc * modelOrdinateLength;
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+
+		visp = vis3DDataModel[axisXSize - 1][0][i * (axisZSize - 1) / 10];
+		visp.x -= modelAbscissaCenter;
+		visp.y -= modelOrdinateCenter;
+		visp.z -= modelApplicateCenter;
+		visp.x += gridLineExtensionPerc * modelAbscissaLength;
+		visp.y -= gridLineExtensionPerc * modelOrdinateLength;
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+
+
+		visp = vis3DDataModel[i * (axisXSize - 1) / 10][axisYSize - 1][0];
+		visp.x -= modelAbscissaCenter;
+		visp.y -= modelOrdinateCenter;
+		visp.z -= modelApplicateCenter;
+		visp.z -= gridLineExtensionPerc * modelApplicateLength;
+		visp.y += gridLineExtensionPerc * modelOrdinateLength;
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+
+		visp = vis3DDataModel[i * (axisXSize - 1) / 10][0][0];
+		visp.x -= modelAbscissaCenter;
+		visp.y -= modelOrdinateCenter;
+		visp.z -= modelApplicateCenter;
+		visp.z -= gridLineExtensionPerc * modelApplicateLength;
+		visp.y -= gridLineExtensionPerc * modelOrdinateLength;
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+
+		visp = vis3DDataModel[i * (axisXSize - 1) / 10][0][axisZSize - 1];
+		visp.x -= modelAbscissaCenter;
+		visp.y -= modelOrdinateCenter;
+		visp.z -= modelApplicateCenter;
+		visp.z += gridLineExtensionPerc * modelApplicateLength;
+		visp.y -= gridLineExtensionPerc * modelOrdinateLength;
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+
+
+		visp = vis3DDataModel[axisXSize - 1][i * (axisYSize - 1) / 10][0];
+		visp.x -= modelAbscissaCenter;
+		visp.y -= modelOrdinateCenter;
+		visp.z -= modelApplicateCenter;
+		visp.x += gridLineExtensionPerc * modelAbscissaLength;
+		visp.z -= gridLineExtensionPerc * modelApplicateLength;
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+
+		visp = vis3DDataModel[0][i * (axisYSize - 1) / 10][0];
+		visp.x -= modelAbscissaCenter;
+		visp.y -= modelOrdinateCenter;
+		visp.z -= modelApplicateCenter;
+		visp.x -= gridLineExtensionPerc * modelAbscissaLength;
+		visp.z -= gridLineExtensionPerc * modelApplicateLength;
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+
+		visp = vis3DDataModel[0][i * (axisYSize - 1) / 10][axisZSize - 1];
+		visp.x -= modelAbscissaCenter;
+		visp.y -= modelOrdinateCenter;
+		visp.z -= modelApplicateCenter;
+		visp.x -= gridLineExtensionPerc * modelAbscissaLength;
+		visp.z += gridLineExtensionPerc * modelApplicateLength;
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+	}
+
+	Microsoft::WRL::ComPtr<ID3D11Buffer> gridVertexBuffer;
+	D3D11_BUFFER_DESC gridVertexBufferDesc;
+	ZeroMemory(&gridVertexBufferDesc, sizeof(D3D11_BUFFER_DESC));
+	gridVertexBufferDesc.ByteWidth = sizeof(Vertex) * gridLinesVertices.size();
+	gridVertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	gridVertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	gridVertexBufferDesc.CPUAccessFlags = 0;
+	gridVertexBufferDesc.MiscFlags = 0;
+	gridVertexBufferDesc.StructureByteStride = sizeof(Vertex);
+
+	D3D11_SUBRESOURCE_DATA gridVertexSubresourceData;
+	ZeroMemory(&gridVertexSubresourceData, sizeof(D3D11_SUBRESOURCE_DATA));
+	gridVertexSubresourceData.pSysMem = &gridLinesVertices[0];
+	gridVertexSubresourceData.SysMemPitch = 0;
+	gridVertexSubresourceData.SysMemSlicePitch = 0;
+
+	this->d3dDevice->CreateBuffer(&gridVertexBufferDesc, &gridVertexSubresourceData, &gridVertexBuffer);
+
+
 	for (int i = 0; i < axisXSize; ++i) {
 		for (int j = 0; j < axisYSize; ++j) {
 			Point visp = vis3DDataModel[i][j][0];
@@ -713,6 +817,23 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 		this->d3dDeviceContext->DrawIndexed(indices.size(), 0u, 0u);
 		
+
+		this->d3dDeviceContext->IASetVertexBuffers(0, 1, gridVertexBuffer.GetAddressOf(), &stride, &offset);
+		this->d3dDeviceContext->VSSetConstantBuffers(0, 1, constBuffer.GetAddressOf());
+
+		this->d3dDeviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
+		this->d3dDeviceContext->IASetInputLayout(inputLayout.Get());
+		this->d3dDeviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
+
+		this->d3dDeviceContext->OMSetDepthStencilState(depthStencilState.Get(), 1u);
+		this->d3dDeviceContext->OMSetRenderTargets(1u, renderTargetResultDisplay.GetAddressOf(), depthStencilView.Get());
+
+		this->d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+		this->d3dDeviceContext->RSSetViewports(1u, &vp);
+
+		this->d3dDeviceContext->Draw(gridLinesVertices.size(), 0u);
+
+
 		this->swapChainResultDisplay->Present(1, 0);
 
 
