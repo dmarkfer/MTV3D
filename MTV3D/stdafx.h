@@ -17,6 +17,12 @@
 #pragma comment(lib, "d3d11.lib")
 #include <DirectXMath.h>
 
+#include <dwrite_2.h>
+#pragma comment(lib, "dwrite.lib")
+
+#include <d2d1_2.h>
+#pragma comment(lib, "d2d1.lib")
+
 
 #include <tchar.h>
 #include <memory>

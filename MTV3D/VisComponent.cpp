@@ -199,7 +199,6 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	vp.MaxDepth = 1.f;
 	vp.TopLeftX = 0.f;
 	vp.TopLeftY = 0.f;
-
 	
 	Microsoft::WRL::ComPtr<ID3D11Resource> backBufferResultDisplay;
 	this->swapChainResultDisplay->GetBuffer(0, __uuidof(ID3D11Resource), &backBufferResultDisplay);
@@ -210,6 +209,53 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	this->swapChainRelErrDisplay->GetBuffer(0, __uuidof(ID3D11Resource), &backBufferRelErrDisplay);
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetRelErrDisplay;
 	this->d3dDevice->CreateRenderTargetView(backBufferRelErrDisplay.Get(), nullptr, &renderTargetRelErrDisplay);
+
+
+
+	Microsoft::WRL::ComPtr<IDWriteFactory2> writeFactory;
+	DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &writeFactory);
+
+	Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
+	this->d3dDevice.Get()->QueryInterface(__uuidof(IDXGIDevice), &dxgiDevice);
+
+	Microsoft::WRL::ComPtr<ID2D1Device> d2dDevice;
+	D2D1_CREATION_PROPERTIES d2dDeviceCreationProps;
+	ZeroMemory(&d2dDeviceCreationProps, sizeof(D2D1_CREATION_PROPERTIES));
+	d2dDeviceCreationProps.threadingMode = D2D1_THREADING_MODE_SINGLE_THREADED;
+	d2dDeviceCreationProps.debugLevel = D2D1_DEBUG_LEVEL_NONE;
+	d2dDeviceCreationProps.options = D2D1_DEVICE_CONTEXT_OPTIONS_NONE;
+	D2D1CreateDevice(dxgiDevice.Get(), &d2dDeviceCreationProps, &d2dDevice);
+
+	Microsoft::WRL::ComPtr<ID2D1DeviceContext> d2dDeviceContext;
+	d2dDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, &d2dDeviceContext);
+
+	D2D1_BITMAP_PROPERTIES1 d2dBitmapProperties;
+	ZeroMemory(&d2dBitmapProperties, sizeof(D2D1_BITMAP_PROPERTIES));
+	d2dBitmapProperties.pixelFormat.format = DXGI_FORMAT_B8G8R8A8_UNORM;
+	d2dBitmapProperties.pixelFormat.alphaMode = D2D1_ALPHA_MODE_IGNORE;
+	d2dBitmapProperties.dpiX = 96.f;
+	d2dBitmapProperties.dpiY = 96.f;
+	d2dBitmapProperties.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW;
+	d2dBitmapProperties.colorContext = nullptr;
+
+	Microsoft::WRL::ComPtr<IDXGISurface> dxgiBuffer;
+	this->swapChainResultDisplay->GetBuffer(0, __uuidof(IDXGISurface), &dxgiBuffer);
+
+	Microsoft::WRL::ComPtr<ID2D1Bitmap1> d2dTargetBitmap;
+	d2dDeviceContext->CreateBitmapFromDxgiSurface(dxgiBuffer.Get(), &d2dBitmapProperties, &d2dTargetBitmap);
+
+	d2dDeviceContext->SetTarget(d2dTargetBitmap.Get());
+
+	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> whiteBrush;
+	d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &whiteBrush);
+
+	Microsoft::WRL::ComPtr<IDWriteTextFormat> textFormat;
+	writeFactory.Get()->CreateTextFormat(L"Arial", nullptr, DWRITE_FONT_WEIGHT_LIGHT, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.f, L"en-us", &textFormat);
+	textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+	textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+
+	Microsoft::WRL::ComPtr<IDWriteTextLayout> textLayout;
+
 
 
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
@@ -920,6 +966,12 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDeviceContext->RSSetViewports(1u, &vp);
 
 		this->d3dDeviceContext->Draw(gridLinesVertices.size(), 0u);
+
+
+		writeFactory->CreateTextLayout(L"", 4, textFormat.Get(), 50.f, 50.f, &textLayout);
+		d2dDeviceContext->BeginDraw();
+		d2dDeviceContext->DrawTextLayout(D2D1::Point2F(2.f, 5.f), textLayout.Get(), whiteBrush.Get());
+		d2dDeviceContext->EndDraw();
 
 
 		this->swapChainResultDisplay->Present(1, 0);
