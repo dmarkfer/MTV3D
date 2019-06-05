@@ -293,6 +293,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	this->d3dDevice->CreateDepthStencilView(depthStencil.Get(), &depthStencilViewDesc, &depthStencilView);
 
 
+	std::vector<DirectX::XMVECTOR> gridAxesValuesVertices;
 	std::vector<Vertex> gridLinesVertices;
 	constexpr float gridLineExtensionPerc = 0.1f;
 
@@ -322,6 +323,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		visp.x += gridLineExtensionPerc * modelAbscissaLength;
 		visp.y -= gridLineExtensionPerc * modelOrdinateLength;
 		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+		gridAxesValuesVertices.push_back(DirectX::XMVectorSet(visp.x, visp.y, visp.z, 1.f));
 
 
 		visp = vis3DDataModel[i * (axisXSize - 1) / 10][axisYSize - 1][0];
@@ -349,6 +351,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		visp.z += gridLineExtensionPerc * modelApplicateLength;
 		visp.y -= gridLineExtensionPerc * modelOrdinateLength;
 		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+		gridAxesValuesVertices.push_back(DirectX::XMVectorSet(visp.x, visp.y, visp.z, 1.f));
 
 
 		visp = vis3DDataModel[axisXSize - 1][i * (axisYSize - 1) / 10][0];
@@ -358,6 +361,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		visp.x += gridLineExtensionPerc * modelAbscissaLength;
 		visp.z -= gridLineExtensionPerc * modelApplicateLength;
 		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+		gridAxesValuesVertices.push_back(DirectX::XMVectorSet(visp.x, visp.y, visp.z, 1.f));
 
 		visp = vis3DDataModel[0][i * (axisYSize - 1) / 10][0];
 		visp.x -= modelAbscissaCenter;
@@ -801,6 +805,8 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDeviceContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 
+		DirectX::XMVECTOR crossProd = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(eyePosition, upDirection));
+
 		if (cursorGrabInteractionProject == this->hVisMerWnd->getResultDisplay() || cursorGrabInteractionProject == this->hVisMerWnd->getRelErrDisplay()) {
 			POINT cursorPosition;
 			GetCursorPos(&cursorPosition);
@@ -890,7 +896,6 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 			float angleClickToCurrentCursor = angleSign * DirectX::XMVector2AngleBetweenVectors(clickVector, cursorVector).m128_f32[0];
 
-			DirectX::XMVECTOR crossProd = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(eyePosition, upDirection));
 			DirectX::XMVECTOR screenUpDirection = DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f);
 			float screenAzimut = DirectX::XMVector2AngleBetweenVectors(screenUpDirection, cursorVector).m128_f32[0];
 			if (cursorScreenVector.x >= 0) {
@@ -906,11 +911,28 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		}
 
 
+		DirectX::XMMATRIX transformationMatrix = rotationMatrix * DirectX::XMMatrixScaling(scaleBase, scaleBase, scaleBase);
+
+		std::vector<DirectX::XMVECTOR> gridAxesValScreenVertices;
+
+		for (auto axisPoint : gridAxesValuesVertices) {
+			axisPoint = DirectX::XMVector3Transform(axisPoint, transformationMatrix);
+
+			DirectX::XMVECTOR planeNormal = DirectX::XMPlaneNormalize(crossProd);
+			DirectX::XMVECTOR dotProduct = DirectX::XMPlaneDotNormal(planeNormal, axisPoint);
+			long double dotProductLength = sqrt(dotProduct.m128_f32[0] * dotProduct.m128_f32[0] + dotProduct.m128_f32[1] * dotProduct.m128_f32[1] + dotProduct.m128_f32[2] * dotProduct.m128_f32[2]);
+			long double vectorLength = sqrt(axisPoint.m128_f32[0] * axisPoint.m128_f32[0] + axisPoint.m128_f32[1] * axisPoint.m128_f32[1] + axisPoint.m128_f32[2] * axisPoint.m128_f32[2]);
+
+			long double anglePlaneNormalToVector = asin( dotProductLength / (vectorLength * sqrt(3.L)) );
+
+
+		}
+
+
 		const ConstBufferStruct cb = {
 			{
 				DirectX::XMMatrixTranspose(
-					rotationMatrix *
-					DirectX::XMMatrixScaling(scaleBase, scaleBase, scaleBase) *
+					transformationMatrix *
 					DirectX::XMMatrixLookAtLH(eyePosition, focusPosition, upDirection) *
 					DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(70), 1.f, 1.f, scaleBase * 100.f * diagonal3DLength)
 				)
