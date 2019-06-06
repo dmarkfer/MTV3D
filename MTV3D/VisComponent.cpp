@@ -192,13 +192,13 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
 
-	D3D11_VIEWPORT vp;
-	vp.Width = (float)this->hVisMerWnd->getDisplayDim();
-	vp.Height = (float)this->hVisMerWnd->getDisplayDim();
-	vp.MinDepth = 0.f;
-	vp.MaxDepth = 1.f;
-	vp.TopLeftX = 0.f;
-	vp.TopLeftY = 0.f;
+	D3D11_VIEWPORT viewport;
+	viewport.Width = (float)this->hVisMerWnd->getDisplayDim();
+	viewport.Height = (float)this->hVisMerWnd->getDisplayDim();
+	viewport.MinDepth = 0.f;
+	viewport.MaxDepth = 1.f;
+	viewport.TopLeftX = 0.f;
+	viewport.TopLeftY = 0.f;
 	
 	Microsoft::WRL::ComPtr<ID3D11Resource> backBufferResultDisplay;
 	this->swapChainResultDisplay->GetBuffer(0, __uuidof(ID3D11Resource), &backBufferResultDisplay);
@@ -250,7 +250,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &whiteBrush);
 
 	Microsoft::WRL::ComPtr<IDWriteTextFormat> textFormat;
-	writeFactory.Get()->CreateTextFormat(L"Arial", nullptr, DWRITE_FONT_WEIGHT_LIGHT, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.f, L"en-us", &textFormat);
+	writeFactory.Get()->CreateTextFormat(L"Arial", nullptr, DWRITE_FONT_WEIGHT_LIGHT, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 10.f, L"en-us", &textFormat);
 	textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
 	textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 
@@ -293,7 +293,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	this->d3dDevice->CreateDepthStencilView(depthStencil.Get(), &depthStencilViewDesc, &depthStencilView);
 
 
-	std::vector<DirectX::XMVECTOR> gridAxesValuesVertices;
+	std::vector<std::pair<DirectX::XMVECTOR, std::pair<float, std::wstring>>> gridAxesValuesVertices;
 	std::vector<Vertex> gridLinesVertices;
 	constexpr float gridLineExtensionPerc = 0.1f;
 
@@ -317,13 +317,20 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
 
 		visp = vis3DDataModel[axisXSize - 1][0][i * (axisZSize - 1) / 10];
+		float zRealValue = visp.z;
 		visp.x -= modelAbscissaCenter;
 		visp.y -= modelOrdinateCenter;
 		visp.z -= modelApplicateCenter;
 		visp.x += gridLineExtensionPerc * modelAbscissaLength;
 		visp.y -= gridLineExtensionPerc * modelOrdinateLength;
 		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
-		gridAxesValuesVertices.push_back(DirectX::XMVectorSet(visp.x, visp.y, visp.z, 1.f));
+		gridAxesValuesVertices.push_back(std::make_pair(
+			DirectX::XMVectorSet(visp.x, visp.y, visp.z, 1.f),
+			std::make_pair(
+				zRealValue,
+				i == 5 ? L"ZMID" : L"Z"
+			)
+		));
 
 
 		visp = vis3DDataModel[i * (axisXSize - 1) / 10][axisYSize - 1][0];
@@ -345,23 +352,37 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
 
 		visp = vis3DDataModel[i * (axisXSize - 1) / 10][0][axisZSize - 1];
+		float xRealValue = visp.x;
 		visp.x -= modelAbscissaCenter;
 		visp.y -= modelOrdinateCenter;
 		visp.z -= modelApplicateCenter;
 		visp.z += gridLineExtensionPerc * modelApplicateLength;
 		visp.y -= gridLineExtensionPerc * modelOrdinateLength;
 		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
-		gridAxesValuesVertices.push_back(DirectX::XMVectorSet(visp.x, visp.y, visp.z, 1.f));
+		gridAxesValuesVertices.push_back(std::make_pair(
+			DirectX::XMVectorSet(visp.x, visp.y, visp.z, 1.f),
+			std::make_pair(
+				xRealValue,
+				i == 5 ? L"XMID" : L"X"
+			)
+		));
 
 
 		visp = vis3DDataModel[axisXSize - 1][i * (axisYSize - 1) / 10][0];
+		float yRealValue = visp.y;
 		visp.x -= modelAbscissaCenter;
 		visp.y -= modelOrdinateCenter;
 		visp.z -= modelApplicateCenter;
 		visp.x += gridLineExtensionPerc * modelAbscissaLength;
 		visp.z -= gridLineExtensionPerc * modelApplicateLength;
 		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
-		gridAxesValuesVertices.push_back(DirectX::XMVectorSet(visp.x, visp.y, visp.z, 1.f));
+		gridAxesValuesVertices.push_back(std::make_pair(
+			DirectX::XMVectorSet(visp.x, visp.y, visp.z, 1.f),
+			std::make_pair(
+				yRealValue,
+				i == 5 ? L"YMID" : L"Y"
+			)
+		));
 
 		visp = vis3DDataModel[0][i * (axisYSize - 1) / 10][0];
 		visp.x -= modelAbscissaCenter;
@@ -651,7 +672,17 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	DirectX::XMVECTOR eyePosition = DirectX::XMVectorSet(diagonal3DLength, diagonal3DLength, diagonal3DLength, 0.f);
 	DirectX::XMVECTOR focusPosition = DirectX::XMVectorSet(0.f, 0.f, 0.f, 0.f);
 	DirectX::XMVECTOR upDirection = DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f);
+	DirectX::XMMATRIX roundRotationMatrix = DirectX::XMMatrixRotationX(0.f);
 	DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationX(0.f);
+	DirectX::XMMATRIX transformationMatrix;
+
+	DirectX::XMMATRIX viewMatrix = DirectX::XMMatrixLookAtLH(eyePosition, focusPosition, upDirection);
+	DirectX::XMMATRIX projectionMatrix;
+
+	DirectX::XMVECTOR crossProd = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(eyePosition, upDirection));
+	DirectX::XMVECTOR rotQuat90Deg = DirectX::XMQuaternionRotationAxis(eyePosition, -DirectX::XMConvertToRadians(90));
+	DirectX::XMVECTOR horizontalPlaneNormal = DirectX::XMPlaneNormalize(DirectX::XMVector3Rotate(crossProd, rotQuat90Deg));
+	DirectX::XMVECTOR verticalPlaneNormal = DirectX::XMPlaneNormalize(crossProd);
 
 
 	MSG msg;
@@ -805,22 +836,18 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDeviceContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 
-		DirectX::XMVECTOR crossProd = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(eyePosition, upDirection));
-
 		if (cursorGrabInteractionProject == this->hVisMerWnd->getResultDisplay() || cursorGrabInteractionProject == this->hVisMerWnd->getRelErrDisplay()) {
 			POINT cursorPosition;
 			GetCursorPos(&cursorPosition);
 			ScreenToClient(cursorGrabInteractionProject, &cursorPosition);
-			RECT wndClientArea;
-			GetClientRect(cursorGrabInteractionProject, &wndClientArea);
 
 			ScreenVector clickScreenVector = {
-				VisComponent::clickPosX - wndClientArea.right / 2.f,
-				- (VisComponent::clickPosY - wndClientArea.bottom / 2.f)
+				VisComponent::clickPosX - this->hVisMerWnd->getDisplayDim() / 2.f,
+				- (VisComponent::clickPosY - this->hVisMerWnd->getDisplayDim() / 2.f)
 			};
 			ScreenVector cursorScreenVector = {
-				cursorPosition.x - wndClientArea.right / 2.f,
-				- (cursorPosition.y - wndClientArea.bottom / 2.f)
+				cursorPosition.x - this->hVisMerWnd->getDisplayDim() / 2.f,
+				- (cursorPosition.y - this->hVisMerWnd->getDisplayDim() / 2.f)
 			};
 
 			float clickScreenVectorLength = std::sqrt(clickScreenVector.x * clickScreenVector.x + clickScreenVector.y * clickScreenVector.y);
@@ -904,6 +931,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			DirectX::XMVECTOR rotQuat = DirectX::XMQuaternionRotationAxis(eyePosition, - screenAzimut);
 			DirectX::XMVECTOR rotationAxis = DirectX::XMVector3Rotate(crossProd, rotQuat);
 
+			roundRotationMatrix *= DirectX::XMMatrixRotationAxis(eyePosition, angleClickToCurrentCursor);
 			rotationMatrix *= DirectX::XMMatrixRotationAxis(eyePosition, angleClickToCurrentCursor) * DirectX::XMMatrixRotationAxis(rotationAxis, rotationAngle);
 
 			VisComponent::clickPosX = cursorPosition.x;
@@ -911,21 +939,21 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		}
 
 
-		DirectX::XMMATRIX transformationMatrix = rotationMatrix * DirectX::XMMatrixScaling(scaleBase, scaleBase, scaleBase);
+		transformationMatrix = rotationMatrix * DirectX::XMMatrixScaling(scaleBase, scaleBase, scaleBase);
+		projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(70), 1.f, 1.f, scaleBase * 100.f * diagonal3DLength);
 
 		std::vector<DirectX::XMVECTOR> gridAxesValScreenVertices;
 
 		for (auto axisPoint : gridAxesValuesVertices) {
-			axisPoint = DirectX::XMVector3Transform(axisPoint, transformationMatrix);
+			axisPoint.first = DirectX::XMVector3Transform(axisPoint.first, transformationMatrix);
 
-			DirectX::XMVECTOR planeNormal = DirectX::XMPlaneNormalize(crossProd);
-			DirectX::XMVECTOR dotProduct = DirectX::XMPlaneDotNormal(planeNormal, axisPoint);
-			long double dotProductLength = sqrt(dotProduct.m128_f32[0] * dotProduct.m128_f32[0] + dotProduct.m128_f32[1] * dotProduct.m128_f32[1] + dotProduct.m128_f32[2] * dotProduct.m128_f32[2]);
-			long double vectorLength = sqrt(axisPoint.m128_f32[0] * axisPoint.m128_f32[0] + axisPoint.m128_f32[1] * axisPoint.m128_f32[1] + axisPoint.m128_f32[2] * axisPoint.m128_f32[2]);
-
-			long double anglePlaneNormalToVector = asin( dotProductLength / (vectorLength * sqrt(3.L)) );
-
-
+			gridAxesValScreenVertices.push_back(DirectX::XMVector3Project(
+				axisPoint.first,
+				viewport.TopLeftX, viewport.TopLeftY, viewport.Width, viewport.Height, viewport.MinDepth, viewport.MaxDepth,
+				projectionMatrix,
+				viewMatrix,
+				roundRotationMatrix * DirectX::XMMatrixScaling(scaleBase, scaleBase, scaleBase)
+			));
 		}
 
 
@@ -933,8 +961,8 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			{
 				DirectX::XMMatrixTranspose(
 					transformationMatrix *
-					DirectX::XMMatrixLookAtLH(eyePosition, focusPosition, upDirection) *
-					DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(70), 1.f, 1.f, scaleBase * 100.f * diagonal3DLength)
+					viewMatrix *
+					projectionMatrix
 				)
 			}
 		};
@@ -969,7 +997,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDeviceContext->OMSetDepthStencilState(depthStencilState.Get(), 1u);
 		this->d3dDeviceContext->OMSetRenderTargets(1u, renderTargetResultDisplay.GetAddressOf(), depthStencilView.Get());
 		this->d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		this->d3dDeviceContext->RSSetViewports(1u, &vp);
+		this->d3dDeviceContext->RSSetViewports(1u, &viewport);
 
 		this->d3dDeviceContext->DrawIndexed(indices.size(), 0u, 0u);
 		
@@ -985,14 +1013,67 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDeviceContext->OMSetRenderTargets(1u, renderTargetResultDisplay.GetAddressOf(), depthStencilView.Get());
 
 		this->d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-		this->d3dDeviceContext->RSSetViewports(1u, &vp);
+		this->d3dDeviceContext->RSSetViewports(1u, &viewport);
 
 		this->d3dDeviceContext->Draw(gridLinesVertices.size(), 0u);
 
 
-		writeFactory->CreateTextLayout(L"", 4, textFormat.Get(), 50.f, 50.f, &textLayout);
 		d2dDeviceContext->BeginDraw();
-		d2dDeviceContext->DrawTextLayout(D2D1::Point2F(2.f, 5.f), textLayout.Get(), whiteBrush.Get());
+
+		auto axValIter = gridAxesValuesVertices.begin();
+		WCHAR axVal[20];
+		int axValSize;
+
+		for (auto scrVec : gridAxesValScreenVertices) {
+			axValSize = swprintf_s(axVal, L"%1.3f", axValIter->second.first);
+
+			writeFactory->CreateTextLayout(axVal, axValSize, textFormat.Get(), axValSize * 10.f, 20.f, &textLayout);
+
+			float offsetX, offsetY;
+
+			if (axValIter->second.second[0] == 'X') {
+				offsetX = 10.f;
+				offsetY = 10.f;
+			}
+			else if (axValIter->second.second[0] == 'Y') {
+				offsetX = - 50.f;
+				offsetY = - 10.f;
+			}
+			else {
+				offsetX = - 30.f;
+				offsetY = 10.f;
+			}
+
+			d2dDeviceContext->DrawTextLayout(
+				D2D1::Point2F(scrVec.m128_f32[0] + offsetX, scrVec.m128_f32[1] + offsetY),
+				textLayout.Get(),
+				whiteBrush.Get()
+			);
+
+			if (axValIter->second.second.size() > 1) {
+				writeFactory->CreateTextLayout(axValIter->second.second.substr(0, 1).c_str(), 1, textFormat.Get(), 10.f, 20.f, &textLayout);
+
+				if (axValIter->second.second[0] == 'X') {
+					offsetX += 40.f;
+					offsetY += 40.f;
+				} else if (axValIter->second.second[0] == 'Y') {
+					offsetX += - 30.f;
+					offsetY += 0.f;
+				} else {
+					offsetX += - 30.f;
+					offsetY += 30.f;
+				}
+
+				d2dDeviceContext->DrawTextLayout(
+					D2D1::Point2F(scrVec.m128_f32[0] + offsetX, scrVec.m128_f32[1] + offsetY),
+					textLayout.Get(),
+					whiteBrush.Get()
+				);
+			}
+
+			++axValIter;
+		}
+
 		d2dDeviceContext->EndDraw();
 
 
@@ -1013,7 +1094,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDeviceContext->OMSetDepthStencilState(depthStencilState.Get(), 1u);
 		this->d3dDeviceContext->OMSetRenderTargets(1u, renderTargetRelErrDisplay.GetAddressOf(), depthStencilView.Get());
 		this->d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		this->d3dDeviceContext->RSSetViewports(1u, &vp);
+		this->d3dDeviceContext->RSSetViewports(1u, &viewport);
 
 		this->d3dDeviceContext->DrawIndexed(indices.size(), 0u, 0u);
 
@@ -1029,7 +1110,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDeviceContext->OMSetRenderTargets(1u, renderTargetRelErrDisplay.GetAddressOf(), depthStencilView.Get());
 
 		this->d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-		this->d3dDeviceContext->RSSetViewports(1u, &vp);
+		this->d3dDeviceContext->RSSetViewports(1u, &viewport);
 
 		this->d3dDeviceContext->Draw(gridLinesVertices.size(), 0u);
 
