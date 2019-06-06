@@ -29,6 +29,8 @@ private:
 	HWND hRelErrDisplay;
 	HWND hResultLegend;
 	HWND hRelErrLegend;
+	HWND hCheckGrid;
+	HWND hCheckAxesVals;
 
 	HWND hPlanePreviewSelection;
 	HWND hOrthAxisGroup;

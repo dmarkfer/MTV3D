@@ -56,6 +56,15 @@ VisMergedWindow::VisMergedWindow(HINSTANCE hInst, LPWSTR windowTitle) {
 	displayStyle &= ~(WS_BORDER | WS_CAPTION | WS_SYSMENU);
 	SetWindowLong(this->hRelErrLegend, GWL_STYLE, displayStyle);
 
+	this->hCheckGrid = CreateWindow(L"BUTTON", L"Grid", BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE | WS_CHILD,
+		wndRect.right / 2 - 20, this->displayDim - 50, 100, 20,
+		this->hWnd, (HMENU)CHECK_GRID, hInst, nullptr);
+	this->hCheckAxesVals = CreateWindow(L"BUTTON", L"Axes values", BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE | WS_CHILD,
+		wndRect.right / 2 - 20, this->displayDim - 20, 100, 20,
+		this->hWnd, (HMENU)CHECK_AX_VAL, hInst, nullptr);
+	CheckDlgButton(this->hWnd, CHECK_GRID, BST_CHECKED);
+	CheckDlgButton(this->hWnd, CHECK_AX_VAL, BST_CHECKED);
+
 
 	this->hRelErrDisplay = CreateWindowEx(WS_EX_TOOLWINDOW, L"VisDisplay", nullptr, WS_VISIBLE | WS_CHILD,
 		wndRect.right - this->displayDim, 0, this->displayDim, this->displayDim,

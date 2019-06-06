@@ -62,6 +62,8 @@ public:
 	static int clickPosX;
 	static int clickPosY;
 	static float scaleBase;
+	static bool gridActive;
+	static bool axesValsActive;
 
 	static unsigned vertexShaderFileSize;
 	static char* vertexShaderBlob;

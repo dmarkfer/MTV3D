@@ -236,9 +236,6 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			DialogBox(nullptr, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
 			break;
 		}
-		default: {
-			return DefWindowProc(hWnd, message, wParam, lParam);
-		}
 		}
 		break;
 	}

@@ -16,6 +16,9 @@
 #define BUTTON_CLOSE_ALL	3
 #define BUTTON_CREATE_PLANE 4
 
+#define CHECK_GRID		10
+#define CHECK_AX_VAL	11
+
 #define ID_LISTVIEW  70
 
 #define IDI_MTV3D			107

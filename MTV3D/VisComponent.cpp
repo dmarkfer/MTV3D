@@ -30,6 +30,8 @@ HWND VisComponent::cursorGrabInteractionProject = nullptr;
 int VisComponent::clickPosX = 0;
 int VisComponent::clickPosY = 0;
 float VisComponent::scaleBase = 1.f;
+bool VisComponent::gridActive = true;
+bool VisComponent::axesValsActive = true;
 
 unsigned VisComponent::vertexShaderFileSize = 0;
 char* VisComponent::vertexShaderBlob = nullptr;
@@ -238,13 +240,15 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	d2dBitmapProperties.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW;
 	d2dBitmapProperties.colorContext = nullptr;
 
-	Microsoft::WRL::ComPtr<IDXGISurface> dxgiBuffer;
-	this->swapChainResultDisplay->GetBuffer(0, __uuidof(IDXGISurface), &dxgiBuffer);
+	Microsoft::WRL::ComPtr<IDXGISurface> dxgiBufferRes;
+	this->swapChainResultDisplay->GetBuffer(0, __uuidof(IDXGISurface), &dxgiBufferRes);
+	Microsoft::WRL::ComPtr<IDXGISurface> dxgiBufferRelErr;
+	this->swapChainRelErrDisplay->GetBuffer(0, __uuidof(IDXGISurface), &dxgiBufferRelErr);
 
-	Microsoft::WRL::ComPtr<ID2D1Bitmap1> d2dTargetBitmap;
-	d2dDeviceContext->CreateBitmapFromDxgiSurface(dxgiBuffer.Get(), &d2dBitmapProperties, &d2dTargetBitmap);
-
-	d2dDeviceContext->SetTarget(d2dTargetBitmap.Get());
+	Microsoft::WRL::ComPtr<ID2D1Bitmap1> d2dTargetBitmapRes;
+	d2dDeviceContext->CreateBitmapFromDxgiSurface(dxgiBufferRes.Get(), &d2dBitmapProperties, &d2dTargetBitmapRes);
+	Microsoft::WRL::ComPtr<ID2D1Bitmap1> d2dTargetBitmapRelErr;
+	d2dDeviceContext->CreateBitmapFromDxgiSurface(dxgiBufferRelErr.Get(), &d2dBitmapProperties, &d2dTargetBitmapRelErr);
 
 	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> whiteBrush;
 	d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &whiteBrush);
@@ -695,7 +699,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 				break;
 			}
 
-			if (! TranslateAccelerator(msg.hwnd, this->hAccelTable, &msg)) {
+			if (!TranslateAccelerator(msg.hwnd, this->hAccelTable, &msg)) {
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 			}
@@ -706,7 +710,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		}
 
 
-		
+
 		HDC hdc = GetDC(this->hVisMerWnd->getResultLegend());
 
 		RECT fillRect;
@@ -793,7 +797,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom / 4 - i) / (fillRect.bottom / 4);
 				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom / 4 - i) / (fillRect.bottom / 4);
 			}
-			else if(i < fillRect.bottom * 2 / 4) {
+			else if (i < fillRect.bottom * 2 / 4) {
 				colHigh = this->relerrLegend[3].color;
 				colLow = this->relerrLegend[2].color;
 
@@ -843,11 +847,11 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 			ScreenVector clickScreenVector = {
 				VisComponent::clickPosX - this->hVisMerWnd->getDisplayDim() / 2.f,
-				- (VisComponent::clickPosY - this->hVisMerWnd->getDisplayDim() / 2.f)
+				-(VisComponent::clickPosY - this->hVisMerWnd->getDisplayDim() / 2.f)
 			};
 			ScreenVector cursorScreenVector = {
 				cursorPosition.x - this->hVisMerWnd->getDisplayDim() / 2.f,
-				- (cursorPosition.y - this->hVisMerWnd->getDisplayDim() / 2.f)
+				-(cursorPosition.y - this->hVisMerWnd->getDisplayDim() / 2.f)
 			};
 
 			float clickScreenVectorLength = std::sqrt(clickScreenVector.x * clickScreenVector.x + clickScreenVector.y * clickScreenVector.y);
@@ -928,7 +932,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			if (cursorScreenVector.x >= 0) {
 				screenAzimut = DirectX::XMConvertToRadians(360) - screenAzimut;
 			}
-			DirectX::XMVECTOR rotQuat = DirectX::XMQuaternionRotationAxis(eyePosition, - screenAzimut);
+			DirectX::XMVECTOR rotQuat = DirectX::XMQuaternionRotationAxis(eyePosition, -screenAzimut);
 			DirectX::XMVECTOR rotationAxis = DirectX::XMVector3Rotate(crossProd, rotQuat);
 
 			roundRotationMatrix *= DirectX::XMMatrixRotationAxis(eyePosition, angleClickToCurrentCursor);
@@ -941,6 +945,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 		transformationMatrix = rotationMatrix * DirectX::XMMatrixScaling(scaleBase, scaleBase, scaleBase);
 		projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(70), 1.f, 1.f, scaleBase * 100.f * diagonal3DLength);
+
 
 		std::vector<DirectX::XMVECTOR> gridAxesValScreenVertices;
 
@@ -1000,68 +1005,55 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDeviceContext->RSSetViewports(1u, &viewport);
 
 		this->d3dDeviceContext->DrawIndexed(indices.size(), 0u, 0u);
+
+
+		if (VisComponent::gridActive) {
+			this->d3dDeviceContext->IASetVertexBuffers(0, 1, gridVertexBuffer.GetAddressOf(), &stride, &offset);
+			this->d3dDeviceContext->VSSetConstantBuffers(0, 1, constBuffer.GetAddressOf());
+
+			this->d3dDeviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
+			this->d3dDeviceContext->IASetInputLayout(inputLayout.Get());
+			this->d3dDeviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
+
+			this->d3dDeviceContext->OMSetDepthStencilState(depthStencilState.Get(), 1u);
+			this->d3dDeviceContext->OMSetRenderTargets(1u, renderTargetResultDisplay.GetAddressOf(), depthStencilView.Get());
+
+			this->d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+			this->d3dDeviceContext->RSSetViewports(1u, &viewport);
+
+			this->d3dDeviceContext->Draw(gridLinesVertices.size(), 0u);
+		}
+
+
 		
-
-		this->d3dDeviceContext->IASetVertexBuffers(0, 1, gridVertexBuffer.GetAddressOf(), &stride, &offset);
-		this->d3dDeviceContext->VSSetConstantBuffers(0, 1, constBuffer.GetAddressOf());
-
-		this->d3dDeviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
-		this->d3dDeviceContext->IASetInputLayout(inputLayout.Get());
-		this->d3dDeviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
-
-		this->d3dDeviceContext->OMSetDepthStencilState(depthStencilState.Get(), 1u);
-		this->d3dDeviceContext->OMSetRenderTargets(1u, renderTargetResultDisplay.GetAddressOf(), depthStencilView.Get());
-
-		this->d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-		this->d3dDeviceContext->RSSetViewports(1u, &viewport);
-
-		this->d3dDeviceContext->Draw(gridLinesVertices.size(), 0u);
-
-
-		d2dDeviceContext->BeginDraw();
-
-		auto axValIter = gridAxesValuesVertices.begin();
 		WCHAR axVal[20];
 		int axValSize;
 
-		for (auto scrVec : gridAxesValScreenVertices) {
-			axValSize = swprintf_s(axVal, L"%1.3f", axValIter->second.first);
+		if (VisComponent::axesValsActive) {
+			d2dDeviceContext->SetTarget(d2dTargetBitmapRes.Get());
 
-			writeFactory->CreateTextLayout(axVal, axValSize, textFormat.Get(), axValSize * 10.f, 20.f, &textLayout);
+			d2dDeviceContext->BeginDraw();
 
-			float offsetX, offsetY;
+			auto axValIter = gridAxesValuesVertices.begin();
 
-			if (axValIter->second.second[0] == 'X') {
-				offsetX = 10.f;
-				offsetY = 10.f;
-			}
-			else if (axValIter->second.second[0] == 'Y') {
-				offsetX = - 50.f;
-				offsetY = - 10.f;
-			}
-			else {
-				offsetX = - 30.f;
-				offsetY = 10.f;
-			}
+			for (auto scrVec : gridAxesValScreenVertices) {
+				axValSize = swprintf_s(axVal, L"%1.3f", axValIter->second.first);
 
-			d2dDeviceContext->DrawTextLayout(
-				D2D1::Point2F(scrVec.m128_f32[0] + offsetX, scrVec.m128_f32[1] + offsetY),
-				textLayout.Get(),
-				whiteBrush.Get()
-			);
+				writeFactory->CreateTextLayout(axVal, axValSize, textFormat.Get(), axValSize * 10.f, 20.f, &textLayout);
 
-			if (axValIter->second.second.size() > 1) {
-				writeFactory->CreateTextLayout(axValIter->second.second.substr(0, 1).c_str(), 1, textFormat.Get(), 10.f, 20.f, &textLayout);
+				float offsetX, offsetY;
 
 				if (axValIter->second.second[0] == 'X') {
-					offsetX += 40.f;
-					offsetY += 40.f;
-				} else if (axValIter->second.second[0] == 'Y') {
-					offsetX += - 30.f;
-					offsetY += 0.f;
-				} else {
-					offsetX += - 30.f;
-					offsetY += 30.f;
+					offsetX = 10.f;
+					offsetY = 10.f;
+				}
+				else if (axValIter->second.second[0] == 'Y') {
+					offsetX = -50.f;
+					offsetY = -10.f;
+				}
+				else {
+					offsetX = -30.f;
+					offsetY = 10.f;
 				}
 
 				d2dDeviceContext->DrawTextLayout(
@@ -1069,12 +1061,35 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 					textLayout.Get(),
 					whiteBrush.Get()
 				);
+
+				if (axValIter->second.second.size() > 1) {
+					writeFactory->CreateTextLayout(axValIter->second.second.substr(0, 1).c_str(), 1, textFormat.Get(), 10.f, 20.f, &textLayout);
+
+					if (axValIter->second.second[0] == 'X') {
+						offsetX += 40.f;
+						offsetY += 40.f;
+					}
+					else if (axValIter->second.second[0] == 'Y') {
+						offsetX += -30.f;
+						offsetY += 0.f;
+					}
+					else {
+						offsetX += -30.f;
+						offsetY += 30.f;
+					}
+
+					d2dDeviceContext->DrawTextLayout(
+						D2D1::Point2F(scrVec.m128_f32[0] + offsetX, scrVec.m128_f32[1] + offsetY),
+						textLayout.Get(),
+						whiteBrush.Get()
+					);
+				}
+
+				++axValIter;
 			}
 
-			++axValIter;
+			d2dDeviceContext->EndDraw();
 		}
-
-		d2dDeviceContext->EndDraw();
 
 
 		this->swapChainResultDisplay->Present(1, 0);
@@ -1099,20 +1114,86 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDeviceContext->DrawIndexed(indices.size(), 0u, 0u);
 
 
-		this->d3dDeviceContext->IASetVertexBuffers(0, 1, gridVertexBuffer.GetAddressOf(), &stride, &offset);
-		this->d3dDeviceContext->VSSetConstantBuffers(0, 1, constBuffer.GetAddressOf());
+		if (VisComponent::gridActive) {
+			this->d3dDeviceContext->IASetVertexBuffers(0, 1, gridVertexBuffer.GetAddressOf(), &stride, &offset);
+			this->d3dDeviceContext->VSSetConstantBuffers(0, 1, constBuffer.GetAddressOf());
 
-		this->d3dDeviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
-		this->d3dDeviceContext->IASetInputLayout(inputLayout.Get());
-		this->d3dDeviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
+			this->d3dDeviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
+			this->d3dDeviceContext->IASetInputLayout(inputLayout.Get());
+			this->d3dDeviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
 
-		this->d3dDeviceContext->OMSetDepthStencilState(depthStencilState.Get(), 1u);
-		this->d3dDeviceContext->OMSetRenderTargets(1u, renderTargetRelErrDisplay.GetAddressOf(), depthStencilView.Get());
+			this->d3dDeviceContext->OMSetDepthStencilState(depthStencilState.Get(), 1u);
+			this->d3dDeviceContext->OMSetRenderTargets(1u, renderTargetRelErrDisplay.GetAddressOf(), depthStencilView.Get());
 
-		this->d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-		this->d3dDeviceContext->RSSetViewports(1u, &viewport);
+			this->d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+			this->d3dDeviceContext->RSSetViewports(1u, &viewport);
 
-		this->d3dDeviceContext->Draw(gridLinesVertices.size(), 0u);
+			this->d3dDeviceContext->Draw(gridLinesVertices.size(), 0u);
+		}
+
+
+
+		if (VisComponent::axesValsActive) {
+			d2dDeviceContext->SetTarget(d2dTargetBitmapRelErr.Get());
+
+			d2dDeviceContext->BeginDraw();
+
+			auto axValIter = gridAxesValuesVertices.begin();
+
+			for (auto scrVec : gridAxesValScreenVertices) {
+				axValSize = swprintf_s(axVal, L"%1.3f", axValIter->second.first);
+
+				writeFactory->CreateTextLayout(axVal, axValSize, textFormat.Get(), axValSize * 10.f, 20.f, &textLayout);
+
+				float offsetX, offsetY;
+
+				if (axValIter->second.second[0] == 'X') {
+					offsetX = 10.f;
+					offsetY = 10.f;
+				}
+				else if (axValIter->second.second[0] == 'Y') {
+					offsetX = -50.f;
+					offsetY = -10.f;
+				}
+				else {
+					offsetX = -30.f;
+					offsetY = 10.f;
+				}
+
+				d2dDeviceContext->DrawTextLayout(
+					D2D1::Point2F(scrVec.m128_f32[0] + offsetX, scrVec.m128_f32[1] + offsetY),
+					textLayout.Get(),
+					whiteBrush.Get()
+				);
+
+				if (axValIter->second.second.size() > 1) {
+					writeFactory->CreateTextLayout(axValIter->second.second.substr(0, 1).c_str(), 1, textFormat.Get(), 10.f, 20.f, &textLayout);
+
+					if (axValIter->second.second[0] == 'X') {
+						offsetX += 40.f;
+						offsetY += 40.f;
+					}
+					else if (axValIter->second.second[0] == 'Y') {
+						offsetX += -30.f;
+						offsetY += 0.f;
+					}
+					else {
+						offsetX += -30.f;
+						offsetY += 30.f;
+					}
+
+					d2dDeviceContext->DrawTextLayout(
+						D2D1::Point2F(scrVec.m128_f32[0] + offsetX, scrVec.m128_f32[1] + offsetY),
+						textLayout.Get(),
+						whiteBrush.Get()
+					);
+				}
+
+				++axValIter;
+			}
+
+			d2dDeviceContext->EndDraw();
+		}
 
 
 		this->swapChainRelErrDisplay->Present(1, 0);
@@ -1173,6 +1254,37 @@ LRESULT CALLBACK VisComponent::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 		if (wcType == WndClass::Type::VIS_DISPLAY) {
 			VisComponent::cursorGrabInteractionProject = nullptr;
 			SetCursor(VisComponent::cursorHandNoGrab);
+		}
+		break;
+	}
+	case WM_COMMAND: {
+		switch (LOWORD(wParam)) {
+		case CHECK_GRID: {
+			if (HIWORD(wParam) == BN_CLICKED) {
+				if (SendDlgItemMessage(hWnd, CHECK_GRID, BM_GETCHECK, 0, 0)) {
+					VisComponent::gridActive = true;
+				}
+				else {
+					VisComponent::gridActive = false;
+					CheckDlgButton(hWnd, CHECK_AX_VAL, BST_UNCHECKED);
+					VisComponent::axesValsActive = false;
+				}
+			}
+			break;
+		}
+		case CHECK_AX_VAL: {
+			if (HIWORD(wParam) == BN_CLICKED) {
+				if (SendDlgItemMessage(hWnd, CHECK_AX_VAL, BM_GETCHECK, 0, 0)) {
+					VisComponent::axesValsActive = true;
+					CheckDlgButton(hWnd, CHECK_GRID, BST_CHECKED);
+					VisComponent::gridActive = true;
+				}
+				else {
+					VisComponent::axesValsActive = false;
+				}
+			}
+			break;
+		}
 		}
 		break;
 	}
