@@ -298,6 +298,7 @@
     <ClInclude Include="VisMergedWindow.h" />
     <ClInclude Include="SplashWindow.h" />
     <ClInclude Include="VisComponent.h" />
+    <ClInclude Include="VisMergedWndBase.h" />
     <ClInclude Include="WndClass.h" />
   </ItemGroup>
   <ItemGroup>
@@ -320,6 +321,7 @@
     <ClCompile Include="VisMergedWindow.cpp" />
     <ClCompile Include="SplashWindow.cpp" />
     <ClCompile Include="VisComponent.cpp" />
+    <ClCompile Include="VisMergedWndBase.cpp" />
     <ClCompile Include="WndClass.cpp" />
   </ItemGroup>
   <ItemGroup>

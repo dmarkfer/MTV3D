@@ -21,43 +21,15 @@
 **********************************************************************************/
 #pragma once
 
+#include "VisMergedWndBase.h"
 
-class VisMergedWindow {
+
+class VisMergedWindow: public VisMergedWndBase {
 private:
-	HWND hWnd;
-	HWND hResultDisplay;
-	HWND hRelErrDisplay;
-	HWND hResultLegend;
-	HWND hRelErrLegend;
-	HWND hCheckGrid;
-	HWND hCheckAxesVals;
-
-	HWND hPlanePreviewSelection;
-	HWND hOrthAxisGroup;
-	HWND radioButtonX;
-	HWND radioButtonY;
-	HWND radioButtonZ;
-	HWND hEnterAxisVal;
-	HWND hAxisValueBoxContainer;
-	HWND hAxisValueBox;
 	HWND hBtnCreatePlane;
-
-	RECT wndRect;
-	int displayDim;
 public:
 	VisMergedWindow(HINSTANCE hInst, LPWSTR windowTitle);
 	~VisMergedWindow() = default;
 
-	HWND getHandle();
-	HWND getResultDisplay();
-	HWND getRelErrDisplay();
-	HWND getResultLegend();
-	HWND getRelErrLegend();
-	HWND getRadioButtonX();
-	HWND getRadioButtonY();
-	HWND getRadioButtonZ();
-	HWND getAxisValueBox();
 	HWND getBtnCreatePlane();
-	RECT getWndRect();
-	int getDisplayDim();
 };

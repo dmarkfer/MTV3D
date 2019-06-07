@@ -19,18 +19,45 @@
 ***
 **********************************************************************************
 **********************************************************************************/
-#include "stdafx.h"
-#include "VisMergedWindow.h"
+#pragma once
 
 
-VisMergedWindow::VisMergedWindow(HINSTANCE hInst, LPWSTR windowTitle): VisMergedWndBase(hInst, windowTitle) {
-	this->hBtnCreatePlane = CreateWindow(L"BUTTON", L"Create plane preview",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		wndRect.right / 4 + dialogWidth * 2 / 3, this->displayDim + dialogHeight * 2 / 3, 180, 30,
-		this->hWnd, (HMENU)BUTTON_CREATE_PLANE, hInst, nullptr);
-}
+class VisMergedWndBase {
+protected:
+	HWND hWnd;
+	HWND hResultDisplay;
+	HWND hRelErrDisplay;
+	HWND hResultLegend;
+	HWND hRelErrLegend;
+	HWND hCheckGrid;
+	HWND hCheckAxesVals;
 
+	HWND hPlanePreviewSelection;
+	HWND hOrthAxisGroup;
+	HWND radioButtonX;
+	HWND radioButtonY;
+	HWND radioButtonZ;
+	HWND hEnterAxisVal;
+	HWND hAxisValueBoxContainer;
+	HWND hAxisValueBox;
 
-HWND VisMergedWindow::getBtnCreatePlane() {
-	return this->hBtnCreatePlane;
-}
+	RECT wndRect;
+	int displayDim;
+	int dialogWidth;
+	int dialogHeight;
+public:
+	VisMergedWndBase(HINSTANCE hInst, LPWSTR windowTitle);
+	virtual ~VisMergedWndBase() = default;
+
+	HWND getHandle();
+	HWND getResultDisplay();
+	HWND getRelErrDisplay();
+	HWND getResultLegend();
+	HWND getRelErrLegend();
+	HWND getRadioButtonX();
+	HWND getRadioButtonY();
+	HWND getRadioButtonZ();
+	HWND getAxisValueBox();
+	RECT getWndRect();
+	int getDisplayDim();
+};
