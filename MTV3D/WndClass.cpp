@@ -33,6 +33,7 @@ WndClass::Type WndClass::typeByWndClassName(const std::wstring& wndClassName) {
 	if (wndClassName == L"VisDisplay") return WndClass::Type::VIS_DISPLAY;
 	if (wndClassName == L"VisLegend") return WndClass::Type::VIS_LEGEND;
 	if (wndClassName == L"Editable") return WndClass::Type::EDITABLE;
+	if (wndClassName == L"About") return WndClass::Type::ABOUT;
 	return WndClass::Type::OTHER;
 }
 

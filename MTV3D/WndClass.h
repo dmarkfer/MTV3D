@@ -36,6 +36,7 @@ public:
 		VIS_DISPLAY,
 		VIS_LEGEND,
 		EDITABLE,
+		ABOUT,
 		OTHER
 	};
 

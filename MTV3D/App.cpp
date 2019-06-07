@@ -43,9 +43,6 @@ App::~App() {
 }
 
 
-INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
-
-
 int App::run(HINSTANCE hInstance, int& nCmdShow) {
 	this->hCurrentInst = hInstance;
 
@@ -103,6 +100,9 @@ void App::readD3DShaders() {
 
 LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	WndClass::Type wcType = WndClass::typeByWndHandle(hWnd);
+
+	PAINTSTRUCT ps;
+	HDC hdc;
 
 	switch (message) {
 	case WM_TIMER: {
@@ -192,6 +192,14 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 	}
 	case WM_COMMAND: {
 		switch (LOWORD(wParam)) {
+		case BUTTON_LINK: {
+			system("start www.github.com/dmarkfer/MTV3D");
+			break;
+		}
+		case BUTTON_LINK_LIC: {
+			system("start www.gnu.org/licenses/agpl-3.0.en.html");
+			break;
+		}
 		case IDM_NEW_PROJ:
 		case BUTTON_NEW_PROJ: {
 			OPENFILENAME ofnObj;
@@ -280,25 +288,135 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			}
 			break;
 		}
+		case IDM_CLOSE:
 		case IDM_EXIT: {
 			DestroyWindow(hWnd);
 			break;
 		}
 		case IDM_DOC: {
-			DialogBox(nullptr, L"Documentation", hWnd, nullptr);
+			RECT rect;
+			HWND hWndPrimaryDesktop = GetDesktopWindow();
+			GetWindowRect(hWndPrimaryDesktop, &rect);
+
+			HWND docWnd = CreateWindow(L"About", L"Documentation", WS_VISIBLE | WS_OVERLAPPEDWINDOW,
+				rect.right / 2 - 250, rect.bottom / 2 - 150, 500, 300,
+				nullptr, nullptr, App::appPointer->hCurrentInst, nullptr);
+			LONG style = GetWindowLong(docWnd, GWL_STYLE);
+			style &= ~(WS_MAXIMIZEBOX | WS_MINIMIZEBOX);
+			SetWindowLong(docWnd, GWL_STYLE, style);
+
+			hdc = BeginPaint(docWnd, &ps);
+
+			App::appPointer->hMainWnd->loadLogo(hdc, 0.15f, 18, 9);
+
+			EndPaint(docWnd, &ps);
+			DeleteDC(hdc);
+
+			CreateWindow(L"STATIC", L"Software documentation available at:", WS_VISIBLE | WS_CHILD,
+				30, 120, 250, 20,
+				docWnd, nullptr, App::appPointer->hCurrentInst, nullptr);
+			CreateWindow(L"STATIC", L"github.com/dmarkfer/MTV3D", WS_VISIBLE | WS_CHILD,
+				200, 150, 200, 20,
+				docWnd, nullptr, App::appPointer->hCurrentInst, nullptr);
+
+			CreateWindow(L"BUTTON", L"Project repository",
+				WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+				220, 190, 180, 25,
+				docWnd, (HMENU)BUTTON_LINK, App::appPointer->hCurrentInst, nullptr);
+
 			break;
 		}
 		case IDM_ABOUT: {
-			DialogBox(nullptr, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+			RECT rect;
+			HWND hWndPrimaryDesktop = GetDesktopWindow();
+			GetWindowRect(hWndPrimaryDesktop, &rect);
+
+			HWND docWnd = CreateWindow(L"About", L"About MTV3D", WS_VISIBLE | WS_OVERLAPPEDWINDOW,
+				rect.right / 2 - 400, rect.bottom / 2 - 250, 800, 500,
+				nullptr, nullptr, App::appPointer->hCurrentInst, nullptr);
+			LONG style = GetWindowLong(docWnd, GWL_STYLE);
+			style &= ~(WS_MAXIMIZEBOX | WS_MINIMIZEBOX);
+			SetWindowLong(docWnd, GWL_STYLE, style);
+
+			hdc = BeginPaint(docWnd, &ps);
+			HDC hMemDC = CreateCompatibleDC(hdc);
+
+			constexpr int margin = 10;
+			constexpr int mtvLogoDim = static_cast<int>(SPLASH_DIM * 0.4f);
+
+			HBITMAP hMTVBitmap = (HBITMAP)LoadImage(nullptr, L"MTV3D.bmp", IMAGE_BITMAP,
+				mtvLogoDim, mtvLogoDim, LR_LOADFROMFILE);
+			SelectObject(hMemDC, hMTVBitmap);
+			BitBlt(hdc, 50, 2 * margin, mtvLogoDim, mtvLogoDim,
+				hMemDC, 0, 0, SRCCOPY);
+			DeleteObject(hMTVBitmap);
+
+
+			constexpr int unizgLogoDim = static_cast<int>(300 * 0.4f * 0.8f);
+
+			HBITMAP hUNIZGBitmap = (HBITMAP)LoadImage(nullptr, L"UniZg_logo.bmp", IMAGE_BITMAP,
+				unizgLogoDim, unizgLogoDim, LR_LOADFROMFILE);
+			SelectObject(hMemDC, hUNIZGBitmap);
+			BitBlt(hdc, 300, 4 * margin, unizgLogoDim, unizgLogoDim,
+				hMemDC, 0, 0, SRCCOPY);
+			DeleteObject(hUNIZGBitmap);
+
+			constexpr int ferLogoDimWidth = static_cast<int>(694 * 0.25f * 0.8f);
+			constexpr int ferLogoDimHeight = static_cast<int>(300 * 0.25f * 0.8f);
+
+			HBITMAP hFERBitmap = (HBITMAP)LoadImage(nullptr, L"FER_logo.bmp", IMAGE_BITMAP,
+				ferLogoDimWidth, ferLogoDimHeight, LR_LOADFROMFILE);
+			SelectObject(hMemDC, hFERBitmap);
+			BitBlt(hdc, 300 + unizgLogoDim + 12 * margin, 6 * margin, ferLogoDimWidth, ferLogoDimHeight,
+				hMemDC, 0, 0, SRCCOPY);
+			DeleteObject(hFERBitmap);
+
+			DeleteDC(hMemDC);
+
+
+			EndPaint(docWnd, &ps);
+			DeleteDC(hdc);
+
+
+			CreateWindow(L"STATIC", L"University of Zagreb", WS_VISIBLE | WS_CHILD,
+				285, 150, 200, 20,
+				docWnd, nullptr, App::appPointer->hCurrentInst, nullptr);
+			CreateWindow(L"STATIC", L"Faculty of electrical engineering", WS_VISIBLE | WS_CHILD,
+				485, 150, 300, 20,
+				docWnd, nullptr, App::appPointer->hCurrentInst, nullptr);
+			CreateWindow(L"STATIC", L"and computing", WS_VISIBLE | WS_CHILD,
+				535, 165, 200, 20,
+				docWnd, nullptr, App::appPointer->hCurrentInst, nullptr);
+
+
+			CreateWindow(L"STATIC", L"Software developed by Domagoj Markota as Bachelor's Thesis project (mentor: docent Mario Matijević, Ph.D.).\n\nSoftware is published under GNU Affero General Public License v 3 .", WS_VISIBLE | WS_CHILD,
+				100, 220, 500, 80,
+				docWnd, nullptr, App::appPointer->hCurrentInst, nullptr);
+
+
+			CreateWindow(L"STATIC", L"Project available at:", WS_VISIBLE | WS_CHILD,
+				300, 320, 250, 20,
+				docWnd, nullptr, App::appPointer->hCurrentInst, nullptr);
+			CreateWindow(L"STATIC", L"github.com/dmarkfer/MTV3D", WS_VISIBLE | WS_CHILD,
+				400, 340, 200, 20,
+				docWnd, nullptr, App::appPointer->hCurrentInst, nullptr);
+
+			CreateWindow(L"BUTTON", L"Project repository",
+				WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+				420, 380, 180, 25,
+				docWnd, (HMENU)BUTTON_LINK, App::appPointer->hCurrentInst, nullptr);
+
+			CreateWindow(L"BUTTON", L"GNU Affero GPL v3",
+				WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+				180, 380, 180, 25,
+				docWnd, (HMENU)BUTTON_LINK_LIC, App::appPointer->hCurrentInst, nullptr);
+
 			break;
 		}
 		}
 		break;
 	}
 	case WM_PAINT: {
-		PAINTSTRUCT ps;
-		HDC hdc;
-
 		switch (wcType) {
 		case WndClass::Type::SPLASH: {
 			hdc = BeginPaint(hWnd, &ps);
@@ -312,13 +430,16 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		case WndClass::Type::MAIN: {
 			hdc = BeginPaint(hWnd, &ps);
 
-			App::appPointer->hMainWnd->loadLogo(hdc);
+			App::appPointer->hMainWnd->loadLogo(hdc, 0.2f, 30, 12);
 
 			EndPaint(hWnd, &ps);
 			DeleteDC(hdc);
 			break;
 		}
 		case WndClass::Type::VIS_LEGEND: {
+			break;
+		}
+		case WndClass::Type::ABOUT: {
 			break;
 		}
 		}
@@ -375,27 +496,6 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
-
-
-INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	UNREFERENCED_PARAMETER(lParam);
-	switch (message)
-	{
-	case WM_INITDIALOG:
-		return (INT_PTR)TRUE;
-
-	case WM_COMMAND:
-		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-		{
-			EndDialog(hDlg, LOWORD(wParam));
-			return (INT_PTR)TRUE;
-		}
-		break;
-	}
-	return (INT_PTR)FALSE;
-}
-
 
 
 void App::createWndClasses() {
@@ -536,6 +636,21 @@ void App::createWndClasses() {
 		nullptr
 	};
 
+	this->wndClassTypeStruct[WndClass::Type::ABOUT] = {
+		sizeof(WNDCLASSEXW),
+		CS_HREDRAW | CS_VREDRAW,
+		App::wndProc,
+		0,
+		0,
+		this->hCurrentInst,
+		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D)),
+		LoadCursor(this->hCurrentInst, IDC_ARROW),
+		CreateSolidBrush(DARK_GRAY),
+		nullptr,
+		L"About",
+		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D))
+	};
+
 
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::SPLASH]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::MAIN]);
@@ -546,6 +661,7 @@ void App::createWndClasses() {
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_DISPLAY]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_LEGEND]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::EDITABLE]);
+	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::ABOUT]);
 }
 
 

@@ -91,12 +91,12 @@ void MainWindow::resizeListView() {
 }
 
 
-void MainWindow::loadLogo(HDC hdc) {
+void MainWindow::loadLogo(HDC hdc, float qLogo, int fontHeight, int fontWidth) {
 	HDC hMemDC = CreateCompatibleDC(hdc);
 
 	constexpr int margin = 10;
 
-	constexpr int mtvLogoDim = static_cast<int>(SPLASH_DIM * 0.2f);
+	int mtvLogoDim = static_cast<int>(SPLASH_DIM * qLogo);
 
 	HBITMAP hMTVBitmap = (HBITMAP)LoadImage(nullptr, L"MTV3D.bmp", IMAGE_BITMAP,
 		mtvLogoDim, mtvLogoDim, LR_LOADFROMFILE);
@@ -109,13 +109,13 @@ void MainWindow::loadLogo(HDC hdc) {
 
 
 	RECT textRect;
-	HFONT hFont = CreateFont(30, 12, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, EASTEUROPE_CHARSET,
+	HFONT hFont = CreateFont(fontHeight, fontWidth, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, EASTEUROPE_CHARSET,
 		OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, TEXT("Arial"));
 	SelectObject(hdc, hFont);
 	SetBkColor(hdc, DARK_GRAY);
 	SetTextColor(hdc, THEME_BLUE);
 
-	SetRect(&textRect, mtvLogoDim + 2 * margin, 3 * margin, 400, 3 * margin + 35);
+	SetRect(&textRect, mtvLogoDim + 2 * margin, 3 * margin, fontWidth * 35, int(fontHeight * 1.5f * margin + 35));
 	DrawText(hdc, TEXT("Mesh Tally Visualization\nin 3D"), -1, &textRect, DT_NOCLIP | DT_CENTER | DT_VCENTER);
 }
 

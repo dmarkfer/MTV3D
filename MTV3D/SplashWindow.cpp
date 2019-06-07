@@ -65,7 +65,7 @@ void SplashWindow::loadSplash(HDC hdc) {
 	HBITMAP hFERBitmap = (HBITMAP)LoadImage(nullptr, L"FER_logo.bmp", IMAGE_BITMAP,
 		ferLogoDimWidth, ferLogoDimHeight, LR_LOADFROMFILE);
 	SelectObject(hMemDC, hFERBitmap);
-	BitBlt(hdc, SPLASH_DIM + unizgLogoDim + 4 * margin, 9 * margin, ferLogoDimWidth, ferLogoDimHeight,
+	BitBlt(hdc, SPLASH_DIM + unizgLogoDim + 4 * margin, int(8.5f * margin), ferLogoDimWidth, ferLogoDimHeight,
 		hMemDC, 0, 0, SRCCOPY);
 	DeleteObject(hFERBitmap);
 

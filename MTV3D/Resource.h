@@ -1,15 +1,10 @@
-
-#define IDS_APP_TITLE			103
-
-#define IDR_MAINFRAME			128
-#define IDD_MTV3D_DIALOG	102
-#define IDD_ABOUTBOX			103
-
 #define IDM_NEW_PROJ		11
 #define IDM_EXIT			12
-#define IDM_CLOSE_PROJ		13
+#define IDM_CLOSE			13
 #define IDM_DOC				32
 #define IDM_ABOUT			31
+#define BUTTON_LINK			33
+#define BUTTON_LINK_LIC		34
 
 #define BUTTON_NEW_PROJ		1
 #define BUTTON_CLOSE_SEL	2
