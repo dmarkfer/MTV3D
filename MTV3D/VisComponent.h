@@ -22,8 +22,7 @@
 #pragma once
 
 #include "stdafx.h"
-#include "WndClass.h"
-#include "VisMergedWindow.h"
+#include "PlanePreview.h"
 
 
 class VisComponent {
@@ -64,6 +63,7 @@ public:
 	static float scaleBase;
 	static bool gridActive;
 	static bool axesValsActive;
+	static bool flagPlanePrevCreation;
 
 	static unsigned vertexShaderFileSize;
 	static char* vertexShaderBlob;
@@ -92,14 +92,17 @@ private:
 
 	std::vector<LegendColorLevel> resultLegend;
 	std::vector<LegendColorLevel> relerrLegend;
+
+	std::map<std::pair<char, float>, std::unique_ptr<PlanePreview>> openPlanePreviews;
+	std::map<std::pair<char, float>, std::thread> planePreviewsThreads;
 public:
 	VisComponent() = default;
 	~VisComponent() = default;
 
 	void run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectIndex, LPWSTR fileAbsolutePath, int visPointsDataSize, Point* visPointsData);
-	static LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 private:
 	void initDirect3D();
 	CustomColor getResultColor(long double resultValue);
 	CustomColor getRelErrColor(long double relerrValue);
+	static std::optional<float> validFloat(std::wstring numberWStr);
 };

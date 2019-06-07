@@ -35,6 +35,7 @@
 #include <utility>
 #include <thread>
 #include <limits>
+#include <optional>
 
 
 #define BLACK		RGB(0, 0, 0)

@@ -32,6 +32,7 @@ int VisComponent::clickPosY = 0;
 float VisComponent::scaleBase = 1.f;
 bool VisComponent::gridActive = true;
 bool VisComponent::axesValsActive = true;
+bool VisComponent::flagPlanePrevCreation = false;
 
 unsigned VisComponent::vertexShaderFileSize = 0;
 char* VisComponent::vertexShaderBlob = nullptr;
@@ -124,7 +125,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	this->resultLegend.push_back({ 1.f, 0.f, 0.f, resultMaxValue });
 
 
-	long double relerrMinValueLog10 =  (relerrMinValue > 0.L) ? std::log10(relerrMinValue) : std::numeric_limits<long double>::min_exponent10 ;
+	long double relerrMinValueLog10 = (relerrMinValue > 0.L) ? std::log10(relerrMinValue) : std::numeric_limits<long double>::min_exponent10;
 	long double relerrMaxValueLog10 = std::log10(relerrMaxValue);
 	long double relerrLogQuarter = (relerrMaxValueLog10 - relerrMinValueLog10) / 4.L;
 
@@ -201,7 +202,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	viewport.MaxDepth = 1.f;
 	viewport.TopLeftX = 0.f;
 	viewport.TopLeftY = 0.f;
-	
+
 	Microsoft::WRL::ComPtr<ID3D11Resource> backBufferResultDisplay;
 	this->swapChainResultDisplay->GetBuffer(0, __uuidof(ID3D11Resource), &backBufferResultDisplay);
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetResultDisplay;
@@ -501,15 +502,15 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 				indices.push_back(startIndex + (k - 1) * axisXSize + i - 1);
 				indices.push_back(startIndex + (k - 1) * axisXSize + i);
 				indices.push_back(startIndex + k * axisXSize + i - 1);
-				
+
 				indices.push_back(startIndex + (k - 1) * axisXSize + i - 1);
 				indices.push_back(startIndex + k * axisXSize + i - 1);
 				indices.push_back(startIndex + (k - 1) * axisXSize + i);
-				
+
 				indices.push_back(startIndex + (k - 1) * axisXSize + i);
 				indices.push_back(startIndex + k * axisXSize + i);
 				indices.push_back(startIndex + k * axisXSize + i - 1);
-				
+
 				indices.push_back(startIndex + (k - 1) * axisXSize + i);
 				indices.push_back(startIndex + k * axisXSize + i - 1);
 				indices.push_back(startIndex + k * axisXSize + i);
@@ -578,7 +579,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			}
 		}
 	}
-	
+
 	startIndex = verticesResult.size();
 
 	for (int j = 0; j < axisYSize; ++j) {
@@ -673,6 +674,12 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	this->d3dDevice->CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
 
 
+	float color[] = { 0.f, 0.f, 0.f, 1.f };
+
+	Microsoft::WRL::ComPtr<ID3D11Buffer> constBuffer;
+
+	std::vector<DirectX::XMVECTOR> gridAxesValScreenVertices;
+
 	DirectX::XMVECTOR eyePosition = DirectX::XMVectorSet(diagonal3DLength, diagonal3DLength, diagonal3DLength, 0.f);
 	DirectX::XMVECTOR focusPosition = DirectX::XMVectorSet(0.f, 0.f, 0.f, 0.f);
 	DirectX::XMVECTOR upDirection = DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f);
@@ -689,24 +696,131 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	DirectX::XMVECTOR verticalPlaneNormal = DirectX::XMPlaneNormalize(crossProd);
 
 
+	WCHAR axVal[20];
+	int axValSize;
+
+
 	MSG msg;
 	bool quitFlag = false;
 
 	while (true) {
-		while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-			if (msg.message == WM_QUIT) {
-				quitFlag = true;
-				break;
-			}
+		if (VisComponent::flagPlanePrevCreation) {
+			WCHAR selectedPlaneAxisStr[101];
+			GetWindowText(this->hVisMerWnd->getAxisValueBox(), selectedPlaneAxisStr, 100);
+			auto axisValCont = VisComponent::validFloat(std::wstring(selectedPlaneAxisStr));
 
-			if (!TranslateAccelerator(msg.hwnd, this->hAccelTable, &msg)) {
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
-		}
+			if (axisValCont) {
+				VisComponent::flagPlanePrevCreation = false;
 
-		if (quitFlag) {
-			break;
+				char axis = 'Z';
+
+				if (Button_GetCheck(this->hVisMerWnd->getRadioButtonX()) == BST_CHECKED) {
+					axis = 'X';
+				}
+				else if (Button_GetCheck(this->hVisMerWnd->getRadioButtonY()) == BST_CHECKED) {
+					axis = 'Y';
+				}
+
+
+				float closestAxisVal = *axisValCont;
+				float lastDistance = std::numeric_limits<float>::infinity();
+				int axisIndex;
+
+				if (axis == 'X') {
+					int cntr = 0;
+					for (auto axEl : axisXValues) {
+						float dist = std::abs(axEl - *axisValCont);
+
+						if (dist <= lastDistance) {
+							lastDistance = dist;
+							closestAxisVal = axEl;
+							axisIndex = cntr;
+						}
+
+						++cntr;
+					}
+				}
+				else if (axis == 'Y') {
+					int cntr = 0;
+					for (auto axEl : axisYValues) {
+						float dist = std::abs(axEl - *axisValCont);
+
+						if (dist <= lastDistance) {
+							lastDistance = dist;
+							closestAxisVal = axEl;
+							axisIndex = cntr;
+						}
+
+						++cntr;
+					}
+				}
+				else {
+					int cntr = 0;
+					for (auto axEl : axisZValues) {
+						float dist = std::abs(axEl - *axisValCont);
+
+						if (dist <= lastDistance) {
+							lastDistance = dist;
+							closestAxisVal = axEl;
+							axisIndex = cntr;
+						}
+
+						++cntr;
+					}
+				}
+
+
+				auto pr = std::make_pair(axis, closestAxisVal);
+
+				if (this->openPlanePreviews.find(pr) == this->openPlanePreviews.end()) {
+					std::vector<PlanePreview::Point2D> planePoints;
+
+					if (axis == 'X') {
+						for (int j = 0; j < axisYSize; ++j) {
+							for (int k = 0; k < axisZSize; ++k) {
+								Point p = vis3DDataModel[axisIndex][j][k];
+
+								planePoints.push_back({ p.y, p.z, p.value, p.relError });
+							}
+						}
+					}
+					else if (axis == 'Y') {
+						for (int i = 0; i < axisXSize; ++i) {
+							for (int k = 0; k < axisZSize; ++k) {
+								Point p = vis3DDataModel[i][axisIndex][k];
+
+								planePoints.push_back({ p.x, p.z, p.value, p.relError });
+							}
+						}
+					}
+					else {
+						for (int i = 0; i < axisXSize; ++i) {
+							for (int j = 0; j < axisYSize; ++j) {
+								Point p = vis3DDataModel[i][j][axisIndex];
+
+								planePoints.push_back({ p.x, p.y, p.value, p.relError });
+							}
+						}
+					}
+
+
+					int planePointsDataSize = planePoints.size();
+					PlanePreview::Point2D* planePointsData = new PlanePreview::Point2D[planePointsDataSize];
+					memcpy(planePointsData, planePoints.data(), planePointsDataSize * sizeof(PlanePreview::Point2D));
+
+
+					this->openPlanePreviews[pr] = std::make_unique<PlanePreview>(axis, closestAxisVal);
+
+					this->planePreviewsThreads[pr] = std::thread(
+						&PlanePreview::run,
+						this->openPlanePreviews[pr].get(),
+						GetCurrentThreadId(), this->hCurrentInst, this->hAccelTable, fileAbsolutePath, planePointsDataSize, planePointsData
+					);
+				}
+				else {
+					MessageBox(this->hVisMerWnd->getHandle(), (std::wstring(L"You have already opened plane: ") + std::to_wstring(axis) + L" = " + std::to_wstring(*axisValCont)).c_str(), L"Already open!", MB_ICONINFORMATION);
+				}
+			}
 		}
 
 
@@ -831,8 +945,6 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 
 
-		float color[] = { 0.f, 0.f, 0.f, 1.f };
-
 		this->d3dDeviceContext->ClearRenderTargetView(renderTargetResultDisplay.Get(), color);
 		this->d3dDeviceContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.f, 0u);
 
@@ -947,7 +1059,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(70), 1.f, 1.f, scaleBase * 100.f * diagonal3DLength);
 
 
-		std::vector<DirectX::XMVECTOR> gridAxesValScreenVertices;
+		gridAxesValScreenVertices.clear();
 
 		for (auto axisPoint : gridAxesValuesVertices) {
 			axisPoint.first = DirectX::XMVector3Transform(axisPoint.first, transformationMatrix);
@@ -971,8 +1083,6 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 				)
 			}
 		};
-
-		Microsoft::WRL::ComPtr<ID3D11Buffer> constBuffer;
 
 		D3D11_BUFFER_DESC constBufferDesc;
 		ZeroMemory(&constBufferDesc, sizeof(D3D11_BUFFER_DESC));
@@ -1024,10 +1134,6 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			this->d3dDeviceContext->Draw(gridLinesVertices.size(), 0u);
 		}
 
-
-		
-		WCHAR axVal[20];
-		int axValSize;
 
 		if (VisComponent::axesValsActive) {
 			d2dDeviceContext->SetTarget(d2dTargetBitmapRes.Get());
@@ -1132,7 +1238,6 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		}
 
 
-
 		if (VisComponent::axesValsActive) {
 			d2dDeviceContext->SetTarget(d2dTargetBitmapRelErr.Get());
 
@@ -1197,128 +1302,43 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 
 		this->swapChainRelErrDisplay->Present(1, 0);
+
+
+
+		while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+			if (msg.message == WM_QUIT) {
+				quitFlag = true;
+				break;
+			}
+
+			if (!TranslateAccelerator(msg.hwnd, this->hAccelTable, &msg)) {
+				TranslateMessage(&msg);
+
+				if (msg.message == WM_THREAD_DONE) {
+					float* customLParam = (float*)msg.lParam;
+					auto pr = std::make_pair(char((int)customLParam[0]), customLParam[1]);
+					delete[] customLParam;
+
+					this->planePreviewsThreads[pr].join();
+					this->planePreviewsThreads.erase(pr);
+					this->openPlanePreviews.erase(pr);
+				}
+				else {
+					DispatchMessage(&msg);
+				}
+			}
+		}
+
+		if (quitFlag) {
+			break;
+		}
 	}
 
 	delete[] this->windowTitle;
-	
+
 	int* customLParam = new int;
 	*customLParam = this->projectId;
 	PostThreadMessage(VisComponent::mainThreadId, WM_THREAD_DONE, 0, (LPARAM)customLParam);
-}
-
-LRESULT CALLBACK VisComponent::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-	WndClass::Type wcType = WndClass::typeByWndHandle(hWnd);
-
-	switch (message) {
-	case WM_MOUSEWHEEL: {
-		WORD fwKeys = GET_KEYSTATE_WPARAM(wParam);
-		WORD zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
-		WORD xPos = GET_X_LPARAM(lParam);
-		WORD yPos = GET_Y_LPARAM(lParam);
-
-		// 2^16 = 65536
-		if (zDelta <= 32000) { //   0  to  2^16 / 2
-			scaleBase *= 1.05f;
-		}
-		else { //   2^16 / 2  to  2^16
-			scaleBase *= 0.95f;
-		}
-
-		return 0;
-		break;
-	}
-	case WM_SETCURSOR: {
-		if (wcType == WndClass::Type::VIS_DISPLAY) {
-			SetCursor(VisComponent::cursorGrabInteractionProject == hWnd ? VisComponent::cursorHandGrab : VisComponent::cursorHandNoGrab);
-		}
-		else if (wcType == WndClass::Type::EDITABLE) {
-			SetCursor(LoadCursor(nullptr, IDC_IBEAM));
-		}
-		else {
-			VisComponent::cursorGrabInteractionProject = nullptr;
-			SetCursor(LoadCursor(nullptr, IDC_ARROW));
-		}
-		return true;
-		break;
-	}
-	case WM_LBUTTONDOWN: {
-		if (wcType == WndClass::Type::VIS_DISPLAY) {
-			VisComponent::cursorGrabInteractionProject = hWnd;
-			SetCursor(VisComponent::cursorHandGrab);
-			VisComponent::clickPosX = GET_X_LPARAM(lParam);
-			VisComponent::clickPosY = GET_Y_LPARAM(lParam);
-		}
-		break;
-	}
-	case WM_LBUTTONUP: {
-		if (wcType == WndClass::Type::VIS_DISPLAY) {
-			VisComponent::cursorGrabInteractionProject = nullptr;
-			SetCursor(VisComponent::cursorHandNoGrab);
-		}
-		break;
-	}
-	case WM_COMMAND: {
-		switch (LOWORD(wParam)) {
-		case CHECK_GRID: {
-			if (HIWORD(wParam) == BN_CLICKED) {
-				if (SendDlgItemMessage(hWnd, CHECK_GRID, BM_GETCHECK, 0, 0)) {
-					VisComponent::gridActive = true;
-				}
-				else {
-					VisComponent::gridActive = false;
-					CheckDlgButton(hWnd, CHECK_AX_VAL, BST_UNCHECKED);
-					VisComponent::axesValsActive = false;
-				}
-			}
-			break;
-		}
-		case CHECK_AX_VAL: {
-			if (HIWORD(wParam) == BN_CLICKED) {
-				if (SendDlgItemMessage(hWnd, CHECK_AX_VAL, BM_GETCHECK, 0, 0)) {
-					VisComponent::axesValsActive = true;
-					CheckDlgButton(hWnd, CHECK_GRID, BST_CHECKED);
-					VisComponent::gridActive = true;
-				}
-				else {
-					VisComponent::axesValsActive = false;
-				}
-			}
-			break;
-		}
-		}
-		break;
-	}
-	case WM_PAINT: {
-		switch (wcType) {
-		case WndClass::Type::VIS_LEGEND: {
-			break;
-		}
-		}
-		break;
-	}
-	case WM_CTLCOLORSTATIC: {
-		SetTextColor((HDC)wParam, WHITE);
-		SetBkColor((HDC)wParam, DARK_GRAY);
-
-		return (BOOL)GetStockObject(NULL_BRUSH);
-		break;
-	}
-	case WM_DESTROY: {
-		switch (wcType) {
-		case WndClass::Type::VIS_RESULT: {
-			break;
-		}
-		case WndClass::Type::VIS_RELERR: {
-			break;
-		}
-		case WndClass::Type::VIS_MERGED: {
-			PostQuitMessage(0);
-		}
-		}
-	}
-	}
-	
-	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
 
@@ -1423,7 +1443,25 @@ VisComponent::CustomColor VisComponent::getRelErrColor(long double relerrValue) 
 		return { 1.f, 0.f, 1.f - (float)levelColor * 0.5f };
 	}
 	else {
-		levelColor = std::abs(std::log10(this->relerrLegend[3].value - valLog)) / std::abs(std::log10(this->relerrLegend[3].value) - (this->relerrLegend[4].value > 0.L) ? std::log10(this->relerrLegend[4].value) : std::numeric_limits<long double>::min_exponent10 );
+		levelColor = std::abs(std::log10(this->relerrLegend[3].value - valLog)) / std::abs(std::log10(this->relerrLegend[3].value) - (this->relerrLegend[4].value > 0.L) ? std::log10(this->relerrLegend[4].value) : std::numeric_limits<long double>::min_exponent10);
 		return { 1.f, 0.f, 0.5f - (float)levelColor * 0.5f };
+	}
+}
+
+
+std::optional<float> VisComponent::validFloat(std::wstring numberWStr) {
+	if (numberWStr.empty()) {
+		return {};
+	}
+
+	try {
+		return { stof(numberWStr, nullptr) };
+	}
+	catch (...) {
+		VisComponent::flagPlanePrevCreation = false;
+
+		MessageBox(nullptr, L"Invalid input!", nullptr, MB_ICONERROR);
+
+		return {};
 	}
 }

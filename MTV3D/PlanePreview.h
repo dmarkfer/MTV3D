@@ -20,44 +20,50 @@
 **********************************************************************************
 **********************************************************************************/
 #pragma once
+#include "WndClass.h"
+#include "VisMergedWindow.h"
 
 
-class VisMergedWindow {
+class PlanePreview {
 private:
-	HWND hWnd;
-	HWND hResultDisplay;
-	HWND hRelErrDisplay;
-	HWND hResultLegend;
-	HWND hRelErrLegend;
-	HWND hCheckGrid;
-	HWND hCheckAxesVals;
+	struct CustomColor {
+		float r, g, b;
+	};
 
-	HWND hPlanePreviewSelection;
-	HWND hOrthAxisGroup;
-	HWND radioButtonX;
-	HWND radioButtonY;
-	HWND radioButtonZ;
-	HWND hEnterAxisVal;
-	HWND hAxisValueBoxContainer;
-	HWND hAxisValueBox;
-	HWND hBtnCreatePlane;
+	struct LegendColorLevel {
+		CustomColor color;
+		long double value;
+	};
 
-	RECT wndRect;
-	int displayDim;
+	struct ScreenVector {
+		float x, y;
+	};
+
+	struct Vertex {
+		float x, y, z;
+		CustomColor color;
+	};
+
+	struct ConstBufferStruct {
+		DirectX::XMMATRIX transform;
+	};
 public:
-	VisMergedWindow(HINSTANCE hInst, LPWSTR windowTitle);
-	~VisMergedWindow() = default;
+	struct Point2D {
+		float axisOne, axisTwo;
+		long double value, relError;
+	};
+private:
+	HINSTANCE hCurrentInst;
+	HACCEL hAccelTable;
+	char axis;
+	float axisValue;
+	LPWSTR fileAbsolutePath;
+	LPWSTR windowTitle;
 
-	HWND getHandle();
-	HWND getResultDisplay();
-	HWND getRelErrDisplay();
-	HWND getResultLegend();
-	HWND getRelErrLegend();
-	HWND getRadioButtonX();
-	HWND getRadioButtonY();
-	HWND getRadioButtonZ();
-	HWND getAxisValueBox();
-	HWND getBtnCreatePlane();
-	RECT getWndRect();
-	int getDisplayDim();
+	std::unique_ptr<VisMergedWindow> hVisMerWnd;
+public:
+	PlanePreview(char axis, float axisValue);
+	~PlanePreview() = default;
+
+	void run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAccelTable, LPWSTR fileAbsolutePath, int planePointsDataSize, Point2D* planePointsData);
 };

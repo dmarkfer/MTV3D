@@ -112,7 +112,7 @@ VisMergedWindow::VisMergedWindow(HINSTANCE hInst, LPWSTR windowTitle) {
 		this->hAxisValueBoxContainer, nullptr, hInst, nullptr);
 
 	this->hBtnCreatePlane = CreateWindow(L"BUTTON", L"Create plane preview",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | WS_DISABLED,
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
 		wndRect.right / 4 + dialogWidth * 2 / 3, this->displayDim + dialogHeight * 2 / 3, 180, 30,
 		this->hWnd, (HMENU)BUTTON_CREATE_PLANE, hInst, nullptr);
 }
@@ -140,6 +140,31 @@ HWND VisMergedWindow::getResultLegend() {
 
 HWND VisMergedWindow::getRelErrLegend() {
 	return this->hRelErrLegend;
+}
+
+
+HWND VisMergedWindow::getRadioButtonX() {
+	return this->radioButtonX;
+}
+
+
+HWND VisMergedWindow::getRadioButtonY() {
+	return this->radioButtonY;
+}
+
+
+HWND VisMergedWindow::getRadioButtonZ() {
+	return this->radioButtonZ;
+}
+
+
+HWND VisMergedWindow::getAxisValueBox() {
+	return this->hAxisValueBox;
+}
+
+
+HWND VisMergedWindow::getBtnCreatePlane() {
+	return this->hBtnCreatePlane;
 }
 
 

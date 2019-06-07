@@ -53,7 +53,7 @@ int App::run(HINSTANCE hInstance, int& nCmdShow) {
 
 	VisComponent::cursorHandNoGrab = LoadCursorFromFile(L"Hand Move No Grab v2.cur");
 	VisComponent::cursorHandGrab = LoadCursorFromFile(L"Hand Move Grab v2.cur");
-	
+
 	this->readD3DShaders();
 
 	this->createWndClasses();
@@ -65,8 +65,8 @@ int App::run(HINSTANCE hInstance, int& nCmdShow) {
 	this->hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MTV3D));
 	MSG msg;
 
-	while(GetMessage(&msg, nullptr, 0, 0)) {
-		if(! TranslateAccelerator(msg.hwnd, this->hAccelTable, &msg)) {
+	while (GetMessage(&msg, nullptr, 0, 0)) {
+		if (!TranslateAccelerator(msg.hwnd, this->hAccelTable, &msg)) {
 			TranslateMessage(&msg);
 
 			if (msg.message == WM_THREAD_DONE) {
@@ -162,16 +162,44 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		}
 		break;
 	}
+	case WM_SETCURSOR: {
+		if (wcType == WndClass::Type::VIS_DISPLAY) {
+			SetCursor(VisComponent::cursorGrabInteractionProject == hWnd ? VisComponent::cursorHandGrab : VisComponent::cursorHandNoGrab);
+		}
+		else if (wcType == WndClass::Type::EDITABLE) {
+			SetCursor(LoadCursor(nullptr, IDC_IBEAM));
+		}
+		else {
+			VisComponent::cursorGrabInteractionProject = nullptr;
+			SetCursor(LoadCursor(nullptr, IDC_ARROW));
+		}
+		return true;
+		break;
+	}
+	case WM_LBUTTONDOWN: {
+		if (wcType == WndClass::Type::VIS_DISPLAY) {
+			VisComponent::cursorGrabInteractionProject = hWnd;
+			SetCursor(VisComponent::cursorHandGrab);
+			VisComponent::clickPosX = GET_X_LPARAM(lParam);
+			VisComponent::clickPosY = GET_Y_LPARAM(lParam);
+		}
+		break;
+	}
+	case WM_LBUTTONUP: {
+		if (wcType == WndClass::Type::VIS_DISPLAY) {
+			VisComponent::cursorGrabInteractionProject = nullptr;
+			SetCursor(VisComponent::cursorHandNoGrab);
+		}
+		break;
+	}
 	case WM_COMMAND: {
-		int wmId = LOWORD(wParam);
-		
-		switch (wmId) {
+		switch (LOWORD(wParam)) {
 		case IDM_NEW_PROJ:
 		case BUTTON_NEW_PROJ: {
 			OPENFILENAME ofnObj;
-			
+
 			ZeroMemory(&ofnObj, sizeof(OPENFILENAME));
-			
+
 			ofnObj.lStructSize = sizeof(OPENFILENAME);
 			ofnObj.hwndOwner = App::appPointer->hMainWnd->getHandle();
 			ofnObj.hInstance = App::appPointer->hCurrentInst;
@@ -188,24 +216,24 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 
 				SetCursor(LoadCursor(nullptr, IDC_ARROW));
 
-				if (! projectLoaded) {
+				if (!projectLoaded) {
 					delete[] ofnObj.lpstrFile;
 
 					MessageBox(App::appPointer->hMainWnd->getHandle(), L"Wrong file type!", nullptr, MB_ICONERROR);
 				}
 			}
 			else {
-				
+
 				delete[] ofnObj.lpstrFile;
 			}
-			
+
 			break;
 		}
 		case BUTTON_CLOSE_SEL: {
 
 			int id = -1;
-			
-			while(true) {
+
+			while (true) {
 				id = SendMessage(App::appPointer->hMainWnd->getHandleListView(), LVM_GETNEXTITEM, id, LVNI_SELECTED);
 
 				if (id > -1) {
@@ -222,6 +250,36 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		}
 		case BUTTON_CLOSE_ALL: {
 			App::appPointer->closeAllProjects();
+			break;
+		}
+		case BUTTON_CREATE_PLANE: {
+			VisComponent::flagPlanePrevCreation = true;
+			break;
+		}
+		case CHECK_GRID: {
+			if (HIWORD(wParam) == BN_CLICKED) {
+				if (SendDlgItemMessage(hWnd, CHECK_GRID, BM_GETCHECK, 0, 0)) {
+					VisComponent::gridActive = true;
+				}
+				else {
+					VisComponent::gridActive = false;
+					CheckDlgButton(hWnd, CHECK_AX_VAL, BST_UNCHECKED);
+					VisComponent::axesValsActive = false;
+				}
+			}
+			break;
+		}
+		case CHECK_AX_VAL: {
+			if (HIWORD(wParam) == BN_CLICKED) {
+				if (SendDlgItemMessage(hWnd, CHECK_AX_VAL, BM_GETCHECK, 0, 0)) {
+					VisComponent::axesValsActive = true;
+					CheckDlgButton(hWnd, CHECK_GRID, BST_CHECKED);
+					VisComponent::gridActive = true;
+				}
+				else {
+					VisComponent::axesValsActive = false;
+				}
+			}
 			break;
 		}
 		case IDM_EXIT: {
@@ -245,7 +303,7 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			hdc = BeginPaint(hWnd, &ps);
 
 			App::appPointer->hSplashWnd->loadSplash(hdc);
-			
+
 			EndPaint(hWnd, &ps);
 			DeleteDC(hdc);
 			break;
@@ -259,7 +317,34 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			DeleteDC(hdc);
 			break;
 		}
+		case WndClass::Type::VIS_LEGEND: {
+			break;
 		}
+		}
+		break;
+	}
+	case WM_CTLCOLORSTATIC: {
+		SetTextColor((HDC)wParam, WHITE);
+		SetBkColor((HDC)wParam, DARK_GRAY);
+
+		return (BOOL)GetStockObject(NULL_BRUSH);
+		break;
+	}
+	case WM_MOUSEWHEEL: {
+		WORD fwKeys = GET_KEYSTATE_WPARAM(wParam);
+		WORD zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+		WORD xPos = GET_X_LPARAM(lParam);
+		WORD yPos = GET_Y_LPARAM(lParam);
+
+		// 2^16 = 65536
+		if (zDelta <= 32000) { //   0  to  2^16 / 2
+			VisComponent::scaleBase *= 1.05f;
+		}
+		else { //   2^16 / 2  to  2^16
+			VisComponent::scaleBase *= 0.95f;
+		}
+
+		return 0;
 		break;
 	}
 	case WM_DESTROY: {
@@ -275,7 +360,8 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 
 			break;
 		}
-		default: {
+		case WndClass::Type::VIS_MERGED: {
+			PostQuitMessage(0);
 			break;
 		}
 		}
@@ -343,7 +429,7 @@ void App::createWndClasses() {
 	this->wndClassTypeStruct[WndClass::Type::VIS_MERGED] = {
 		sizeof(WNDCLASSEXW),
 		CS_HREDRAW | CS_VREDRAW,
-		VisComponent::wndProc,
+		App::wndProc,
 		0,
 		0,
 		this->hCurrentInst,
@@ -358,7 +444,7 @@ void App::createWndClasses() {
 	this->wndClassTypeStruct[WndClass::Type::VIS_RESULT] = {
 		sizeof(WNDCLASSEXW),
 		CS_HREDRAW | CS_VREDRAW,
-		VisComponent::wndProc,
+		App::wndProc,
 		0,
 		0,
 		this->hCurrentInst,
@@ -373,7 +459,7 @@ void App::createWndClasses() {
 	this->wndClassTypeStruct[WndClass::Type::VIS_RELERR] = {
 		sizeof(WNDCLASSEXW),
 		CS_HREDRAW | CS_VREDRAW,
-		VisComponent::wndProc,
+		App::wndProc,
 		0,
 		0,
 		this->hCurrentInst,
@@ -388,7 +474,7 @@ void App::createWndClasses() {
 	this->wndClassTypeStruct[WndClass::Type::VIS_DISPLAY] = {
 		sizeof(WNDCLASSEXW),
 		CS_HREDRAW | CS_VREDRAW,
-		VisComponent::wndProc,
+		App::wndProc,
 		0,
 		0,
 		this->hCurrentInst,
@@ -403,7 +489,7 @@ void App::createWndClasses() {
 	this->wndClassTypeStruct[WndClass::Type::VIS_LEGEND] = {
 		sizeof(WNDCLASSEXW),
 		CS_HREDRAW | CS_VREDRAW,
-		VisComponent::wndProc,
+		App::wndProc,
 		0,
 		0,
 		this->hCurrentInst,
@@ -418,7 +504,7 @@ void App::createWndClasses() {
 	this->wndClassTypeStruct[WndClass::Type::EDITABLE] = {
 		sizeof(WNDCLASSEXW),
 		CS_HREDRAW | CS_VREDRAW,
-		VisComponent::wndProc,
+		App::wndProc,
 		0,
 		0,
 		this->hCurrentInst,
@@ -452,7 +538,7 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 
 	DWORD fileSize;
 	fileSize = GetFileSize(hFile, nullptr);
-	
+
 	if (fileSize == INVALID_FILE_SIZE) {
 		CloseHandle(hFile);
 		return false;
@@ -460,7 +546,7 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 
 
 	BY_HANDLE_FILE_INFORMATION fileInfo;
-	if (! GetFileInformationByHandle(hFile, &fileInfo)) {
+	if (!GetFileInformationByHandle(hFile, &fileInfo)) {
 		CloseHandle(hFile);
 		return false;
 	}
@@ -472,11 +558,11 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 	BOOL retVal = ReadFile(hFile, fileRawContent, fileSize, &bytesRead, nullptr);
 	CloseHandle(hFile);
 
-	if(! retVal) {
+	if (!retVal) {
 		return false;
 	}
-	
-	
+
+
 	fileRawContent[fileSize] = '\0';
 
 	DWORD numberOfUTF8Characters = utf8CharacterCounter(fileRawContent);
@@ -505,8 +591,8 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 	for (int cnt = 0; cnt < 15; ++cnt) {
 		std::getline(fileContentStringStream, fileLine);
 	}
-	
-	
+
+
 	bool isPhoton = false;
 
 	for (WCHAR& ch : fileLine) {
@@ -521,7 +607,7 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 		}
 	}
 
-	
+
 	std::vector<VisComponent::Point> visPoints;
 	VisComponent::Point point;
 	LPCWSTR fileLineWCStr;
@@ -562,22 +648,22 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 	SystemTimeToTzSpecificLocalTime(nullptr, &stUTC, &stLocal);
 	swprintf_s(fileModifiedStr, 20, L"%02d/%02d/%d  %02d:%02d", stLocal.wMonth, stLocal.wDay, stLocal.wYear, stLocal.wHour, stLocal.wMinute);
 
-	std::vector<LPWSTR> lvData { fileAbsolutePath, fileSizeStr, fileCreatedStr, fileModifiedStr };
+	std::vector<LPWSTR> lvData{ fileAbsolutePath, fileSizeStr, fileCreatedStr, fileModifiedStr };
 	int newProjectId = this->giveNewProjectId();
 	this->openProjects.push_back(std::make_pair(newProjectId, std::make_pair(lvData, nullptr)));
-	
+
 
 	if (insertItemIntoListView() == -1) {
 		delete[] fileSizeStr;
 		delete[] fileCreatedStr;
 		delete[] fileModifiedStr;
 		this->openProjects.pop_back();
-		
+
 		return false;
 	}
 
 	++this->numberOfOpenProjects;
-	
+
 	this->openProjects[this->numberOfOpenProjects - 1].second.second = std::make_unique<VisComponent>();
 
 	this->projectsThreads.push_back(
@@ -592,7 +678,7 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 	);
 
 	EnableWindow(this->hMainWnd->getHandleBtnCloseAll(), TRUE);
-	
+
 	return true;
 }
 
@@ -621,16 +707,16 @@ void App::closeProject(int projectId) {
 	this->projectsThreads[index].second.join();
 	this->projectsThreads.erase(this->projectsThreads.begin() + index);
 
-	
+
 	this->hMainWnd->deleteListViewItem(index);
-	
+
 
 	--this->numberOfOpenProjects;
 
 
 	EnableWindow(this->hMainWnd->getHandleBtnCloseSel(), FALSE);
 
-	if (! this->numberOfOpenProjects) {
+	if (!this->numberOfOpenProjects) {
 		EnableWindow(this->hMainWnd->getHandleBtnCloseAll(), FALSE);
 	}
 
@@ -643,7 +729,7 @@ void App::closeProject(int projectId) {
 	this->recreateListView();
 
 	if (App::quitFlag) {
-		if (! this->numberOfOpenProjects) {
+		if (!this->numberOfOpenProjects) {
 			PostQuitMessage(0);
 		}
 	}

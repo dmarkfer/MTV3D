@@ -16,8 +16,8 @@
 #define BUTTON_CLOSE_ALL	3
 #define BUTTON_CREATE_PLANE 4
 
-#define CHECK_GRID		10
-#define CHECK_AX_VAL	11
+#define CHECK_GRID		20
+#define CHECK_AX_VAL	21
 
 #define ID_LISTVIEW  70
 
