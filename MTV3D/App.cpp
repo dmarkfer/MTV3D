@@ -365,6 +365,10 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			PostQuitMessage(0);
 			break;
 		}
+		case WndClass::Type::VIS_MERGED_PLANE: {
+			PostQuitMessage(0);
+			break;
+		}
 		}
 	}
 	}
@@ -439,6 +443,21 @@ void App::createWndClasses() {
 		CreateSolidBrush(DARK_GRAY),
 		MAKEINTRESOURCEW(IDC_MTV3D_VIS),
 		L"VisMerged",
+		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D))
+	};
+
+	this->wndClassTypeStruct[WndClass::Type::VIS_MERGED_PLANE] = {
+		sizeof(WNDCLASSEXW),
+		CS_HREDRAW | CS_VREDRAW,
+		App::wndProc,
+		0,
+		0,
+		this->hCurrentInst,
+		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D)),
+		LoadCursor(this->hCurrentInst, IDC_ARROW),
+		CreateSolidBrush(DARK_GRAY),
+		MAKEINTRESOURCEW(IDC_MTV3D_VIS),
+		L"VisMergedPlane",
 		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D))
 	};
 
@@ -521,6 +540,7 @@ void App::createWndClasses() {
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::SPLASH]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::MAIN]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_MERGED]);
+	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_MERGED_PLANE]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_RESULT]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_RELERR]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_DISPLAY]);

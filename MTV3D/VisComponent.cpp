@@ -804,7 +804,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 					);
 				}
 				else {
-					MessageBox(this->hVisMerWnd->getHandle(), (std::wstring(L"You have already opened plane: ") + std::to_wstring(axis) + L" = " + std::to_wstring(*axisValCont)).c_str(), L"Already open!", MB_ICONINFORMATION);
+					MessageBox(this->hVisMerWnd->getHandle(), (std::wstring(L"You have already opened plane: ") + std::wstring(1, axis) + L" = " + std::to_wstring(*axisValCont)).c_str(), L"Already open!", MB_ICONINFORMATION);
 				}
 			}
 		}
@@ -1293,8 +1293,15 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 		while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
 			if (msg.message == WM_QUIT) {
+				for (auto iter = this->planePreviewsThreads.begin(); iter != this->planePreviewsThreads.end(); ++iter) {
+					PostThreadMessage(
+						GetThreadId(iter->second.native_handle()),
+						WM_QUIT, 0, 0
+					);
+				}
+
 				quitFlag = true;
-				break;
+				continue;
 			}
 
 			if (!TranslateAccelerator(msg.hwnd, this->hAccelTable, &msg)) {
@@ -1315,7 +1322,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			}
 		}
 
-		if (quitFlag) {
+		if (quitFlag  &&  this->openPlanePreviews.size() == 0) {
 			break;
 		}
 	}

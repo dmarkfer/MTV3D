@@ -23,10 +23,10 @@
 #include "VisMergedWndBase.h"
 
 
-VisMergedWndBase::VisMergedWndBase(HINSTANCE hInst, LPWSTR windowTitle) {
+VisMergedWndBase::VisMergedWndBase(HINSTANCE hInst, LPWSTR windowTitle, char wClass) {
 	SetCursor(LoadCursor(nullptr, IDC_ARROW));
 
-	this->hWnd = CreateWindowW(L"VisMerged", windowTitle, WS_OVERLAPPEDWINDOW | WS_MAXIMIZE,
+	this->hWnd = CreateWindowW(wClass == 'P' ? L"VisMerged" : L"VisMergedPlane", windowTitle, WS_OVERLAPPEDWINDOW | WS_MAXIMIZE,
 		CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInst, nullptr);
 
 
@@ -77,7 +77,7 @@ VisMergedWndBase::VisMergedWndBase(HINSTANCE hInst, LPWSTR windowTitle) {
 	this->dialogWidth = wndRect.right / 2;
 	this->dialogHeight = wndRect.bottom - this->displayDim - 20;
 
-	this->hPlanePreviewSelection = CreateWindow(L"BUTTON", L" Select plane ", WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
+	this->hPlanePreviewSelection = CreateWindow(L"BUTTON", wClass == 'P' ? L" Select plane " : L" Select line ", WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
 		wndRect.right / 4, this->displayDim + 10, dialogWidth, dialogHeight,
 		this->hWnd, nullptr, hInst, nullptr);
 
@@ -93,7 +93,6 @@ VisMergedWndBase::VisMergedWndBase(HINSTANCE hInst, LPWSTR windowTitle) {
 	this->radioButtonZ = CreateWindow(L"BUTTON", L"Z", WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
 		wndRect.right / 4 + 200, this->displayDim + dialogHeight / 3 + 30, 40, 20,
 		this->hWnd, nullptr, hInst, nullptr);
-	SendMessage(radioButtonZ, BM_SETCHECK, BST_CHECKED, 0);
 	
 
 	this->hEnterAxisVal = CreateWindow(L"STATIC", L"Enter axis value: ", WS_VISIBLE | WS_CHILD,
@@ -165,4 +164,9 @@ RECT VisMergedWndBase::getWndRect() {
 
 int VisMergedWndBase::getDisplayDim() {
 	return this->displayDim;
+}
+
+
+int VisMergedWndBase::getDialogHeight() {
+	return this->dialogHeight;
 }

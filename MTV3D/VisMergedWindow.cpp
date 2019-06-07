@@ -23,7 +23,9 @@
 #include "VisMergedWindow.h"
 
 
-VisMergedWindow::VisMergedWindow(HINSTANCE hInst, LPWSTR windowTitle): VisMergedWndBase(hInst, windowTitle) {
+VisMergedWindow::VisMergedWindow(HINSTANCE hInst, LPWSTR windowTitle): VisMergedWndBase(hInst, windowTitle, 'P') {
+	SendMessage(radioButtonZ, BM_SETCHECK, BST_CHECKED, 0);
+
 	this->hBtnCreatePlane = CreateWindow(L"BUTTON", L"Create plane preview",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
 		wndRect.right / 4 + dialogWidth * 2 / 3, this->displayDim + dialogHeight * 2 / 3, 180, 30,

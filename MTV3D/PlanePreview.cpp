@@ -32,9 +32,35 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 	this->hAccelTable = hAccelTable;
 	this->fileAbsolutePath = fileAbsolutePath;
 	this->windowTitle = new WCHAR[WCHAR_ARR_MAX];
-	swprintf_s(this->windowTitle, WCHAR_ARR_MAX - 1, L"MTV3D - %s - %c = %1.3f", this->fileAbsolutePath, this->axis, this->axisValue);
+	WCHAR axisEqValueStr[101];
+	swprintf_s(axisEqValueStr, L"%c = %1.3f", this->axis, this->axisValue);
+	swprintf_s(this->windowTitle, WCHAR_ARR_MAX - 1, L"MTV3D - %s ( %s )", this->fileAbsolutePath, axisEqValueStr);
 
 	this->hVisMerWnd = std::make_unique<PlaneMergedWnd>(this->hCurrentInst, this->windowTitle);
+	if (this->axis == 'X') {
+		SendMessage(this->hVisMerWnd->getRadioButtonY(), BM_SETCHECK, BST_CHECKED, 0);
+		EnableWindow(this->hVisMerWnd->getRadioButtonX(), false);
+		ShowWindow(this->hVisMerWnd->getRadioButtonX(), SW_HIDE);
+		CreateWindow(L"STATIC", axisEqValueStr, WS_VISIBLE | WS_CHILD,
+			this->hVisMerWnd->getWndRect().right / 4 + 30, this->hVisMerWnd->getDisplayDim() + this->hVisMerWnd->getDialogHeight() / 3 + 30, 100, 20,
+			this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+	}
+	else if (this->axis == 'Y') {
+		SendMessage(this->hVisMerWnd->getRadioButtonX(), BM_SETCHECK, BST_CHECKED, 0);
+		EnableWindow(this->hVisMerWnd->getRadioButtonY(), false);
+		ShowWindow(this->hVisMerWnd->getRadioButtonY(), SW_HIDE);
+		CreateWindow(L"STATIC", axisEqValueStr, WS_VISIBLE | WS_CHILD,
+			this->hVisMerWnd->getWndRect().right / 4 + 130, this->hVisMerWnd->getDisplayDim() + this->hVisMerWnd->getDialogHeight() / 3 + 30, 100, 20,
+			this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+	}
+	else {
+		SendMessage(this->hVisMerWnd->getRadioButtonX(), BM_SETCHECK, BST_CHECKED, 0);
+		EnableWindow(this->hVisMerWnd->getRadioButtonZ(), false);
+		ShowWindow(this->hVisMerWnd->getRadioButtonZ(), SW_HIDE);
+		CreateWindow(L"STATIC", axisEqValueStr, WS_VISIBLE | WS_CHILD,
+			this->hVisMerWnd->getWndRect().right / 4 + 190, this->hVisMerWnd->getDisplayDim() + this->hVisMerWnd->getDialogHeight() / 3 + 30, 100, 20,
+			this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+	}
 	ShowWindow(this->hVisMerWnd->getHandle(), SW_SHOWMAXIMIZED);
 
 	SetCursor(LoadCursor(nullptr, IDC_WAIT));
@@ -123,19 +149,16 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 
 	int axisOneSize = axisOneValues.size();
 	int axisTwoSize = axisTwoValues.size();
-	int axisReliefSize = resultMaxValue - resultMinValue;
 
-	int q = axisOneSize - 1;
-	int w = axisTwoSize - 1;
-
-	float modelAbscissaLength = std::abs(visPlaneModel[q][w].axisOne - visPlaneModel[0][0].axisOne);
+	float modelAbscissaLength = std::abs(visPlaneModel[axisOneSize - 1][axisTwoSize - 1].axisOne - visPlaneModel[0][0].axisOne);
 	float modelOrdinateLength = std::abs(visPlaneModel[axisOneSize - 1][axisTwoSize - 1].axisTwo - visPlaneModel[0][0].axisTwo);
+	long double modelReliefLength = resultMaxValue - resultMinValue;
 
 	float modelAbscissaCenter = std::vector<float>(axisOneValues.begin(), axisOneValues.end())[axisOneSize / 2];
 	float modelOrdinateCenter = std::vector<float>(axisTwoValues.begin(), axisTwoValues.end())[axisTwoSize / 2];
-	float modelReliefCenter = float(resultMaxValue / 2.f);
+	long double modelReliefCenter = resultMaxValue / 2.L;
 
-	float diagonal3DLength = std::sqrt(modelAbscissaLength * modelAbscissaLength + modelOrdinateLength * modelOrdinateLength + modelReliefCenter * modelReliefCenter);
+	float diagonal3DLength = std::sqrt(modelAbscissaLength * modelAbscissaLength + modelOrdinateLength * modelOrdinateLength + float(modelReliefCenter * modelReliefCenter));
 
 
 

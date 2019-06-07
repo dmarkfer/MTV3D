@@ -46,7 +46,7 @@ protected:
 	int dialogWidth;
 	int dialogHeight;
 public:
-	VisMergedWndBase(HINSTANCE hInst, LPWSTR windowTitle);
+	VisMergedWndBase(HINSTANCE hInst, LPWSTR windowTitle, char wClass);
 	virtual ~VisMergedWndBase() = default;
 
 	HWND getHandle();
@@ -60,4 +60,5 @@ public:
 	HWND getAxisValueBox();
 	RECT getWndRect();
 	int getDisplayDim();
+	int getDialogHeight();
 };

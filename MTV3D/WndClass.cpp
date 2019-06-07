@@ -27,6 +27,7 @@ WndClass::Type WndClass::typeByWndClassName(const std::wstring& wndClassName) {
 	if (wndClassName == L"Splash") return WndClass::Type::SPLASH;
 	if (wndClassName == L"Main") return WndClass::Type::MAIN;
 	if (wndClassName == L"VisMerged") return WndClass::Type::VIS_MERGED;
+	if (wndClassName == L"VisMergedPlane") return WndClass::Type::VIS_MERGED_PLANE;
 	if (wndClassName == L"VisResult") return WndClass::Type::VIS_RESULT;
 	if (wndClassName == L"VisRelErr") return WndClass::Type::VIS_RELERR;
 	if (wndClassName == L"VisDisplay") return WndClass::Type::VIS_DISPLAY;
