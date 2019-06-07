@@ -25,8 +25,6 @@
 
 bool App::quitFlag = false;
 App* App::appPointer = nullptr;
-PAINTSTRUCT App::ps = {};
-HDC App::hdc = nullptr;
 
 
 App::App() {
@@ -40,8 +38,8 @@ App::App() {
 
 
 App::~App() {
-	delete[] VisComponent::vertexShaderBlob;
-	delete[] VisComponent::pixelShaderBlob;
+	delete[] Graphics::vertexShaderBlob;
+	delete[] Graphics::pixelShaderBlob;
 }
 
 
@@ -51,8 +49,8 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 int App::run(HINSTANCE hInstance, int& nCmdShow) {
 	this->hCurrentInst = hInstance;
 
-	VisComponent::cursorHandNoGrab = LoadCursorFromFile(L"Hand Move No Grab v2.cur");
-	VisComponent::cursorHandGrab = LoadCursorFromFile(L"Hand Move Grab v2.cur");
+	CursorData::cursorHandNoGrab = LoadCursorFromFile(L"Hand Move No Grab v2.cur");
+	CursorData::cursorHandGrab = LoadCursorFromFile(L"Hand Move Grab v2.cur");
 
 	this->readD3DShaders();
 
@@ -87,18 +85,18 @@ int App::run(HINSTANCE hInstance, int& nCmdShow) {
 void App::readD3DShaders() {
 	std::ifstream ifStreamShader(L"VertexShader.cso", std::ifstream::in | std::ifstream::binary);
 	ifStreamShader.seekg(0, std::ios::end);
-	VisComponent::vertexShaderFileSize = (unsigned)ifStreamShader.tellg();
-	VisComponent::vertexShaderBlob = new char[VisComponent::vertexShaderFileSize];
+	Graphics::vertexShaderFileSize = (unsigned)ifStreamShader.tellg();
+	Graphics::vertexShaderBlob = new char[Graphics::vertexShaderFileSize];
 	ifStreamShader.seekg(0, std::ios::beg);
-	ifStreamShader.read(VisComponent::vertexShaderBlob, VisComponent::vertexShaderFileSize);
+	ifStreamShader.read(Graphics::vertexShaderBlob, Graphics::vertexShaderFileSize);
 	ifStreamShader.close();
 
 	ifStreamShader.open(L"PixelShader.cso", std::ifstream::in | std::ifstream::binary);
 	ifStreamShader.seekg(0, std::ios::end);
-	VisComponent::pixelShaderFileSize = (unsigned)ifStreamShader.tellg();
-	VisComponent::pixelShaderBlob = new char[VisComponent::pixelShaderFileSize];
+	Graphics::pixelShaderFileSize = (unsigned)ifStreamShader.tellg();
+	Graphics::pixelShaderBlob = new char[Graphics::pixelShaderFileSize];
 	ifStreamShader.seekg(0, std::ios::beg);
-	ifStreamShader.read(VisComponent::pixelShaderBlob, VisComponent::pixelShaderFileSize);
+	ifStreamShader.read(Graphics::pixelShaderBlob, Graphics::pixelShaderFileSize);
 	ifStreamShader.close();
 }
 
@@ -164,13 +162,13 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 	}
 	case WM_SETCURSOR: {
 		if (wcType == WndClass::Type::VIS_DISPLAY) {
-			SetCursor(VisComponent::cursorGrabInteractionProject == hWnd ? VisComponent::cursorHandGrab : VisComponent::cursorHandNoGrab);
+			SetCursor(CursorData::cursorGrabInteractionProject == hWnd ? CursorData::cursorHandGrab : CursorData::cursorHandNoGrab);
 		}
 		else if (wcType == WndClass::Type::EDITABLE) {
 			SetCursor(LoadCursor(nullptr, IDC_IBEAM));
 		}
 		else {
-			VisComponent::cursorGrabInteractionProject = nullptr;
+			CursorData::cursorGrabInteractionProject = nullptr;
 			SetCursor(LoadCursor(nullptr, IDC_ARROW));
 		}
 		return true;
@@ -178,17 +176,17 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 	}
 	case WM_LBUTTONDOWN: {
 		if (wcType == WndClass::Type::VIS_DISPLAY) {
-			VisComponent::cursorGrabInteractionProject = hWnd;
-			SetCursor(VisComponent::cursorHandGrab);
-			VisComponent::clickPosX = GET_X_LPARAM(lParam);
-			VisComponent::clickPosY = GET_Y_LPARAM(lParam);
+			CursorData::cursorGrabInteractionProject = hWnd;
+			SetCursor(CursorData::cursorHandGrab);
+			CursorData::clickPosX = GET_X_LPARAM(lParam);
+			CursorData::clickPosY = GET_Y_LPARAM(lParam);
 		}
 		break;
 	}
 	case WM_LBUTTONUP: {
 		if (wcType == WndClass::Type::VIS_DISPLAY) {
-			VisComponent::cursorGrabInteractionProject = nullptr;
-			SetCursor(VisComponent::cursorHandNoGrab);
+			CursorData::cursorGrabInteractionProject = nullptr;
+			SetCursor(CursorData::cursorHandNoGrab);
 		}
 		break;
 	}
@@ -298,6 +296,9 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		break;
 	}
 	case WM_PAINT: {
+		PAINTSTRUCT ps;
+		HDC hdc;
+
 		switch (wcType) {
 		case WndClass::Type::SPLASH: {
 			hdc = BeginPaint(hWnd, &ps);
@@ -479,7 +480,7 @@ void App::createWndClasses() {
 		0,
 		this->hCurrentInst,
 		nullptr,
-		VisComponent::cursorHandNoGrab,
+		CursorData::cursorHandNoGrab,
 		CreateSolidBrush(WHITE),
 		nullptr,
 		L"VisDisplay",
@@ -608,8 +609,8 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 	}
 
 
-	std::vector<VisComponent::Point> visPoints;
-	VisComponent::Point point;
+	std::vector<Graphics::Point3D> visPoints;
+	Graphics::Point3D point;
 	LPCWSTR fileLineWCStr;
 
 	if (isPhoton) {
@@ -628,8 +629,8 @@ bool App::loadFile(LPWSTR fileAbsolutePath) {
 	}
 
 	int visPointsDataSize = visPoints.size();
-	VisComponent::Point* visPointsData = new VisComponent::Point[visPointsDataSize];
-	memcpy(visPointsData, visPoints.data(), visPointsDataSize * sizeof(VisComponent::Point));
+	Graphics::Point3D* visPointsData = new Graphics::Point3D[visPointsDataSize];
+	memcpy(visPointsData, visPoints.data(), visPointsDataSize * sizeof(Graphics::Point3D));
 
 
 	LPWSTR fileSizeStr = new WCHAR[WCHAR_ARR_MAX];

@@ -20,25 +20,48 @@
 **********************************************************************************
 **********************************************************************************/
 #pragma once
-#include "WndClass.h"
-#include "VisMergedWindow.h"
-#include "Graphics.h"
-#include "CursorData.h"
 
 
-class PlanePreview {
-private:
-	HINSTANCE hCurrentInst;
-	HACCEL hAccelTable;
-	char axis;
-	float axisValue;
-	LPWSTR fileAbsolutePath;
-	LPWSTR windowTitle;
-
-	std::unique_ptr<VisMergedWindow> hVisMerWnd;
+class Graphics {
 public:
-	PlanePreview(char axis, float axisValue);
-	~PlanePreview() = default;
+	struct CustomColor {
+		float r, g, b;
+	};
 
-	void run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAccelTable, LPWSTR fileAbsolutePath, int planePointsDataSize, Graphics::Point2D* planePointsData);
+	struct LegendColorLevel {
+		CustomColor color;
+		long double value;
+	};
+
+	struct ScreenVector {
+		float x, y;
+	};
+
+	struct Vertex {
+		float x, y, z;
+		CustomColor color;
+	};
+
+	struct ConstBufferStruct {
+		DirectX::XMMATRIX transform;
+	};
+
+	struct Point3D {
+		float x, y, z;
+		long double value, relError;
+	};
+
+	struct Point2D {
+		float axisOne, axisTwo;
+		long double value, relError;
+	};
+public:
+	static unsigned vertexShaderFileSize;
+	static char* vertexShaderBlob;
+	static const D3D11_INPUT_ELEMENT_DESC inputElementDesc[];
+	static unsigned pixelShaderFileSize;
+	static char* pixelShaderBlob;
+public:
+	Graphics() = delete;
+	~Graphics() = delete;
 };

@@ -19,26 +19,17 @@
 ***
 **********************************************************************************
 **********************************************************************************/
-#pragma once
-#include "WndClass.h"
-#include "VisMergedWindow.h"
+#include "stdafx.h"
 #include "Graphics.h"
-#include "CursorData.h"
 
 
-class PlanePreview {
-private:
-	HINSTANCE hCurrentInst;
-	HACCEL hAccelTable;
-	char axis;
-	float axisValue;
-	LPWSTR fileAbsolutePath;
-	LPWSTR windowTitle;
+unsigned Graphics::vertexShaderFileSize = 0;
+char* Graphics::vertexShaderBlob = nullptr;
 
-	std::unique_ptr<VisMergedWindow> hVisMerWnd;
-public:
-	PlanePreview(char axis, float axisValue);
-	~PlanePreview() = default;
-
-	void run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAccelTable, LPWSTR fileAbsolutePath, int planePointsDataSize, Graphics::Point2D* planePointsData);
+const D3D11_INPUT_ELEMENT_DESC Graphics::inputElementDesc[] = {
+	{ "Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "Color", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 };
+
+unsigned Graphics::pixelShaderFileSize = 0;
+char* Graphics::pixelShaderBlob = nullptr;

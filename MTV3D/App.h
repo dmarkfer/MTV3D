@@ -32,8 +32,6 @@ private:
 	HINSTANCE hCurrentInst;
 	HACCEL hAccelTable;
 	static App* appPointer;
-	static PAINTSTRUCT ps;
-	static HDC hdc;
 
 	std::map<WndClass::Type, WNDCLASSEXW> wndClassTypeStruct;
 	std::unique_ptr<SplashWindow> hSplashWnd;

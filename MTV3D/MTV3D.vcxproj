@@ -288,6 +288,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
+    <ClInclude Include="CursorData.h" />
+    <ClInclude Include="Graphics.h" />
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="PlanePreview.h" />
     <ClInclude Include="Resource.h" />
@@ -300,6 +302,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
+    <ClCompile Include="CursorData.cpp" />
+    <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="PlanePreview.cpp" />

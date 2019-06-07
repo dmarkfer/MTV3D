@@ -20,25 +20,16 @@
 **********************************************************************************
 **********************************************************************************/
 #pragma once
-#include "WndClass.h"
-#include "VisMergedWindow.h"
-#include "Graphics.h"
-#include "CursorData.h"
 
 
-class PlanePreview {
-private:
-	HINSTANCE hCurrentInst;
-	HACCEL hAccelTable;
-	char axis;
-	float axisValue;
-	LPWSTR fileAbsolutePath;
-	LPWSTR windowTitle;
-
-	std::unique_ptr<VisMergedWindow> hVisMerWnd;
+class CursorData {
 public:
-	PlanePreview(char axis, float axisValue);
-	~PlanePreview() = default;
-
-	void run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAccelTable, LPWSTR fileAbsolutePath, int planePointsDataSize, Graphics::Point2D* planePointsData);
+	static HCURSOR cursorHandNoGrab;
+	static HCURSOR cursorHandGrab;
+	static HWND cursorGrabInteractionProject;
+	static int clickPosX;
+	static int clickPosY;
+public:
+	CursorData() = delete;
+	~CursorData() = delete;
 };

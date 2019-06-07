@@ -26,50 +26,12 @@
 
 
 class VisComponent {
-private:
-	struct CustomColor {
-		float r, g, b;
-	};
-
-	struct LegendColorLevel {
-		CustomColor color;
-		long double value;
-	};
-
-	struct ScreenVector {
-		float x, y;
-	};
-
-	struct Vertex {
-		float x, y, z;
-		CustomColor color;
-	};
-
-	struct ConstBufferStruct {
-		DirectX::XMMATRIX transform;
-	};
 public:
-	struct Point {
-		float x, y, z;
-		long double value, relError;
-	};
-
 	static DWORD mainThreadId;
-	static HCURSOR cursorHandNoGrab;
-	static HCURSOR cursorHandGrab;
-	static HWND cursorGrabInteractionProject;
-	static int clickPosX;
-	static int clickPosY;
 	static float scaleBase;
 	static bool gridActive;
 	static bool axesValsActive;
 	static bool flagPlanePrevCreation;
-
-	static unsigned vertexShaderFileSize;
-	static char* vertexShaderBlob;
-	static const D3D11_INPUT_ELEMENT_DESC inputElementDesc[];
-	static unsigned pixelShaderFileSize;
-	static char* pixelShaderBlob;
 private:
 	HINSTANCE hCurrentInst;
 	HACCEL hAccelTable;
@@ -77,10 +39,10 @@ private:
 	int projectId;
 	LPWSTR fileAbsolutePath;
 	LPWSTR windowTitle;
-	std::vector<Point> visPoints;
-	std::vector<std::vector<std::vector<VisComponent::Point>>> vis3DDataModel;
-	std::vector<Vertex> verticesResult;
-	std::vector<Vertex> verticesRelErr;
+	std::vector<Graphics::Point3D> visPoints;
+	std::vector<std::vector<std::vector<Graphics::Point3D>>> vis3DDataModel;
+	std::vector<Graphics::Vertex> verticesResult;
+	std::vector<Graphics::Vertex> verticesRelErr;
 	std::vector<unsigned> indices;
 
 	Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice;
@@ -90,8 +52,8 @@ private:
 
 	std::unique_ptr<VisMergedWindow> hVisMerWnd;
 
-	std::vector<LegendColorLevel> resultLegend;
-	std::vector<LegendColorLevel> relerrLegend;
+	std::vector<Graphics::LegendColorLevel> resultLegend;
+	std::vector<Graphics::LegendColorLevel> relerrLegend;
 
 	std::map<std::pair<char, float>, std::unique_ptr<PlanePreview>> openPlanePreviews;
 	std::map<std::pair<char, float>, std::thread> planePreviewsThreads;
@@ -99,10 +61,10 @@ public:
 	VisComponent() = default;
 	~VisComponent() = default;
 
-	void run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectIndex, LPWSTR fileAbsolutePath, int visPointsDataSize, Point* visPointsData);
+	void run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectIndex, LPWSTR fileAbsolutePath, int visPointsDataSize, Graphics::Point3D* visPointsData);
 private:
 	void initDirect3D();
-	CustomColor getResultColor(long double resultValue);
-	CustomColor getRelErrColor(long double relerrValue);
+	Graphics::CustomColor getResultColor(long double resultValue);
+	Graphics::CustomColor getRelErrColor(long double relerrValue);
 	static std::optional<float> validFloat(std::wstring numberWStr);
 };

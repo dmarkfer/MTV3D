@@ -27,7 +27,7 @@ PlanePreview::PlanePreview(char axis, float axisValue): axis(axis), axisValue(ax
 }
 
 
-void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAccelTable, LPWSTR fileAbsolutePath, int planePointsDataSize, Point2D* planePointsData) {
+void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAccelTable, LPWSTR fileAbsolutePath, int planePointsDataSize, Graphics::Point2D* planePointsData) {
 	this->hCurrentInst = hCurrentInst;
 	this->hAccelTable = hAccelTable;
 	this->fileAbsolutePath = fileAbsolutePath;

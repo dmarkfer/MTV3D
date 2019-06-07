@@ -24,27 +24,13 @@
 
 
 DWORD VisComponent::mainThreadId = 0;
-HCURSOR VisComponent::cursorHandNoGrab = nullptr;
-HCURSOR VisComponent::cursorHandGrab = nullptr;
-HWND VisComponent::cursorGrabInteractionProject = nullptr;
-int VisComponent::clickPosX = 0;
-int VisComponent::clickPosY = 0;
 float VisComponent::scaleBase = 1.f;
 bool VisComponent::gridActive = true;
 bool VisComponent::axesValsActive = true;
 bool VisComponent::flagPlanePrevCreation = false;
 
-unsigned VisComponent::vertexShaderFileSize = 0;
-char* VisComponent::vertexShaderBlob = nullptr;
-const D3D11_INPUT_ELEMENT_DESC VisComponent::inputElementDesc[] = {
-	{ "Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	{ "Color", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-};
-unsigned VisComponent::pixelShaderFileSize = 0;
-char* VisComponent::pixelShaderBlob = nullptr;
 
-
-void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId, LPWSTR fileAbsolutePath, int visPointsDataSize, Point* visPointsData) {
+void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId, LPWSTR fileAbsolutePath, int visPointsDataSize, Graphics::Point3D* visPointsData) {
 	VisComponent::scaleBase = 1.f;
 
 	this->hCurrentInst = hCurrentInst;
@@ -63,8 +49,8 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	std::set<float> axisYValues;
 	std::set<float> axisZValues;
 
-	std::vector<std::vector<VisComponent::Point>> visPlaneModel;
-	std::vector<VisComponent::Point> visLineModel;
+	std::vector<std::vector<Graphics::Point3D>> visPlaneModel;
+	std::vector<Graphics::Point3D> visLineModel;
 
 	long double resultMinValue = std::numeric_limits<long double>::infinity();
 	long double resultMaxValue = 0.L;
@@ -76,7 +62,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		axisYValues.insert(visPointsData[i].y);
 		axisZValues.insert(visPointsData[i].z);
 
-		VisComponent::Point visPoint = {
+		Graphics::Point3D visPoint = {
 			visPointsData[i].x, visPointsData[i].y, visPointsData[i].z,
 			visPointsData[i].value, visPointsData[i].relError
 		};
@@ -299,11 +285,11 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 
 	std::vector<std::pair<DirectX::XMVECTOR, std::pair<float, std::wstring>>> gridAxesValuesVertices;
-	std::vector<Vertex> gridLinesVertices;
+	std::vector<Graphics::Vertex> gridLinesVertices;
 	constexpr float gridLineExtensionPerc = 0.1f;
 
 	for (int i = 0; i <= 10; ++i) {
-		Point visp = vis3DDataModel[0][axisYSize - 1][i * (axisZSize - 1) / 10];
+		Graphics::Point3D visp = vis3DDataModel[0][axisYSize - 1][i * (axisZSize - 1) / 10];
 		visp.x -= modelAbscissaCenter;
 		visp.y -= modelOrdinateCenter;
 		visp.z -= modelApplicateCenter;
@@ -411,12 +397,12 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	Microsoft::WRL::ComPtr<ID3D11Buffer> gridVertexBuffer;
 	D3D11_BUFFER_DESC gridVertexBufferDesc;
 	ZeroMemory(&gridVertexBufferDesc, sizeof(D3D11_BUFFER_DESC));
-	gridVertexBufferDesc.ByteWidth = sizeof(Vertex) * gridLinesVertices.size();
+	gridVertexBufferDesc.ByteWidth = sizeof(Graphics::Vertex) * gridLinesVertices.size();
 	gridVertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	gridVertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	gridVertexBufferDesc.CPUAccessFlags = 0;
 	gridVertexBufferDesc.MiscFlags = 0;
-	gridVertexBufferDesc.StructureByteStride = sizeof(Vertex);
+	gridVertexBufferDesc.StructureByteStride = sizeof(Graphics::Vertex);
 
 	D3D11_SUBRESOURCE_DATA gridVertexSubresourceData;
 	ZeroMemory(&gridVertexSubresourceData, sizeof(D3D11_SUBRESOURCE_DATA));
@@ -429,7 +415,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 	for (int i = 0; i < axisXSize; ++i) {
 		for (int j = 0; j < axisYSize; ++j) {
-			Point visp = vis3DDataModel[i][j][0];
+			Graphics::Point3D visp = vis3DDataModel[i][j][0];
 			visp.x -= modelAbscissaCenter;
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
@@ -460,7 +446,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 	for (int i = 0; i < axisXSize; ++i) {
 		for (int j = 0; j < axisYSize; ++j) {
-			Point visp = vis3DDataModel[i][j][axisZSize - 1];
+			Graphics::Point3D visp = vis3DDataModel[i][j][axisZSize - 1];
 			visp.x -= modelAbscissaCenter;
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
@@ -491,7 +477,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 	for (int k = 0; k < axisZSize; ++k) {
 		for (int i = 0; i < axisXSize; ++i) {
-			Point visp = vis3DDataModel[i][0][k];
+			Graphics::Point3D visp = vis3DDataModel[i][0][k];
 			visp.x -= modelAbscissaCenter;
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
@@ -522,7 +508,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 	for (int k = 0; k < axisZSize; ++k) {
 		for (int i = 0; i < axisXSize; ++i) {
-			Point visp = vis3DDataModel[i][axisYSize - 1][k];
+			Graphics::Point3D visp = vis3DDataModel[i][axisYSize - 1][k];
 			visp.x -= modelAbscissaCenter;
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
@@ -553,7 +539,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 	for (int j = 0; j < axisYSize; ++j) {
 		for (int k = 0; k < axisZSize; ++k) {
-			Point visp = vis3DDataModel[0][j][k];
+			Graphics::Point3D visp = vis3DDataModel[0][j][k];
 			visp.x -= modelAbscissaCenter;
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
@@ -584,7 +570,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 	for (int j = 0; j < axisYSize; ++j) {
 		for (int k = 0; k < axisZSize; ++k) {
-			Point visp = vis3DDataModel[axisXSize - 1][j][k];
+			Graphics::Point3D visp = vis3DDataModel[axisXSize - 1][j][k];
 			visp.x -= modelAbscissaCenter;
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
@@ -615,12 +601,12 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexResultBuffer;
 	D3D11_BUFFER_DESC vertexResultBufferDesc;
 	ZeroMemory(&vertexResultBufferDesc, sizeof(D3D11_BUFFER_DESC));
-	vertexResultBufferDesc.ByteWidth = sizeof(Vertex) * verticesResult.size();
+	vertexResultBufferDesc.ByteWidth = sizeof(Graphics::Vertex) * verticesResult.size();
 	vertexResultBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	vertexResultBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexResultBufferDesc.CPUAccessFlags = 0;
 	vertexResultBufferDesc.MiscFlags = 0;
-	vertexResultBufferDesc.StructureByteStride = sizeof(Vertex);
+	vertexResultBufferDesc.StructureByteStride = sizeof(Graphics::Vertex);
 
 	D3D11_SUBRESOURCE_DATA vertexResultSubresourceData;
 	ZeroMemory(&vertexResultSubresourceData, sizeof(D3D11_SUBRESOURCE_DATA));
@@ -634,12 +620,12 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexRelErrBuffer;
 	D3D11_BUFFER_DESC vertexRelErrBufferDesc;
 	ZeroMemory(&vertexRelErrBufferDesc, sizeof(D3D11_BUFFER_DESC));
-	vertexRelErrBufferDesc.ByteWidth = sizeof(Vertex) * verticesRelErr.size();
+	vertexRelErrBufferDesc.ByteWidth = sizeof(Graphics::Vertex) * verticesRelErr.size();
 	vertexRelErrBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	vertexRelErrBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexRelErrBufferDesc.CPUAccessFlags = 0;
 	vertexRelErrBufferDesc.MiscFlags = 0;
-	vertexRelErrBufferDesc.StructureByteStride = sizeof(Vertex);
+	vertexRelErrBufferDesc.StructureByteStride = sizeof(Graphics::Vertex);
 
 	D3D11_SUBRESOURCE_DATA vertexRelErrSubresourceData;
 	ZeroMemory(&vertexRelErrSubresourceData, sizeof(D3D11_SUBRESOURCE_DATA));
@@ -650,7 +636,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	this->d3dDevice->CreateBuffer(&vertexRelErrBufferDesc, &vertexRelErrSubresourceData, &vertexRelErrBuffer);
 
 
-	const UINT stride = sizeof(Vertex);
+	const UINT stride = sizeof(Graphics::Vertex);
 	const UINT offset = 0;
 
 
@@ -773,12 +759,12 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 				auto pr = std::make_pair(axis, closestAxisVal);
 
 				if (this->openPlanePreviews.find(pr) == this->openPlanePreviews.end()) {
-					std::vector<PlanePreview::Point2D> planePoints;
+					std::vector<Graphics::Point2D> planePoints;
 
 					if (axis == 'X') {
 						for (int j = 0; j < axisYSize; ++j) {
 							for (int k = 0; k < axisZSize; ++k) {
-								Point p = vis3DDataModel[axisIndex][j][k];
+								Graphics::Point3D p = vis3DDataModel[axisIndex][j][k];
 
 								planePoints.push_back({ p.y, p.z, p.value, p.relError });
 							}
@@ -787,7 +773,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 					else if (axis == 'Y') {
 						for (int i = 0; i < axisXSize; ++i) {
 							for (int k = 0; k < axisZSize; ++k) {
-								Point p = vis3DDataModel[i][axisIndex][k];
+								Graphics::Point3D p = vis3DDataModel[i][axisIndex][k];
 
 								planePoints.push_back({ p.x, p.z, p.value, p.relError });
 							}
@@ -796,7 +782,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 					else {
 						for (int i = 0; i < axisXSize; ++i) {
 							for (int j = 0; j < axisYSize; ++j) {
-								Point p = vis3DDataModel[i][j][axisIndex];
+								Graphics::Point3D p = vis3DDataModel[i][j][axisIndex];
 
 								planePoints.push_back({ p.x, p.y, p.value, p.relError });
 							}
@@ -805,8 +791,8 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 
 					int planePointsDataSize = planePoints.size();
-					PlanePreview::Point2D* planePointsData = new PlanePreview::Point2D[planePointsDataSize];
-					memcpy(planePointsData, planePoints.data(), planePointsDataSize * sizeof(PlanePreview::Point2D));
+					Graphics::Point2D* planePointsData = new Graphics::Point2D[planePointsDataSize];
+					memcpy(planePointsData, planePoints.data(), planePointsDataSize * sizeof(Graphics::Point2D));
 
 
 					this->openPlanePreviews[pr] = std::make_unique<PlanePreview>(axis, closestAxisVal);
@@ -831,9 +817,9 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		GetClientRect(this->hVisMerWnd->getResultLegend(), &fillRect);
 
 		for (int i = 0; i < fillRect.bottom; ++i) {
-			CustomColor colHigh;
-			CustomColor colLow;
-			CustomColor fillCol;
+			Graphics::CustomColor colHigh;
+			Graphics::CustomColor colLow;
+			Graphics::CustomColor fillCol;
 
 			if (i < fillRect.bottom / 5) {
 				colHigh = this->resultLegend[5].color;
@@ -899,9 +885,9 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		GetClientRect(this->hVisMerWnd->getRelErrLegend(), &fillRect);
 
 		for (int i = 0; i < fillRect.bottom; ++i) {
-			CustomColor colHigh;
-			CustomColor colLow;
-			CustomColor fillCol;
+			Graphics::CustomColor colHigh;
+			Graphics::CustomColor colLow;
+			Graphics::CustomColor fillCol;
 
 			if (i < fillRect.bottom / 4) {
 				colHigh = this->relerrLegend[4].color;
@@ -952,16 +938,16 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDeviceContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 
-		if (cursorGrabInteractionProject == this->hVisMerWnd->getResultDisplay() || cursorGrabInteractionProject == this->hVisMerWnd->getRelErrDisplay()) {
+		if (CursorData::cursorGrabInteractionProject == this->hVisMerWnd->getResultDisplay() || CursorData::cursorGrabInteractionProject == this->hVisMerWnd->getRelErrDisplay()) {
 			POINT cursorPosition;
 			GetCursorPos(&cursorPosition);
-			ScreenToClient(cursorGrabInteractionProject, &cursorPosition);
+			ScreenToClient(CursorData::cursorGrabInteractionProject, &cursorPosition);
 
-			ScreenVector clickScreenVector = {
-				VisComponent::clickPosX - this->hVisMerWnd->getDisplayDim() / 2.f,
-				-(VisComponent::clickPosY - this->hVisMerWnd->getDisplayDim() / 2.f)
+			Graphics::ScreenVector clickScreenVector = {
+				CursorData::clickPosX - this->hVisMerWnd->getDisplayDim() / 2.f,
+				-(CursorData::clickPosY - this->hVisMerWnd->getDisplayDim() / 2.f)
 			};
-			ScreenVector cursorScreenVector = {
+			Graphics::ScreenVector cursorScreenVector = {
 				cursorPosition.x - this->hVisMerWnd->getDisplayDim() / 2.f,
 				-(cursorPosition.y - this->hVisMerWnd->getDisplayDim() / 2.f)
 			};
@@ -1050,8 +1036,8 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			roundRotationMatrix *= DirectX::XMMatrixRotationAxis(eyePosition, angleClickToCurrentCursor);
 			rotationMatrix *= DirectX::XMMatrixRotationAxis(eyePosition, angleClickToCurrentCursor) * DirectX::XMMatrixRotationAxis(rotationAxis, rotationAngle);
 
-			VisComponent::clickPosX = cursorPosition.x;
-			VisComponent::clickPosY = cursorPosition.y;
+			CursorData::clickPosX = cursorPosition.x;
+			CursorData::clickPosY = cursorPosition.y;
 		}
 
 
@@ -1074,7 +1060,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		}
 
 
-		const ConstBufferStruct cb = {
+		const Graphics::ConstBufferStruct cb = {
 			{
 				DirectX::XMMatrixTranspose(
 					transformationMatrix *
@@ -1102,11 +1088,11 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		this->d3dDevice->CreateBuffer(&constBufferDesc, &constBufferSubresourceData, &constBuffer);
 		this->d3dDeviceContext->VSSetConstantBuffers(0, 1, constBuffer.GetAddressOf());
 
-		this->d3dDevice->CreateVertexShader(VisComponent::vertexShaderBlob, VisComponent::vertexShaderFileSize, nullptr, &vertexShader);
+		this->d3dDevice->CreateVertexShader(Graphics::vertexShaderBlob, Graphics::vertexShaderFileSize, nullptr, &vertexShader);
 		this->d3dDeviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
-		this->d3dDevice->CreateInputLayout(VisComponent::inputElementDesc, (UINT)std::size(VisComponent::inputElementDesc), VisComponent::vertexShaderBlob, VisComponent::vertexShaderFileSize, &inputLayout);
+		this->d3dDevice->CreateInputLayout(Graphics::inputElementDesc, 2, Graphics::vertexShaderBlob, Graphics::vertexShaderFileSize, &inputLayout);
 		this->d3dDeviceContext->IASetInputLayout(inputLayout.Get());
-		this->d3dDevice->CreatePixelShader(VisComponent::pixelShaderBlob, VisComponent::pixelShaderFileSize, nullptr, &pixelShader);
+		this->d3dDevice->CreatePixelShader(Graphics::pixelShaderBlob, Graphics::pixelShaderFileSize, nullptr, &pixelShader);
 		this->d3dDeviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
 
 		this->d3dDeviceContext->OMSetDepthStencilState(depthStencilState.Get(), 1u);
@@ -1395,7 +1381,7 @@ void VisComponent::initDirect3D() {
 }
 
 
-VisComponent::CustomColor VisComponent::getResultColor(long double resultValue) {
+Graphics::CustomColor VisComponent::getResultColor(long double resultValue) {
 	if (resultValue == 0.L) {
 		return { 1.f, 1.f, 1.f };
 	}
@@ -1426,7 +1412,7 @@ VisComponent::CustomColor VisComponent::getResultColor(long double resultValue) 
 }
 
 
-VisComponent::CustomColor VisComponent::getRelErrColor(long double relerrValue) {
+Graphics::CustomColor VisComponent::getRelErrColor(long double relerrValue) {
 	long double valLog = std::log10(relerrValue);
 	long double levelColor;
 
