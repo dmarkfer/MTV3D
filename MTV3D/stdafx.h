@@ -36,6 +36,7 @@
 #include <thread>
 #include <limits>
 #include <optional>
+#include <algorithm>
 
 
 #define BLACK		RGB(0, 0, 0)

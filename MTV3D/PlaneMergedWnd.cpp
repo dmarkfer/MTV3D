@@ -19,32 +19,18 @@
 ***
 **********************************************************************************
 **********************************************************************************/
-#pragma once
-#include "WndClass.h"
+#include "stdafx.h"
 #include "PlaneMergedWnd.h"
-#include "Graphics.h"
-#include "CursorData.h"
 
 
-class PlanePreview {
-private:
-	HINSTANCE hCurrentInst;
-	HACCEL hAccelTable;
-	char axis;
-	float axisValue;
-	LPWSTR fileAbsolutePath;
-	LPWSTR windowTitle;
+PlaneMergedWnd::PlaneMergedWnd(HINSTANCE hInst, LPWSTR windowTitle): VisMergedWndBase(hInst, windowTitle) {
+	this->hBtnCreateLine = CreateWindow(L"BUTTON", L"Create line preview",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+		wndRect.right / 4 + dialogWidth * 2 / 3, this->displayDim + dialogHeight * 2 / 3, 180, 30,
+		this->hWnd, (HMENU)BUTTON_CREATE_PLANE, hInst, nullptr);
+}
 
-	std::unique_ptr<PlaneMergedWnd> hVisMerWnd;
 
-	std::vector<Graphics::LegendColorLevel> resultLegend;
-	std::vector<Graphics::LegendColorLevel> relerrLegend;
-public:
-	PlanePreview(char axis, float axisValue);
-	~PlanePreview() = default;
-
-	void run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAccelTable, LPWSTR fileAbsolutePath, int planePointsDataSize, Graphics::Point2D* planePointsData);
-private:
-	Graphics::CustomColor getResultColor(long double resultValue);
-	Graphics::CustomColor getRelErrColor(long double relerrValue);
-};
+HWND PlaneMergedWnd::getBtnCreateLine() {
+	return this->hBtnCreateLine;
+}

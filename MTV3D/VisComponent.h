@@ -23,6 +23,7 @@
 
 #include "stdafx.h"
 #include "PlanePreview.h"
+#include "VisMergedWindow.h"
 
 
 class VisComponent {
@@ -66,5 +67,4 @@ private:
 	void initDirect3D();
 	Graphics::CustomColor getResultColor(long double resultValue);
 	Graphics::CustomColor getRelErrColor(long double relerrValue);
-	static std::optional<float> validFloat(std::wstring numberWStr);
 };

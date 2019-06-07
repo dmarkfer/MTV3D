@@ -693,7 +693,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		if (VisComponent::flagPlanePrevCreation) {
 			WCHAR selectedPlaneAxisStr[101];
 			GetWindowText(this->hVisMerWnd->getAxisValueBox(), selectedPlaneAxisStr, 100);
-			auto axisValCont = VisComponent::validFloat(std::wstring(selectedPlaneAxisStr));
+			auto axisValCont = Graphics::validFloat(std::wstring(selectedPlaneAxisStr));
 
 			if (axisValCont) {
 				VisComponent::flagPlanePrevCreation = false;
@@ -1431,23 +1431,5 @@ Graphics::CustomColor VisComponent::getRelErrColor(long double relerrValue) {
 	else {
 		levelColor = std::abs(std::log10(this->relerrLegend[3].value - valLog)) / std::abs(std::log10(this->relerrLegend[3].value) - (this->relerrLegend[4].value > 0.L) ? std::log10(this->relerrLegend[4].value) : std::numeric_limits<long double>::min_exponent10);
 		return { 1.f, 0.f, 0.5f - (float)levelColor * 0.5f };
-	}
-}
-
-
-std::optional<float> VisComponent::validFloat(std::wstring numberWStr) {
-	if (numberWStr.empty()) {
-		return {};
-	}
-
-	try {
-		return { stof(numberWStr, nullptr) };
-	}
-	catch (...) {
-		VisComponent::flagPlanePrevCreation = false;
-
-		MessageBox(nullptr, L"Invalid input!", nullptr, MB_ICONERROR);
-
-		return {};
 	}
 }

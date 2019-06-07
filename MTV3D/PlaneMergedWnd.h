@@ -20,31 +20,16 @@
 **********************************************************************************
 **********************************************************************************/
 #pragma once
-#include "WndClass.h"
-#include "PlaneMergedWnd.h"
-#include "Graphics.h"
-#include "CursorData.h"
+
+#include "VisMergedWndBase.h"
 
 
-class PlanePreview {
+class PlaneMergedWnd: public VisMergedWndBase {
 private:
-	HINSTANCE hCurrentInst;
-	HACCEL hAccelTable;
-	char axis;
-	float axisValue;
-	LPWSTR fileAbsolutePath;
-	LPWSTR windowTitle;
-
-	std::unique_ptr<PlaneMergedWnd> hVisMerWnd;
-
-	std::vector<Graphics::LegendColorLevel> resultLegend;
-	std::vector<Graphics::LegendColorLevel> relerrLegend;
+	HWND hBtnCreateLine;
 public:
-	PlanePreview(char axis, float axisValue);
-	~PlanePreview() = default;
+	PlaneMergedWnd(HINSTANCE hInst, LPWSTR windowTitle);
+	~PlaneMergedWnd() = default;
 
-	void run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAccelTable, LPWSTR fileAbsolutePath, int planePointsDataSize, Graphics::Point2D* planePointsData);
-private:
-	Graphics::CustomColor getResultColor(long double resultValue);
-	Graphics::CustomColor getRelErrColor(long double relerrValue);
+	HWND getBtnCreateLine();
 };

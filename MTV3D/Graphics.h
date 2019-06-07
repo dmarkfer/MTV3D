@@ -64,4 +64,6 @@ public:
 public:
 	Graphics() = delete;
 	~Graphics() = delete;
+
+	static std::optional<float> validFloat(std::wstring numberWStr);
 };

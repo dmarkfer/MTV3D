@@ -33,3 +33,19 @@ const D3D11_INPUT_ELEMENT_DESC Graphics::inputElementDesc[] = {
 
 unsigned Graphics::pixelShaderFileSize = 0;
 char* Graphics::pixelShaderBlob = nullptr;
+
+
+std::optional<float> Graphics::validFloat(std::wstring numberWStr) {
+	if (numberWStr.empty()) {
+		return {};
+	}
+
+	try {
+		return { stof(numberWStr, nullptr) };
+	}
+	catch (...) {
+		MessageBox(nullptr, L"Invalid input!", nullptr, MB_ICONERROR);
+
+		return {};
+	}
+}
