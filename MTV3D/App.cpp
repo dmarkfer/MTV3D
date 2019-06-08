@@ -258,6 +258,10 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			App::appPointer->closeAllProjects();
 			break;
 		}
+		case BUTTON_CREATE_LINE: {
+			PlanePreview::flagLinePrevCreation = true;
+			break;
+		}
 		case BUTTON_CREATE_PLANE: {
 			VisComponent::flagPlanePrevCreation = true;
 			break;
@@ -569,6 +573,21 @@ void App::createWndClasses() {
 		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D))
 	};
 
+	this->wndClassTypeStruct[WndClass::Type::VIS_LINE] = {
+		sizeof(WNDCLASSEXW),
+		CS_HREDRAW | CS_VREDRAW,
+		App::wndProc,
+		0,
+		0,
+		this->hCurrentInst,
+		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D)),
+		LoadCursor(this->hCurrentInst, IDC_ARROW),
+		CreateSolidBrush(DARK_GRAY),
+		MAKEINTRESOURCEW(IDC_MTV3D_VIS),
+		L"VisLine",
+		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D))
+	};
+
 	this->wndClassTypeStruct[WndClass::Type::VIS_RESULT] = {
 		sizeof(WNDCLASSEXW),
 		CS_HREDRAW | CS_VREDRAW,
@@ -664,6 +683,7 @@ void App::createWndClasses() {
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::MAIN]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_MERGED]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_MERGED_PLANE]);
+	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_LINE]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_RESULT]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_RELERR]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_DISPLAY]);

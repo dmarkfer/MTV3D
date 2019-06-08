@@ -55,6 +55,11 @@ public:
 		float axisOne, axisTwo;
 		long double value, relError;
 	};
+
+	struct Point1D {
+		float axis;
+		long double value, relError;
+	};
 public:
 	static unsigned vertexShaderFileSize;
 	static char* vertexShaderBlob;

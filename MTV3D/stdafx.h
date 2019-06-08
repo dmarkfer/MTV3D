@@ -52,4 +52,4 @@
 
 #define PI_CONST 3.14159f
 
-#define WM_THREAD_DONE		WM_USER + 1
+#define WM_THREAD_DONE				WM_USER + 1

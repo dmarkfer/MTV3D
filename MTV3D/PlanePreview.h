@@ -24,6 +24,7 @@
 #include "PlaneMergedWnd.h"
 #include "Graphics.h"
 #include "CursorData.h"
+#include "LinePreviewWnd.h"
 
 
 class PlanePreview {
@@ -48,6 +49,8 @@ private:
 
 	std::vector<Graphics::LegendColorLevel> resultLegend;
 	std::vector<Graphics::LegendColorLevel> relerrLegend;
+
+	std::map<std::pair<std::pair<char, float>, std::pair<char, float>>, std::unique_ptr<LinePreviewWnd>> openLinePreviews;
 public:
 	static float scaleBase;
 	static bool gridActive;

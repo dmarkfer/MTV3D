@@ -20,17 +20,35 @@
 **********************************************************************************
 **********************************************************************************/
 #include "stdafx.h"
-#include "PlaneMergedWnd.h"
+#include "LinePreviewWnd.h"
 
 
-PlaneMergedWnd::PlaneMergedWnd(HINSTANCE hInst, LPWSTR windowTitle): VisMergedWndBase(hInst, windowTitle, 'L') {
-	this->hBtnCreateLine = CreateWindow(L"BUTTON", L"Create line preview",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		wndRect.right / 4 + dialogWidth * 2 / 3, this->displayDim + dialogHeight * 2 / 3, 180, 30,
-		this->hWnd, (HMENU)BUTTON_CREATE_LINE, hInst, nullptr);
+LinePreviewWnd::LinePreviewWnd(HINSTANCE hCurrentInst, LPWSTR fileAbsolutePath, std::pair<std::pair<char, float>, std::pair<char, float>> pr, int linePointsDataSize, Graphics::Point1D* linePointsData) {
+	SetCursor(LoadCursor(nullptr, IDC_ARROW));
+
+	this->windowTitle = new WCHAR[WCHAR_ARR_MAX];
+	swprintf_s(windowTitle, WCHAR_ARR_MAX - 1, L"MTV3D - %s ( %c = %1.3f , %c = %1.3f )", fileAbsolutePath, pr.first.first, pr.first.second, pr.second.first, pr.second.second);
+
+	this->linePoints.assign(linePointsData, linePointsData + linePointsDataSize);
+	delete[] linePointsData;
+
+	this->reCreate();
 }
 
 
-HWND PlaneMergedWnd::getBtnCreateLine() {
-	return this->hBtnCreateLine;
+LinePreviewWnd::~LinePreviewWnd() {
+	DestroyWindow(this->hWnd);
+	delete[] this->windowTitle;
+}
+
+
+HWND LinePreviewWnd::getHandle() {
+	return this->hWnd;
+}
+
+
+void LinePreviewWnd::reCreate() {
+	this->hWnd = CreateWindowW(L"VisLine", this->windowTitle, WS_OVERLAPPEDWINDOW | WS_MAXIMIZE,
+		CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, this->hCurrentInst, nullptr);
+	ShowWindow(this->hWnd, SW_SHOW);
 }

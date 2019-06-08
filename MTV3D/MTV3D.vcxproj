@@ -290,6 +290,7 @@
     <ClInclude Include="App.h" />
     <ClInclude Include="CursorData.h" />
     <ClInclude Include="Graphics.h" />
+    <ClInclude Include="LinePreviewWnd.h" />
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="PlaneMergedWnd.h" />
     <ClInclude Include="PlanePreview.h" />
@@ -306,6 +307,7 @@
     <ClCompile Include="App.cpp" />
     <ClCompile Include="CursorData.cpp" />
     <ClCompile Include="Graphics.cpp" />
+    <ClCompile Include="LinePreviewWnd.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="PlaneMergedWnd.cpp" />

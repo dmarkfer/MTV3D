@@ -19,18 +19,22 @@
 ***
 **********************************************************************************
 **********************************************************************************/
-#include "stdafx.h"
-#include "PlaneMergedWnd.h"
+#pragma once
+
+#include "Graphics.h"
 
 
-PlaneMergedWnd::PlaneMergedWnd(HINSTANCE hInst, LPWSTR windowTitle): VisMergedWndBase(hInst, windowTitle, 'L') {
-	this->hBtnCreateLine = CreateWindow(L"BUTTON", L"Create line preview",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		wndRect.right / 4 + dialogWidth * 2 / 3, this->displayDim + dialogHeight * 2 / 3, 180, 30,
-		this->hWnd, (HMENU)BUTTON_CREATE_LINE, hInst, nullptr);
-}
+class LinePreviewWnd {
+private:
+	HWND hWnd;
+	HINSTANCE hCurrentInst;
+	LPWSTR windowTitle;
 
+	std::vector<Graphics::Point1D> linePoints;
+public:
+	LinePreviewWnd(HINSTANCE hCurrentInst, LPWSTR fileAbsolutePath, std::pair<std::pair<char, float>, std::pair<char, float>> pr, int linePointsDataSize, Graphics::Point1D* linePointsData);
+	~LinePreviewWnd();
 
-HWND PlaneMergedWnd::getBtnCreateLine() {
-	return this->hBtnCreateLine;
-}
+	HWND getHandle();
+	void reCreate();
+};

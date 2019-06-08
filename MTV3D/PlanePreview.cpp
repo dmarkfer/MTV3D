@@ -544,6 +544,140 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 	bool quitFlag = false;
 
 	while (true) {
+		if (PlanePreview::flagLinePrevCreation) {
+			WCHAR selectedLineAxisStr[101];
+			GetWindowText(this->hVisMerWnd->getAxisValueBox(), selectedLineAxisStr, 100);
+			auto axisValCont = Graphics::validFloat(std::wstring(selectedLineAxisStr));
+
+			if (axisValCont) {
+				PlanePreview::flagLinePrevCreation = false;
+
+				char selAxis = 'Z';
+
+				if (Button_GetCheck(this->hVisMerWnd->getRadioButtonX()) == BST_CHECKED) {
+					selAxis = 'X';
+				}
+				else if (Button_GetCheck(this->hVisMerWnd->getRadioButtonY()) == BST_CHECKED) {
+					selAxis = 'Y';
+				}
+
+
+				float closestAxisVal = *axisValCont;
+				float lastDistance = std::numeric_limits<float>::infinity();
+				int axisIndex;
+
+				if (selAxis == 'X') {
+					int cntr = 0;
+					for (auto axEl : axisOneValues) {
+						float dist = std::abs(axEl - *axisValCont);
+
+						if (dist <= lastDistance) {
+							lastDistance = dist;
+							closestAxisVal = axEl;
+							axisIndex = cntr;
+						}
+
+						++cntr;
+					}
+				}
+				else if (selAxis == 'Y'  &&  this->axis == 'X') {
+					int cntr = 0;
+					for (auto axEl : axisOneValues) {
+						float dist = std::abs(axEl - *axisValCont);
+
+						if (dist <= lastDistance) {
+							lastDistance = dist;
+							closestAxisVal = axEl;
+							axisIndex = cntr;
+						}
+
+						++cntr;
+					}
+				}
+				else if (selAxis == 'Y'  &&  this->axis == 'Z') {
+					int cntr = 0;
+					for (auto axEl : axisTwoValues) {
+						float dist = std::abs(axEl - *axisValCont);
+
+						if (dist <= lastDistance) {
+							lastDistance = dist;
+							closestAxisVal = axEl;
+							axisIndex = cntr;
+						}
+
+						++cntr;
+					}
+				}
+				else {
+					int cntr = 0;
+					for (auto axEl : axisTwoValues) {
+						float dist = std::abs(axEl - *axisValCont);
+
+						if (dist <= lastDistance) {
+							lastDistance = dist;
+							closestAxisVal = axEl;
+							axisIndex = cntr;
+						}
+
+						++cntr;
+					}
+				}
+
+
+				auto pr = std::make_pair(
+					std::make_pair(this->axis, this->axisValue),
+					std::make_pair(selAxis, closestAxisVal)
+				);
+
+				if (this->openLinePreviews.find(pr) == this->openLinePreviews.end()) {
+					std::vector<Graphics::Point1D> linePoints;
+
+					if (selAxis == 'X') {
+						for (int j = 0; j < axisTwoSize; ++j) {
+							Graphics::Point2D p = visPlaneModel[axisIndex][j];
+							linePoints.push_back({ p.axisTwo, p.value, p.relError });
+						}
+					}
+					else if (selAxis == 'Y'  &&  this->axis == 'X') {
+						for (int i = 0; i < axisOneSize; ++i) {
+							Graphics::Point2D p = visPlaneModel[i][axisIndex];
+							linePoints.push_back({ p.axisOne, p.value, p.relError });
+						}
+					}
+					else if (selAxis == 'Y'  &&  this->axis == 'Z') {
+						for (int j = 0; j < axisTwoSize; ++j) {
+							Graphics::Point2D p = visPlaneModel[axisIndex][j];
+							linePoints.push_back({ p.axisTwo, p.value, p.relError });
+						}
+					}
+					else {
+						for (int i = 0; i < axisOneSize; ++i) {
+							Graphics::Point2D p = visPlaneModel[i][axisIndex];
+							linePoints.push_back({ p.axisOne, p.value, p.relError });
+						}
+					}
+
+
+					int linePointsDataSize = linePoints.size();
+					Graphics::Point1D* linePointsData = new Graphics::Point1D[linePointsDataSize];
+					memcpy(linePointsData, linePoints.data(), linePointsDataSize * sizeof(Graphics::Point1D));
+
+
+					this->openLinePreviews[pr] = std::make_unique<LinePreviewWnd>(this->hCurrentInst, fileAbsolutePath, pr, linePointsDataSize, linePointsData);
+				}
+				else {
+					if (IsWindow(this->openLinePreviews[pr]->getHandle())) {
+						MessageBox(this->hVisMerWnd->getHandle(), (std::wstring(L"You have already opened line: ") + std::wstring(1, this->axis) + L" = " + std::to_wstring(this->axisValue) + L" , " + std::wstring(1, selAxis) + L" = " + std::to_wstring(*axisValCont)).c_str(), L"Already open!", MB_ICONINFORMATION);
+					}
+					else {
+						this->openLinePreviews[pr]->reCreate();
+					}
+				}
+			}
+		}
+
+
+
 		HDC hdc = GetDC(this->hVisMerWnd->getResultLegend());
 
 		RECT fillRect;
