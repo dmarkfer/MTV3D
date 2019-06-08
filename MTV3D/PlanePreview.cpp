@@ -48,7 +48,7 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 		EnableWindow(this->hVisMerWnd->getRadioButtonX(), false);
 		ShowWindow(this->hVisMerWnd->getRadioButtonX(), SW_HIDE);
 		CreateWindow(L"STATIC", axisEqValueStr, WS_VISIBLE | WS_CHILD,
-			this->hVisMerWnd->getWndRect().right / 4 + 30, this->hVisMerWnd->getDisplayDim() + this->hVisMerWnd->getDialogHeight() / 3 + 30, 100, 20,
+			this->hVisMerWnd->getWndRect().right / 4 + 60, this->hVisMerWnd->getDisplayDim() + this->hVisMerWnd->getDialogHeight() / 3 + 30, 100, 20,
 			this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
 	}
 	else if (this->axis == 'Y') {
@@ -56,7 +56,7 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 		EnableWindow(this->hVisMerWnd->getRadioButtonY(), false);
 		ShowWindow(this->hVisMerWnd->getRadioButtonY(), SW_HIDE);
 		CreateWindow(L"STATIC", axisEqValueStr, WS_VISIBLE | WS_CHILD,
-			this->hVisMerWnd->getWndRect().right / 4 + 130, this->hVisMerWnd->getDisplayDim() + this->hVisMerWnd->getDialogHeight() / 3 + 30, 100, 20,
+			this->hVisMerWnd->getWndRect().right / 4 + 120, this->hVisMerWnd->getDisplayDim() + this->hVisMerWnd->getDialogHeight() / 3 + 30, 100, 20,
 			this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
 	}
 	else {
@@ -64,7 +64,7 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 		EnableWindow(this->hVisMerWnd->getRadioButtonZ(), false);
 		ShowWindow(this->hVisMerWnd->getRadioButtonZ(), SW_HIDE);
 		CreateWindow(L"STATIC", axisEqValueStr, WS_VISIBLE | WS_CHILD,
-			this->hVisMerWnd->getWndRect().right / 4 + 190, this->hVisMerWnd->getDisplayDim() + this->hVisMerWnd->getDialogHeight() / 3 + 30, 100, 20,
+			this->hVisMerWnd->getWndRect().right / 4 + 180, this->hVisMerWnd->getDisplayDim() + this->hVisMerWnd->getDialogHeight() / 3 + 30, 100, 20,
 			this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
 	}
 	ShowWindow(this->hVisMerWnd->getHandle(), SW_SHOWMAXIMIZED);
@@ -328,7 +328,7 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 		visp.axisOne -= modelAbscissaCenter;
 		visp.axisTwo -= modelOrdinateCenter;
 		visp.axisOne -= gridLineExtensionPerc * modelAbscissaLength;
-		gridLinesVertices.push_back({ visp.axisOne, relfToAxis, visp.axisTwo, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.axisOne, relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, { 1.f, 1.f, 1.f } });
 
 		gridLinesVertices.push_back({ visp.axisOne, -relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, { 1.f, 1.f, 1.f } });
 
@@ -353,7 +353,7 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 		visp.axisOne -= modelAbscissaCenter;
 		visp.axisTwo -= modelOrdinateCenter;
 		visp.axisTwo -= gridLineExtensionPerc * modelOrdinateLength;
-		gridLinesVertices.push_back({ visp.axisOne, relfToAxis, visp.axisTwo, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.axisOne, relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, { 1.f, 1.f, 1.f } });
 		gridLinesVertices.push_back({ visp.axisOne, -relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, { 1.f, 1.f, 1.f } });
 
 		gridLinesVertices.push_back({ visp.axisOne, -relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, { 1.f, 1.f, 1.f } });
@@ -378,10 +378,10 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 		visp.axisTwo -= modelOrdinateCenter;
 		visp.axisOne += gridLineExtensionPerc * modelAbscissaLength;
 		visp.axisTwo -= gridLineExtensionPerc * modelOrdinateLength;
-		gridLinesVertices.push_back({ visp.axisOne, i * float(modelReliefLength / 10.L) - relfToAxis, visp.axisTwo, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.axisOne, i * float((1 + gridLineExtensionPerc) * modelReliefLength / 10.L) - relfToAxis, visp.axisTwo, { 1.f, 1.f, 1.f } });
 
 		gridAxesValuesVertices.push_back(std::make_pair(
-			DirectX::XMVectorSet(visp.axisOne, i * float(modelReliefLength / 10.L) - relfToAxis, visp.axisTwo, 1.f),
+			DirectX::XMVectorSet(visp.axisOne, i * float((1 + gridLineExtensionPerc) * modelReliefLength / 10.L) - relfToAxis, visp.axisTwo, 1.f),
 			std::make_pair(
 				std::make_pair(resultMinValue + i * (resultMaxValue - resultMinValue) / 10.L, relerrMaxValue - i * (relerrMaxValue - relerrMinValue) / 10.L),
 				i == 5 ? L"3MID" : L"3"
@@ -393,16 +393,16 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 		visp.axisTwo -= modelOrdinateCenter;
 		visp.axisOne -= gridLineExtensionPerc * modelAbscissaLength;
 		visp.axisTwo -= gridLineExtensionPerc * modelOrdinateLength;
-		gridLinesVertices.push_back({ visp.axisOne, i * float(modelReliefLength / 10.L) - relfToAxis, visp.axisTwo, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.axisOne, i * float((1 + gridLineExtensionPerc) * modelReliefLength / 10.L) - relfToAxis, visp.axisTwo, { 1.f, 1.f, 1.f } });
 
-		gridLinesVertices.push_back({ visp.axisOne, i * float(modelReliefLength / 10.L) - relfToAxis, visp.axisTwo, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.axisOne, i * float((1 + gridLineExtensionPerc) * modelReliefLength / 10.L) - relfToAxis, visp.axisTwo, { 1.f, 1.f, 1.f } });
 
 		visp = visPlaneModel[0][axisTwoSize - 1];
 		visp.axisOne -= modelAbscissaCenter;
 		visp.axisTwo -= modelOrdinateCenter;
 		visp.axisOne -= gridLineExtensionPerc * modelAbscissaLength;
 		visp.axisTwo += gridLineExtensionPerc * modelOrdinateLength;
-		gridLinesVertices.push_back({ visp.axisOne, i * float(modelReliefLength / 10.L) - relfToAxis, visp.axisTwo, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.axisOne, i * float((1 + gridLineExtensionPerc) * modelReliefLength / 10.L) - relfToAxis, visp.axisTwo, { 1.f, 1.f, 1.f } });
 	}
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> gridVertexBuffer;
