@@ -30,11 +30,19 @@ private:
 	HINSTANCE hCurrentInst;
 	LPWSTR windowTitle;
 
+	std::pair<std::pair<char, float>, std::pair<char, float>> pr;
+
+	int linePointsDataSize;
 	std::vector<Graphics::Point1D> linePoints;
+
+	std::vector<HWND> childWnds;
+
+	static std::set<LinePreviewWnd*> lineWndSet;
 public:
 	LinePreviewWnd(HINSTANCE hCurrentInst, LPWSTR fileAbsolutePath, std::pair<std::pair<char, float>, std::pair<char, float>> pr, int linePointsDataSize, Graphics::Point1D* linePointsData);
 	~LinePreviewWnd();
 
 	HWND getHandle();
 	void reCreate();
+	static void drawChart(PAINTSTRUCT* ps, HWND hWnd);
 };

@@ -23,6 +23,9 @@
 #include <d2d1_2.h>
 #pragma comment(lib, "d2d1.lib")
 
+#include <gdiplus.h>
+#pragma comment(lib, "Gdiplus.lib")
+
 
 #include <tchar.h>
 #include <memory>

@@ -44,6 +44,10 @@ App::~App() {
 
 
 int App::run(HINSTANCE hInstance, int& nCmdShow) {
+	ULONG_PTR gdiplusToken;
+	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+	Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, nullptr);
+
 	this->hCurrentInst = hInstance;
 
 	CursorData::cursorHandNoGrab = LoadCursorFromFile(L"Hand Move No Grab v2.cur");
@@ -74,6 +78,8 @@ int App::run(HINSTANCE hInstance, int& nCmdShow) {
 			}
 		}
 	}
+
+	Gdiplus::GdiplusShutdown(gdiplusToken);
 
 	return (int)msg.wParam;
 }
@@ -444,6 +450,10 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 
 			EndPaint(hWnd, &ps);
 			DeleteDC(hdc);
+			break;
+		}
+		case WndClass::Type::VIS_LINE: {
+			LinePreviewWnd::drawChart(&ps, hWnd);
 			break;
 		}
 		case WndClass::Type::VIS_LEGEND: {
