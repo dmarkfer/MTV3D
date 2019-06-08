@@ -266,11 +266,14 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			if (HIWORD(wParam) == BN_CLICKED) {
 				if (SendDlgItemMessage(hWnd, CHECK_GRID, BM_GETCHECK, 0, 0)) {
 					VisComponent::gridActive = true;
+					PlanePreview::gridActive = true;
 				}
 				else {
 					VisComponent::gridActive = false;
+					PlanePreview::gridActive = false;
 					CheckDlgButton(hWnd, CHECK_AX_VAL, BST_UNCHECKED);
 					VisComponent::axesValsActive = false;
+					PlanePreview::axesValsActive = false;
 				}
 			}
 			break;
@@ -279,11 +282,14 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			if (HIWORD(wParam) == BN_CLICKED) {
 				if (SendDlgItemMessage(hWnd, CHECK_AX_VAL, BM_GETCHECK, 0, 0)) {
 					VisComponent::axesValsActive = true;
+					PlanePreview::axesValsActive = true;
 					CheckDlgButton(hWnd, CHECK_GRID, BST_CHECKED);
 					VisComponent::gridActive = true;
+					PlanePreview::gridActive = true;
 				}
 				else {
 					VisComponent::axesValsActive = false;
+					PlanePreview::axesValsActive = false;
 				}
 			}
 			break;
@@ -461,9 +467,11 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		// 2^16 = 65536
 		if (zDelta <= 32000) { //   0  to  2^16 / 2
 			VisComponent::scaleBase *= 1.05f;
+			PlanePreview::scaleBase *= 1.05f;
 		}
 		else { //   2^16 / 2  to  2^16
 			VisComponent::scaleBase *= 0.95f;
+			PlanePreview::scaleBase *= 0.95f;
 		}
 
 		return 0;

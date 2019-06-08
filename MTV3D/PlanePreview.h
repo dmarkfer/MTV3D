@@ -35,16 +35,31 @@ private:
 	LPWSTR fileAbsolutePath;
 	LPWSTR windowTitle;
 
+	std::vector<Graphics::Vertex> verticesResult;
+	std::vector<Graphics::Vertex> verticesRelErr;
+	std::vector<unsigned> indices;
+
+	Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice;
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext> d3dDeviceContext;
+	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChainResultDisplay;
+	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChainRelErrDisplay;
+
 	std::unique_ptr<PlaneMergedWnd> hVisMerWnd;
 
 	std::vector<Graphics::LegendColorLevel> resultLegend;
 	std::vector<Graphics::LegendColorLevel> relerrLegend;
+public:
+	static float scaleBase;
+	static bool gridActive;
+	static bool axesValsActive;
+	static bool flagLinePrevCreation;
 public:
 	PlanePreview(char axis, float axisValue);
 	~PlanePreview() = default;
 
 	void run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAccelTable, LPWSTR fileAbsolutePath, int planePointsDataSize, Graphics::Point2D* planePointsData);
 private:
+	void initDirect3D();
 	Graphics::CustomColor getResultColor(long double resultValue);
 	Graphics::CustomColor getRelErrColor(long double relerrValue);
 };
