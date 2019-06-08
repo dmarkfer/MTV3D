@@ -377,7 +377,7 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 		gridAxesValuesVertices.push_back(std::make_pair(
 			DirectX::XMVectorSet(visp.axisOne, i * float(modelReliefLength / 10.L) - relfToAxis, visp.axisTwo, 1.f),
 			std::make_pair(
-				std::make_pair(resultMinValue + i * (resultMaxValue - resultMinValue) / 10.L, relerrMinValue + i * (relerrMaxValue - relerrMinValue) / 10.L),
+				std::make_pair(resultMinValue + i * (resultMaxValue - resultMinValue) / 10.L, relerrMaxValue - i * (relerrMaxValue - relerrMinValue) / 10.L),
 				i == 5 ? L"3MID" : L"3"
 			)
 		));
