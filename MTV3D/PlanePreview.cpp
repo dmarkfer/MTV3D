@@ -1115,7 +1115,7 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 			auto axValIter = gridAxesValuesVertices.begin();
 
 			for (auto scrVec : gridAxesValScreenVertices) {
-				axValSize = swprintf_s(axVal, L"%1.3Lf", axValIter->second.first.second);
+				axValSize = swprintf_s(axVal, L"%1.3Lf", axValIter->second.first.first);
 
 				float offsetX = 0.f, offsetY = 0.f;
 
