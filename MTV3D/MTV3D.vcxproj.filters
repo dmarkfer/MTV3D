@@ -166,10 +166,10 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Hand Move Grab v2.cur">
+    <None Include="Hand_Move_Grab_v2.cur">
       <Filter>Resource Files\Cursors</Filter>
     </None>
-    <None Include="Hand Move No Grab v2.cur">
+    <None Include="Hand_Move_No_Grab_v2.cur">
       <Filter>Resource Files\Cursors</Filter>
     </None>
   </ItemGroup>

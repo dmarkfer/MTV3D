@@ -50,8 +50,8 @@ int App::run(HINSTANCE hInstance, int& nCmdShow) {
 
 	this->hCurrentInst = hInstance;
 
-	CursorData::cursorHandNoGrab = LoadCursorFromFile(L"Hand Move No Grab v2.cur");
-	CursorData::cursorHandGrab = LoadCursorFromFile(L"Hand Move Grab v2.cur");
+	CursorData::cursorHandNoGrab = LoadCursorFromFile(L"Hand_Move_No_Grab_v2.cur");
+	CursorData::cursorHandGrab = LoadCursorFromFile(L"Hand_Move_Grab_v2.cur");
 
 	this->readD3DShaders();
 
