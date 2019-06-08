@@ -82,25 +82,25 @@ VisMergedWndBase::VisMergedWndBase(HINSTANCE hInst, LPWSTR windowTitle, char wCl
 		this->hWnd, nullptr, hInst, nullptr);
 
 	this->hOrthAxisGroup = CreateWindow(L"BUTTON", L" Orthogonal to axis ", WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
-		wndRect.right / 4 + 50, this->displayDim + dialogHeight / 3, 220, 70,
+		wndRect.right / 4 + 30, this->displayDim + dialogHeight / 3, 280, 70,
 		this->hWnd, nullptr, hInst, nullptr);
 	this->radioButtonX = CreateWindow(L"BUTTON", L"X", WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
-		wndRect.right / 4 + 80, this->displayDim + dialogHeight / 3 + 30, 40, 20,
+		wndRect.right / 4 + 70, this->displayDim + dialogHeight / 3 + 30, 40, 20,
 		this->hWnd, nullptr, hInst, nullptr);
 	this->radioButtonY = CreateWindow(L"BUTTON", L"Y", WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
-		wndRect.right / 4 + 140, this->displayDim + dialogHeight / 3 + 30, 40, 20,
+		wndRect.right / 4 + 150, this->displayDim + dialogHeight / 3 + 30, 40, 20,
 		this->hWnd, nullptr, hInst, nullptr);
 	this->radioButtonZ = CreateWindow(L"BUTTON", L"Z", WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
-		wndRect.right / 4 + 200, this->displayDim + dialogHeight / 3 + 30, 40, 20,
+		wndRect.right / 4 + 230, this->displayDim + dialogHeight / 3 + 30, 40, 20,
 		this->hWnd, nullptr, hInst, nullptr);
 	
 
 	this->hEnterAxisVal = CreateWindow(L"STATIC", L"Enter axis value: ", WS_VISIBLE | WS_CHILD,
-		wndRect.right / 4 + 320, this->displayDim + 10 + dialogHeight / 3, 120, 20,
+		wndRect.right / 4 + 350, this->displayDim + 10 + dialogHeight / 3, 120, 20,
 		this->hWnd, nullptr, hInst, nullptr);
 
 	this->hAxisValueBoxContainer = CreateWindowEx(WS_EX_TOOLWINDOW, L"Editable", nullptr, WS_VISIBLE | WS_CHILD,
-		wndRect.right / 4 + 450, this->displayDim + 10 + dialogHeight / 3, 120, 20,
+		wndRect.right / 4 + 480, this->displayDim + 10 + dialogHeight / 3, 120, 20,
 		this->hWnd, nullptr, hInst, nullptr);
 	displayStyle = GetWindowLong(this->hAxisValueBoxContainer, GWL_STYLE);
 	displayStyle &= ~(WS_BORDER | WS_CAPTION | WS_SYSMENU);

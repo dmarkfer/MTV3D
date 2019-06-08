@@ -48,7 +48,7 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 		EnableWindow(this->hVisMerWnd->getRadioButtonX(), false);
 		ShowWindow(this->hVisMerWnd->getRadioButtonX(), SW_HIDE);
 		CreateWindow(L"STATIC", axisEqValueStr, WS_VISIBLE | WS_CHILD,
-			this->hVisMerWnd->getWndRect().right / 4 + 60, this->hVisMerWnd->getDisplayDim() + this->hVisMerWnd->getDialogHeight() / 3 + 30, 100, 20,
+			this->hVisMerWnd->getWndRect().right / 4 + 50, this->hVisMerWnd->getDisplayDim() + this->hVisMerWnd->getDialogHeight() / 3 + 30, 100, 20,
 			this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
 	}
 	else if (this->axis == 'Y') {
@@ -64,7 +64,7 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 		EnableWindow(this->hVisMerWnd->getRadioButtonZ(), false);
 		ShowWindow(this->hVisMerWnd->getRadioButtonZ(), SW_HIDE);
 		CreateWindow(L"STATIC", axisEqValueStr, WS_VISIBLE | WS_CHILD,
-			this->hVisMerWnd->getWndRect().right / 4 + 180, this->hVisMerWnd->getDisplayDim() + this->hVisMerWnd->getDialogHeight() / 3 + 30, 100, 20,
+			this->hVisMerWnd->getWndRect().right / 4 + 200, this->hVisMerWnd->getDisplayDim() + this->hVisMerWnd->getDialogHeight() / 3 + 30, 100, 20,
 			this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
 	}
 	ShowWindow(this->hVisMerWnd->getHandle(), SW_SHOWMAXIMIZED);
