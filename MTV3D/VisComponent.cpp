@@ -420,7 +420,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
 			verticesResult.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
-			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.value) });
+			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.relError) });
 
 			if (i > 0 && j > 0) {
 				indices.push_back((i - 1) * axisYSize + j - 1);
@@ -451,7 +451,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
 			verticesResult.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
-			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.value) });
+			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.relError) });
 
 			if (i > 0 && j > 0) {
 				indices.push_back(startIndex + (i - 1) * axisYSize + j - 1);
@@ -482,7 +482,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
 			verticesResult.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
-			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.value) });
+			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.relError) });
 
 			if (k > 0 && i > 0) {
 				indices.push_back(startIndex + (k - 1) * axisXSize + i - 1);
@@ -513,7 +513,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
 			verticesResult.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
-			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.value) });
+			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.relError) });
 
 			if (k > 0 && i > 0) {
 				indices.push_back(startIndex + (k - 1) * axisXSize + i - 1);
@@ -544,7 +544,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
 			verticesResult.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
-			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.value) });
+			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.relError) });
 
 			if (j > 0 && k > 0) {
 				indices.push_back(startIndex + (j - 1) * axisZSize + k - 1);
@@ -575,7 +575,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
 			verticesResult.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
-			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.value) });
+			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.relError) });
 
 			if (j > 0 && k > 0) {
 				indices.push_back(startIndex + (j - 1) * axisZSize + k - 1);
