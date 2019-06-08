@@ -171,6 +171,12 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
 	}
 
+	swprintf_s(legendValue, L"irrelevant");
+
+	CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
+		this->hVisMerWnd->getWndRect().right / 2 + this->hVisMerWnd->getDisplayDim() / 25 + 30, 90 + int(this->hVisMerWnd->getDisplayDim() / 2.L) + 60, 120, 20,
+		this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+
 
 
 	SetCursor(LoadCursor(nullptr, IDC_ARROW));
@@ -420,7 +426,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
 			verticesResult.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
-			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.relError) });
+			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.value, visp.relError) });
 
 			if (i > 0 && j > 0) {
 				indices.push_back((i - 1) * axisYSize + j - 1);
@@ -451,7 +457,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
 			verticesResult.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
-			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.relError) });
+			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.value, visp.relError) });
 
 			if (i > 0 && j > 0) {
 				indices.push_back(startIndex + (i - 1) * axisYSize + j - 1);
@@ -482,7 +488,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
 			verticesResult.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
-			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.relError) });
+			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.value, visp.relError) });
 
 			if (k > 0 && i > 0) {
 				indices.push_back(startIndex + (k - 1) * axisXSize + i - 1);
@@ -513,7 +519,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
 			verticesResult.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
-			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.relError) });
+			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.value, visp.relError) });
 
 			if (k > 0 && i > 0) {
 				indices.push_back(startIndex + (k - 1) * axisXSize + i - 1);
@@ -544,7 +550,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
 			verticesResult.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
-			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.relError) });
+			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.value, visp.relError) });
 
 			if (j > 0 && k > 0) {
 				indices.push_back(startIndex + (j - 1) * axisZSize + k - 1);
@@ -575,7 +581,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			visp.y -= modelOrdinateCenter;
 			visp.z -= modelApplicateCenter;
 			verticesResult.push_back({ visp.x, visp.y, visp.z, getResultColor(visp.value) });
-			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.relError) });
+			verticesRelErr.push_back({ visp.x, visp.y, visp.z, getRelErrColor(visp.value, visp.relError) });
 
 			if (j > 0 && k > 0) {
 				indices.push_back(startIndex + (j - 1) * axisZSize + k - 1);
@@ -874,6 +880,8 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		for (int i = 0; i < 20; ++i) {
 			for (int j = 0; j < fillRect.right; ++j) {
 				SetPixel(hdc, this->hVisMerWnd->getWndRect().right / 2 - this->hVisMerWnd->getDisplayDim() / 25 - 10 + j, 100 + this->hVisMerWnd->getDisplayDim() / 2 + 48 + i, RGB(255, 255, 255));
+
+				SetPixel(hdc, this->hVisMerWnd->getWndRect().right / 2 + 10 + j, 100 + this->hVisMerWnd->getDisplayDim() / 2 + 48 + i, RGB(255, 255, 255));
 			}
 		}
 
@@ -1419,7 +1427,11 @@ Graphics::CustomColor VisComponent::getResultColor(long double resultValue) {
 }
 
 
-Graphics::CustomColor VisComponent::getRelErrColor(long double relerrValue) {
+Graphics::CustomColor VisComponent::getRelErrColor(long double resultValue, long double relerrValue) {
+	if (resultValue == 0.L) {
+		return { 1.f, 1.f, 1.f };
+	}
+
 	long double valLog = std::log10(relerrValue);
 	long double levelColor;
 

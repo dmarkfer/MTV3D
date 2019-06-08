@@ -66,5 +66,5 @@ public:
 private:
 	void initDirect3D();
 	Graphics::CustomColor getResultColor(long double resultValue);
-	Graphics::CustomColor getRelErrColor(long double relerrValue);
+	Graphics::CustomColor getRelErrColor(long double resultValue, long double relerrValue);
 };
