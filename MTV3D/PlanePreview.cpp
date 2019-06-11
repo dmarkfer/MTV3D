@@ -23,10 +23,10 @@
 #include "PlanePreview.h"
 
 
-float PlanePreview::scaleBase = 1.f;
-bool PlanePreview::gridActive = true;
-bool PlanePreview::axesValsActive = true;
-bool PlanePreview::flagLinePrevCreation = false;
+thread_local float PlanePreview::scaleBase = 1.f;
+thread_local bool PlanePreview::gridActive = true;
+thread_local bool PlanePreview::axesValsActive = true;
+thread_local bool PlanePreview::flagLinePrevCreation = false;
 
 
 PlanePreview::PlanePreview(char axis, float axisValue): axis(axis), axisValue(axisValue) {

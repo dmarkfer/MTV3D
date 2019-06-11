@@ -52,10 +52,10 @@ private:
 
 	std::map<std::pair<std::pair<char, float>, std::pair<char, float>>, std::unique_ptr<LinePreviewWnd>> openLinePreviews;
 public:
-	static float scaleBase;
-	static bool gridActive;
-	static bool axesValsActive;
-	static bool flagLinePrevCreation;
+	thread_local static float scaleBase;
+	thread_local static bool gridActive;
+	thread_local static bool axesValsActive;
+	thread_local static bool flagLinePrevCreation;
 public:
 	PlanePreview(char axis, float axisValue);
 	~PlanePreview() = default;

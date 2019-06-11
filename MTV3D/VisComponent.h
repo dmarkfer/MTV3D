@@ -29,10 +29,10 @@
 class VisComponent {
 public:
 	static DWORD mainThreadId;
-	static float scaleBase;
-	static bool gridActive;
-	static bool axesValsActive;
-	static bool flagPlanePrevCreation;
+	thread_local static float scaleBase;
+	thread_local static bool gridActive;
+	thread_local static bool axesValsActive;
+	thread_local static bool flagPlanePrevCreation;
 private:
 	HINSTANCE hCurrentInst;
 	HACCEL hAccelTable;

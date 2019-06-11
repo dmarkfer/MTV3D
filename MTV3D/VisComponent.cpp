@@ -24,10 +24,10 @@
 
 
 DWORD VisComponent::mainThreadId = 0;
-float VisComponent::scaleBase = 1.f;
-bool VisComponent::gridActive = true;
-bool VisComponent::axesValsActive = true;
-bool VisComponent::flagPlanePrevCreation = false;
+thread_local float VisComponent::scaleBase = 1.f;
+thread_local bool VisComponent::gridActive = true;
+thread_local bool VisComponent::axesValsActive = true;
+thread_local bool VisComponent::flagPlanePrevCreation = false;
 
 
 void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId, LPWSTR fileAbsolutePath, int visPointsDataSize, Graphics::Point3D* visPointsData) {

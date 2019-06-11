@@ -37,6 +37,7 @@ char* Graphics::pixelShaderBlob = nullptr;
 
 std::optional<float> Graphics::validFloat(std::wstring numberWStr) {
 	if (numberWStr.empty()) {
+		MessageBox(nullptr, L"Empty input!", nullptr, MB_ICONERROR);
 		return {};
 	}
 
@@ -45,7 +46,6 @@ std::optional<float> Graphics::validFloat(std::wstring numberWStr) {
 	}
 	catch (...) {
 		MessageBox(nullptr, L"Invalid input!", nullptr, MB_ICONERROR);
-
 		return {};
 	}
 }
