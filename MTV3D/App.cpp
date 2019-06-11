@@ -25,6 +25,7 @@
 
 bool App::quitFlag = false;
 App* App::appPointer = nullptr;
+LPWSTR App::rootDir = nullptr;
 
 
 App::App() {
@@ -34,12 +35,17 @@ App::App() {
 	this->numberOfOpenProjects = 0;
 
 	VisComponent::mainThreadId = GetCurrentThreadId();
+
+	App::rootDir = new WCHAR[FILEPATH_MAX_LENGTH];
+	GetCurrentDirectory(FILEPATH_MAX_LENGTH, App::rootDir);
 }
 
 
 App::~App() {
 	delete[] Graphics::vertexShaderBlob;
 	delete[] Graphics::pixelShaderBlob;
+
+	delete[] App::rootDir;
 }
 
 
@@ -323,7 +329,7 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 
 			hdc = BeginPaint(docWnd, &ps);
 
-			App::appPointer->hMainWnd->loadLogo(hdc, 0.15f, 18, 9);
+			App::appPointer->hMainWnd->loadLogo(hdc, App::rootDir, 0.15f, 18, 9);
 
 			EndPaint(docWnd, &ps);
 			DeleteDC(hdc);
@@ -360,7 +366,7 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			constexpr int margin = 10;
 			constexpr int mtvLogoDim = static_cast<int>(SPLASH_DIM * 0.4f);
 
-			HBITMAP hMTVBitmap = (HBITMAP)LoadImage(nullptr, L"MTV3D.bmp", IMAGE_BITMAP,
+			HBITMAP hMTVBitmap = (HBITMAP)LoadImage(nullptr, (std::wstring(App::rootDir) + L"\\MTV3D.bmp").c_str(), IMAGE_BITMAP,
 				mtvLogoDim, mtvLogoDim, LR_LOADFROMFILE);
 			SelectObject(hMemDC, hMTVBitmap);
 			BitBlt(hdc, 50, 2 * margin, mtvLogoDim, mtvLogoDim,
@@ -370,7 +376,7 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 
 			constexpr int unizgLogoDim = static_cast<int>(300 * 0.4f * 0.8f);
 
-			HBITMAP hUNIZGBitmap = (HBITMAP)LoadImage(nullptr, L"UniZg_logo.bmp", IMAGE_BITMAP,
+			HBITMAP hUNIZGBitmap = (HBITMAP)LoadImage(nullptr, (std::wstring(App::rootDir) + L"\\UniZg_logo.bmp").c_str(), IMAGE_BITMAP,
 				unizgLogoDim, unizgLogoDim, LR_LOADFROMFILE);
 			SelectObject(hMemDC, hUNIZGBitmap);
 			BitBlt(hdc, 300, 4 * margin, unizgLogoDim, unizgLogoDim,
@@ -380,7 +386,7 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			constexpr int ferLogoDimWidth = static_cast<int>(694 * 0.25f * 0.8f);
 			constexpr int ferLogoDimHeight = static_cast<int>(300 * 0.25f * 0.8f);
 
-			HBITMAP hFERBitmap = (HBITMAP)LoadImage(nullptr, L"FER_logo.bmp", IMAGE_BITMAP,
+			HBITMAP hFERBitmap = (HBITMAP)LoadImage(nullptr, (std::wstring(App::rootDir) + L"\\FER_logo.bmp").c_str(), IMAGE_BITMAP,
 				ferLogoDimWidth, ferLogoDimHeight, LR_LOADFROMFILE);
 			SelectObject(hMemDC, hFERBitmap);
 			BitBlt(hdc, 300 + unizgLogoDim + 12 * margin, 6 * margin, ferLogoDimWidth, ferLogoDimHeight,
@@ -446,7 +452,7 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		case WndClass::Type::MAIN: {
 			hdc = BeginPaint(hWnd, &ps);
 
-			App::appPointer->hMainWnd->loadLogo(hdc, 0.2f, 30, 12);
+			App::appPointer->hMainWnd->loadLogo(hdc, App::rootDir, 0.2f, 30, 12);
 
 			EndPaint(hWnd, &ps);
 			DeleteDC(hdc);

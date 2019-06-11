@@ -35,7 +35,7 @@ public:
 	MainWindow(HINSTANCE hInst);
 	~MainWindow() = default;
 
-	void loadLogo(HDC hdc, float qLogo, int fontHeight, int fontWidth);
+	void loadLogo(HDC hdc, LPWSTR rootDir, float qLogo, int fontHeight, int fontWidth);
 	void initListView(HINSTANCE hInst);
 	void resizeListView();
 	void deleteListViewItem(int index);

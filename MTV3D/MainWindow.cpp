@@ -91,14 +91,14 @@ void MainWindow::resizeListView() {
 }
 
 
-void MainWindow::loadLogo(HDC hdc, float qLogo, int fontHeight, int fontWidth) {
+void MainWindow::loadLogo(HDC hdc, LPWSTR rootDir, float qLogo, int fontHeight, int fontWidth) {
 	HDC hMemDC = CreateCompatibleDC(hdc);
 
 	constexpr int margin = 10;
 
 	int mtvLogoDim = static_cast<int>(SPLASH_DIM * qLogo);
 
-	HBITMAP hMTVBitmap = (HBITMAP)LoadImage(nullptr, L"MTV3D.bmp", IMAGE_BITMAP,
+	HBITMAP hMTVBitmap = (HBITMAP)LoadImage(nullptr, (std::wstring(rootDir) + L"\\MTV3D.bmp").c_str(), IMAGE_BITMAP,
 		mtvLogoDim, mtvLogoDim, LR_LOADFROMFILE);
 	SelectObject(hMemDC, hMTVBitmap);
 	BitBlt(hdc, 2 * margin, 2 * margin, mtvLogoDim, mtvLogoDim,
