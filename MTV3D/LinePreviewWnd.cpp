@@ -101,8 +101,8 @@ void LinePreviewWnd::drawChart(PAINTSTRUCT* ps, HWND hWnd) {
 	graphics.DrawLine(&penThick, rect.right / 2 - rect.right / 3 - 2, rect.bottom / 2 + rect.bottom / 3,
 								 rect.right / 2 + rect.right / 3 + 3, rect.bottom / 2 + rect.bottom / 3);
 
-	int widthTenth = (rect.right * 2 / 3) / 10;
-	int heightTenth = (rect.bottom * 2 / 3) / 10;
+	int widthTenth = int((rect.right * 2. / 3.) / 10.);
+	int heightTenth = int((rect.bottom * 2. / 3.) / 10.);
 
 	WCHAR axisValWStr[101];
 
@@ -185,10 +185,10 @@ void LinePreviewWnd::drawChart(PAINTSTRUCT* ps, HWND hWnd) {
 			int(rect.right / 2 - rect.right / 3 + (rect.right * 2. / 3.) * (el.axis - lineWnd->linePoints[0].axis) / axDiff),
 			int(rect.bottom / 2 + rect.bottom / 3 - (rect.bottom * 2. / 3.) * (el.value - resultMinValue) / resDiff)
 		});
-
+		
 		curveRelErrPts.push_back({
 			int(rect.right / 2 - rect.right / 3 + (rect.right * 2. / 3.) * (el.axis - lineWnd->linePoints[0].axis) / axDiff),
-			int(rect.bottom / 2 + rect.bottom / 3 - (rect.bottom * 2. / 3.) * (el.relError - relerrMinValue) / relerrDiff)
+			int(rect.bottom / 2 + rect.bottom / 3 - (rect.bottom * 2. / 3.) * (relerrMaxValue - el.relError) / relerrDiff)
 		});
 	}
 
