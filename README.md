@@ -7,3 +7,8 @@ Rendering 3D models from meshtal/mctal output files of MCNP (Monte Carlo Neutron
 - specified plane preview
 - specified line preview
 - color logarithmic distribution
+
+### Supported OS
+- Windows from version 7
+
+###### NOTICE: Needed Service Pack 1 if using Windows 7.
