@@ -35,7 +35,12 @@ int APIENTRY wWinMain(
 	try {
 		return std::make_unique<App>()->run(hInstance, nCmdShow);
 	}
+	catch (const std::exception & e) {
+		MessageBoxA(nullptr, e.what(), nullptr, MB_ICONERROR);
+		return -1;
+	}
 	catch (...) {
+		MessageBoxA(nullptr, "Error occurred!", nullptr, MB_ICONERROR);
 		return -1;
 	}
 

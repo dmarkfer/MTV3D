@@ -27,6 +27,7 @@
 #pragma comment(lib, "Gdiplus.lib")
 
 
+#include <exception>
 #include <tchar.h>
 #include <memory>
 #include <fstream>
