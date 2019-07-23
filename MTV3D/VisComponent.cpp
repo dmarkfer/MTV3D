@@ -816,135 +816,82 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 			}
 		}
 
+		
 
-
-		HDC hdc = GetDC(this->hVisMerWnd->getResultLegend());
 
 		RECT fillRect;
 		GetClientRect(this->hVisMerWnd->getResultLegend(), &fillRect);
 
-		for (int i = 0; i < fillRect.bottom; ++i) {
-			Graphics::CustomColor colHigh;
-			Graphics::CustomColor colLow;
-			Graphics::CustomColor fillCol;
+		HDC hdc = GetDC(this->hVisMerWnd->getResultLegend());
+		Gdiplus::Graphics * gdiGraphics = Gdiplus::Graphics::FromHDC(hdc);
 
-			if (i < fillRect.bottom / 5) {
-				colHigh = this->resultLegend[5].color;
-				colLow = this->resultLegend[4].color;
+		int legendSize = this->resultLegend.size() - 1;
+		int levelSize = int(fillRect.bottom / (float)legendSize);
 
-				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom / 5 - i) / (fillRect.bottom / 5);
-				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom / 5 - i) / (fillRect.bottom / 5);
-				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom / 5 - i) / (fillRect.bottom / 5);
-			}
-			else if (i < fillRect.bottom * 2 / 5) {
-				colHigh = this->resultLegend[4].color;
-				colLow = this->resultLegend[3].color;
+		for (int i = 0; i < legendSize; ++i) {
+			Graphics::CustomColor colHigh = this->resultLegend[legendSize - i].color;
+			Graphics::CustomColor colLow = this->resultLegend[legendSize - i - 1].color;;
 
-				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom * 2 / 5 - i) / (fillRect.bottom / 5);
-				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom * 2 / 5 - i) / (fillRect.bottom / 5);
-				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom * 2 / 5 - i) / (fillRect.bottom / 5);
-			}
-			else if (i < fillRect.bottom * 3 / 5) {
-				colHigh = this->resultLegend[3].color;
-				colLow = this->resultLegend[2].color;
+			Gdiplus::LinearGradientBrush linGradBrush(
+				Gdiplus::Point(0, i * levelSize - 1),
+				Gdiplus::Point(0, (i + 1) * levelSize),
+				Gdiplus::Color(255, int(colHigh.r * 255), int(colHigh.g * 255), int(colHigh.b * 255)),
+				Gdiplus::Color(255, int(colLow.r * 255), int(colLow.g * 255), int(colLow.b * 255))
+			);
 
-				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom * 3 / 5 - i) / (fillRect.bottom / 5);
-				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom * 3 / 5 - i) / (fillRect.bottom / 5);
-				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom * 3 / 5 - i) / (fillRect.bottom / 5);
-			}
-			else if (i < fillRect.bottom * 4 / 5) {
-				colHigh = this->resultLegend[2].color;
-				colLow = this->resultLegend[1].color;
+			Gdiplus::Pen brushPen(&linGradBrush, (float)fillRect.right);
 
-				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom * 4 / 5 - i) / (fillRect.bottom / 5);
-				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom * 4 / 5 - i) / (fillRect.bottom / 5);
-				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom * 4 / 5 - i) / (fillRect.bottom / 5);
-			}
-			else {
-				colHigh = this->resultLegend[1].color;
-				colLow = this->resultLegend[0].color;
-
-				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom - i) / (fillRect.bottom / 5 + 1);
-				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom - i) / (fillRect.bottom / 5 + 1);
-				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom - i) / (fillRect.bottom / 5 + 1);
-			}
-
-			for (int j = 0; j < fillRect.right; ++j) {
-				SetPixel(hdc, j, i, RGB(fillCol.r * 255, fillCol.g * 255, fillCol.b * 255));
-			}
+			gdiGraphics->DrawLine(&brushPen, fillRect.right / 2, i * levelSize, fillRect.right / 2, (i + 1) * levelSize + ((i == legendSize - 1)?1:0));
 		}
 
-		DeleteDC(hdc);
-
-		hdc = GetDC(this->hVisMerWnd->getHandle());
-
-		for (int i = 0; i < 20; ++i) {
-			for (int j = 0; j < fillRect.right; ++j) {
-				SetPixel(hdc, this->hVisMerWnd->getWndRect().right / 2 - this->hVisMerWnd->getDisplayDim() / 25 - 10 + j, 100 + this->hVisMerWnd->getDisplayDim() / 2 + 48 + i, RGB(255, 255, 255));
-
-				SetPixel(hdc, this->hVisMerWnd->getWndRect().right / 2 + 10 + j, 100 + this->hVisMerWnd->getDisplayDim() / 2 + 48 + i, RGB(255, 255, 255));
-			}
-		}
-
+		delete gdiGraphics;
 		DeleteDC(hdc);
 
 
-		hdc = GetDC(this->hVisMerWnd->getRelErrLegend());
 
 		GetClientRect(this->hVisMerWnd->getRelErrLegend(), &fillRect);
 
-		for (int i = 0; i < fillRect.bottom; ++i) {
-			Graphics::CustomColor colHigh;
-			Graphics::CustomColor colLow;
-			Graphics::CustomColor fillCol;
+		hdc = GetDC(this->hVisMerWnd->getRelErrLegend());
+		gdiGraphics = Gdiplus::Graphics::FromHDC(hdc);
 
-			if (i < fillRect.bottom / 5) {
-				colHigh = this->relerrLegend[5].color;
-				colLow = this->relerrLegend[4].color;
+		legendSize = this->relerrLegend.size() - 1;
+		levelSize = int(fillRect.bottom / (float)legendSize);
 
-				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom / 5 - i) / (fillRect.bottom / 5);
-				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom / 5 - i) / (fillRect.bottom / 5);
-				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom / 5 - i) / (fillRect.bottom / 5);
-			}
-			else if (i < fillRect.bottom * 2 / 5) {
-				colHigh = this->relerrLegend[4].color;
-				colLow = this->relerrLegend[3].color;
+		for (int i = 0; i < legendSize; ++i) {
+			Graphics::CustomColor colHigh = this->relerrLegend[legendSize - i].color;
+			Graphics::CustomColor colLow = this->relerrLegend[legendSize - i - 1].color;;
 
-				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom * 2 / 5 - i) / (fillRect.bottom / 5);
-				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom * 2 / 5 - i) / (fillRect.bottom / 5);
-				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom * 2 / 5 - i) / (fillRect.bottom / 5);
-			}
-			else if (i < fillRect.bottom * 3 / 5) {
-				colHigh = this->relerrLegend[3].color;
-				colLow = this->relerrLegend[2].color;
+			Gdiplus::LinearGradientBrush linGradBrush(
+				Gdiplus::Point(0, i * levelSize - 1),
+				Gdiplus::Point(0, (i + 1) * levelSize),
+				Gdiplus::Color(255, int(colHigh.r * 255), int(colHigh.g * 255), int(colHigh.b * 255)),
+				Gdiplus::Color(255, int(colLow.r * 255), int(colLow.g * 255), int(colLow.b * 255))
+			);
 
-				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom * 3 / 5 - i) / (fillRect.bottom / 5);
-				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom * 3 / 5 - i) / (fillRect.bottom / 5);
-				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom * 3 / 5 - i) / (fillRect.bottom / 5);
-			}
-			else if (i < fillRect.bottom * 4 / 5) {
-				colHigh = this->relerrLegend[2].color;
-				colLow = this->relerrLegend[1].color;
+			Gdiplus::Pen brushPen(&linGradBrush, (float)fillRect.right);
 
-				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom * 4 / 5 - i) / (fillRect.bottom / 5);
-				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom * 4 / 5 - i) / (fillRect.bottom / 5);
-				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom * 4 / 5 - i) / (fillRect.bottom / 5);
-			}
-			else {
-				colHigh = this->relerrLegend[1].color;
-				colLow = this->relerrLegend[0].color;
-
-				fillCol.r = colLow.r + (colHigh.r - colLow.r) * (fillRect.bottom - i) / (fillRect.bottom / 5 + 1);
-				fillCol.g = colLow.g + (colHigh.g - colLow.g) * (fillRect.bottom - i) / (fillRect.bottom / 5 + 1);
-				fillCol.b = colLow.b + (colHigh.b - colLow.b) * (fillRect.bottom - i) / (fillRect.bottom / 5 + 1);
-			}
-
-			for (int j = 0; j < fillRect.right; ++j) {
-				SetPixel(hdc, j, i, RGB(fillCol.r * 255, fillCol.g * 255, fillCol.b * 255));
-			}
+			gdiGraphics->DrawLine(&brushPen, fillRect.right / 2, i * levelSize, fillRect.right / 2, (i + 1) * levelSize + ((i == legendSize - 1) ? 1 : 0));
 		}
 
+		delete gdiGraphics;
 		DeleteDC(hdc);
+
+
+
+		hdc = GetDC(this->hVisMerWnd->getHandle());
+		gdiGraphics = Gdiplus::Graphics::FromHDC(hdc);
+
+		Gdiplus::Pen whitePen(Gdiplus::Color(255, 255, 255, 255), (float)fillRect.right);
+
+		gdiGraphics->DrawLine(&whitePen, this->hVisMerWnd->getWndRect().right / 2 - this->hVisMerWnd->getDisplayDim() / 25 - 10 + fillRect.right / 2, 100 + this->hVisMerWnd->getDisplayDim() / 2 + 48,
+										 this->hVisMerWnd->getWndRect().right / 2 - this->hVisMerWnd->getDisplayDim() / 25 - 10 + fillRect.right / 2, 100 + this->hVisMerWnd->getDisplayDim() / 2 + 48 + 20);
+
+		gdiGraphics->DrawLine(&whitePen, this->hVisMerWnd->getWndRect().right / 2 + 10 + fillRect.right / 2, 100 + this->hVisMerWnd->getDisplayDim() / 2 + 48,
+										 this->hVisMerWnd->getWndRect().right / 2 + 10 + fillRect.right / 2, 100 + this->hVisMerWnd->getDisplayDim() / 2 + 48 + 20);
+
+		delete gdiGraphics;
+		DeleteDC(hdc);
+
 
 
 
