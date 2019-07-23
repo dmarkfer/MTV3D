@@ -33,3 +33,5 @@ Rendering 3D models from meshtal output files of MCNP (Monte Carlo N-Particle) p
 ![plane wnd](https://user-images.githubusercontent.com/34462030/59398023-efd38500-8d8e-11e9-9623-e3db7fd6fb60.png)
 
 ![line wnd](https://user-images.githubusercontent.com/34462030/59398055-0c6fbd00-8d8f-11e9-9570-97fd55f5fffb.png)
+
+![controlboardselected](https://user-images.githubusercontent.com/34462030/61745968-f5af8380-ad9a-11e9-988b-276e2e31bf01.png)
