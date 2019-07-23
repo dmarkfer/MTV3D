@@ -21,7 +21,7 @@ Rendering 3D models from meshtal output files of MCNP (Monte Carlo N-Particle) p
 ###### NOTICE: Needed Service Pack 1 if using Windows 7.
 
 ### Download executable
-- Latest release: https://github.com/dmarkfer/MTV3D/releases/download/v1.0/MTV3D_v1.0_built.zip
+- Latest release: https://github.com/dmarkfer/MTV3D/releases/download/v1.1/MTV3D_v1.1_built.zip
 
 ---
 ---
