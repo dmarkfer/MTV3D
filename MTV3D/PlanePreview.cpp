@@ -273,8 +273,8 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 	Microsoft::WRL::ComPtr<ID2D1Bitmap1> d2dTargetBitmapRelErr;
 	d2dDeviceContext->CreateBitmapFromDxgiSurface(dxgiBufferRelErr.Get(), &d2dBitmapProperties, &d2dTargetBitmapRelErr);
 
-	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> whiteBrush;
-	d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &whiteBrush);
+	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> blackBrush;
+	d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &blackBrush);
 
 	Microsoft::WRL::ComPtr<IDWriteTextFormat> textFormat;
 	writeFactory.Get()->CreateTextFormat(L"Arial", nullptr, DWRITE_FONT_WEIGHT_LIGHT, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 10.f, L"en-us", &textFormat);
@@ -329,18 +329,18 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 		visp.axisOne -= modelAbscissaCenter;
 		visp.axisTwo -= modelOrdinateCenter;
 		visp.axisOne -= gridLineExtensionPerc * modelAbscissaLength;
-		gridLinesVertices.push_back({ visp.axisOne, relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.axisOne, relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, { 0.f, 0.f, 0.f } });
 
-		gridLinesVertices.push_back({ visp.axisOne, -relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.axisOne, -relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, { 0.f, 0.f, 0.f } });
 
-		gridLinesVertices.push_back({ visp.axisOne, -relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.axisOne, -relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, { 0.f, 0.f, 0.f } });
 
 		visp = visPlaneModel[axisOneSize - 1][i * (axisTwoSize - 1) / 10];
 		float twoRealValue = visp.axisTwo;
 		visp.axisOne -= modelAbscissaCenter;
 		visp.axisTwo -= modelOrdinateCenter;
 		visp.axisOne += gridLineExtensionPerc * modelAbscissaLength;
-		gridLinesVertices.push_back({ visp.axisOne, -relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.axisOne, -relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, { 0.f, 0.f, 0.f } });
 
 		gridAxesValuesVertices.push_back(std::make_pair(
 			DirectX::XMVectorSet(visp.axisOne, -relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, 1.f),
@@ -354,17 +354,17 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 		visp.axisOne -= modelAbscissaCenter;
 		visp.axisTwo -= modelOrdinateCenter;
 		visp.axisTwo -= gridLineExtensionPerc * modelOrdinateLength;
-		gridLinesVertices.push_back({ visp.axisOne, relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, { 1.f, 1.f, 1.f } });
-		gridLinesVertices.push_back({ visp.axisOne, -relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.axisOne, relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, { 0.f, 0.f, 0.f } });
+		gridLinesVertices.push_back({ visp.axisOne, -relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, { 0.f, 0.f, 0.f } });
 
-		gridLinesVertices.push_back({ visp.axisOne, -relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.axisOne, -relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, { 0.f, 0.f, 0.f } });
 
 		visp = visPlaneModel[i * (axisOneSize - 1) / 10][axisTwoSize - 1];
 		float oneRealValue = visp.axisOne;
 		visp.axisOne -= modelAbscissaCenter;
 		visp.axisTwo -= modelOrdinateCenter;
 		visp.axisTwo += gridLineExtensionPerc * modelOrdinateLength;
-		gridLinesVertices.push_back({ visp.axisOne, -relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.axisOne, -relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, { 0.f, 0.f, 0.f } });
 
 		gridAxesValuesVertices.push_back(std::make_pair(
 			DirectX::XMVectorSet(visp.axisOne, -relfToAxis * (1 + 2 * gridLineExtensionPerc), visp.axisTwo, 1.f),
@@ -379,7 +379,7 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 		visp.axisTwo -= modelOrdinateCenter;
 		visp.axisOne += gridLineExtensionPerc * modelAbscissaLength;
 		visp.axisTwo -= gridLineExtensionPerc * modelOrdinateLength;
-		gridLinesVertices.push_back({ visp.axisOne, i * float((1 + gridLineExtensionPerc) * modelReliefLength / 10.L) - relfToAxis, visp.axisTwo, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.axisOne, i * float((1 + gridLineExtensionPerc) * modelReliefLength / 10.L) - relfToAxis, visp.axisTwo, { 0.f, 0.f, 0.f } });
 
 		gridAxesValuesVertices.push_back(std::make_pair(
 			DirectX::XMVectorSet(visp.axisOne, i * float((1 + gridLineExtensionPerc) * modelReliefLength / 10.L) - relfToAxis, visp.axisTwo, 1.f),
@@ -394,16 +394,16 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 		visp.axisTwo -= modelOrdinateCenter;
 		visp.axisOne -= gridLineExtensionPerc * modelAbscissaLength;
 		visp.axisTwo -= gridLineExtensionPerc * modelOrdinateLength;
-		gridLinesVertices.push_back({ visp.axisOne, i * float((1 + gridLineExtensionPerc) * modelReliefLength / 10.L) - relfToAxis, visp.axisTwo, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.axisOne, i * float((1 + gridLineExtensionPerc) * modelReliefLength / 10.L) - relfToAxis, visp.axisTwo, { 0.f, 0.f, 0.f } });
 
-		gridLinesVertices.push_back({ visp.axisOne, i * float((1 + gridLineExtensionPerc) * modelReliefLength / 10.L) - relfToAxis, visp.axisTwo, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.axisOne, i * float((1 + gridLineExtensionPerc) * modelReliefLength / 10.L) - relfToAxis, visp.axisTwo, { 0.f, 0.f, 0.f } });
 
 		visp = visPlaneModel[0][axisTwoSize - 1];
 		visp.axisOne -= modelAbscissaCenter;
 		visp.axisTwo -= modelOrdinateCenter;
 		visp.axisOne -= gridLineExtensionPerc * modelAbscissaLength;
 		visp.axisTwo += gridLineExtensionPerc * modelOrdinateLength;
-		gridLinesVertices.push_back({ visp.axisOne, i * float((1 + gridLineExtensionPerc) * modelReliefLength / 10.L) - relfToAxis, visp.axisTwo, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.axisOne, i * float((1 + gridLineExtensionPerc) * modelReliefLength / 10.L) - relfToAxis, visp.axisTwo, { 0.f, 0.f, 0.f } });
 	}
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> gridVertexBuffer;
@@ -520,7 +520,7 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 	this->d3dDevice->CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
 
 
-	float color[] = { 0.f, 0.f, 0.f, 1.f };
+	float color[] = { 1.f, 1.f, 1.f, 1.f };
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> constBuffer;
 
@@ -984,7 +984,7 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 				d2dDeviceContext->DrawTextLayout(
 					D2D1::Point2F(scrVec.m128_f32[0] + offsetX, scrVec.m128_f32[1] + offsetY),
 					textLayout.Get(),
-					whiteBrush.Get()
+					blackBrush.Get()
 				);
 
 				if (axValIter->second.second.size() > 1) {
@@ -1020,7 +1020,7 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 					d2dDeviceContext->DrawTextLayout(
 						D2D1::Point2F(scrVec.m128_f32[0] + offsetX, scrVec.m128_f32[1] + offsetY),
 						textLayout.Get(),
-						whiteBrush.Get()
+						blackBrush.Get()
 					);
 				}
 
@@ -1103,7 +1103,7 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 				d2dDeviceContext->DrawTextLayout(
 					D2D1::Point2F(scrVec.m128_f32[0] + offsetX, scrVec.m128_f32[1] + offsetY),
 					textLayout.Get(),
-					whiteBrush.Get()
+					blackBrush.Get()
 				);
 
 				if (axValIter->second.second.size() > 1) {
@@ -1139,7 +1139,7 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 					d2dDeviceContext->DrawTextLayout(
 						D2D1::Point2F(scrVec.m128_f32[0] + offsetX, scrVec.m128_f32[1] + offsetY),
 						textLayout.Get(),
-						whiteBrush.Get()
+						blackBrush.Get()
 					);
 				}
 

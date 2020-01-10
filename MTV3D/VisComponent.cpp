@@ -244,8 +244,8 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	Microsoft::WRL::ComPtr<ID2D1Bitmap1> d2dTargetBitmapRelErr;
 	d2dDeviceContext->CreateBitmapFromDxgiSurface(dxgiBufferRelErr.Get(), &d2dBitmapProperties, &d2dTargetBitmapRelErr);
 
-	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> whiteBrush;
-	d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &whiteBrush);
+	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> blackBrush;
+	d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &blackBrush);
 
 	Microsoft::WRL::ComPtr<IDWriteTextFormat> textFormat;
 	writeFactory.Get()->CreateTextFormat(L"Arial", nullptr, DWRITE_FONT_WEIGHT_LIGHT, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 10.f, L"en-us", &textFormat);
@@ -302,7 +302,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		visp.z -= modelApplicateCenter;
 		visp.x -= gridLineExtensionPerc * modelAbscissaLength;
 		visp.y += gridLineExtensionPerc * modelOrdinateLength;
-		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 0.f, 0.f, 0.f } });
 
 		visp = vis3DDataModel[0][0][i * (axisZSize - 1) / 10];
 		visp.x -= modelAbscissaCenter;
@@ -310,9 +310,9 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		visp.z -= modelApplicateCenter;
 		visp.x -= gridLineExtensionPerc * modelAbscissaLength;
 		visp.y -= gridLineExtensionPerc * modelOrdinateLength;
-		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 0.f, 0.f, 0.f } });
 
-		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 0.f, 0.f, 0.f } });
 
 		visp = vis3DDataModel[axisXSize - 1][0][i * (axisZSize - 1) / 10];
 		float zRealValue = visp.z;
@@ -321,7 +321,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		visp.z -= modelApplicateCenter;
 		visp.x += gridLineExtensionPerc * modelAbscissaLength;
 		visp.y -= gridLineExtensionPerc * modelOrdinateLength;
-		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 0.f, 0.f, 0.f } });
 		gridAxesValuesVertices.push_back(std::make_pair(
 			DirectX::XMVectorSet(visp.x, visp.y, visp.z, 1.f),
 			std::make_pair(
@@ -337,7 +337,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		visp.z -= modelApplicateCenter;
 		visp.z -= gridLineExtensionPerc * modelApplicateLength;
 		visp.y += gridLineExtensionPerc * modelOrdinateLength;
-		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 0.f, 0.f, 0.f } });
 
 		visp = vis3DDataModel[i * (axisXSize - 1) / 10][0][0];
 		visp.x -= modelAbscissaCenter;
@@ -345,9 +345,9 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		visp.z -= modelApplicateCenter;
 		visp.z -= gridLineExtensionPerc * modelApplicateLength;
 		visp.y -= gridLineExtensionPerc * modelOrdinateLength;
-		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 0.f, 0.f, 0.f } });
 
-		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 0.f, 0.f, 0.f } });
 
 		visp = vis3DDataModel[i * (axisXSize - 1) / 10][0][axisZSize - 1];
 		float xRealValue = visp.x;
@@ -356,7 +356,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		visp.z -= modelApplicateCenter;
 		visp.z += gridLineExtensionPerc * modelApplicateLength;
 		visp.y -= gridLineExtensionPerc * modelOrdinateLength;
-		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 0.f, 0.f, 0.f } });
 		gridAxesValuesVertices.push_back(std::make_pair(
 			DirectX::XMVectorSet(visp.x, visp.y, visp.z, 1.f),
 			std::make_pair(
@@ -373,7 +373,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		visp.z -= modelApplicateCenter;
 		visp.x += gridLineExtensionPerc * modelAbscissaLength;
 		visp.z -= gridLineExtensionPerc * modelApplicateLength;
-		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 0.f, 0.f, 0.f } });
 		gridAxesValuesVertices.push_back(std::make_pair(
 			DirectX::XMVectorSet(visp.x, visp.y, visp.z, 1.f),
 			std::make_pair(
@@ -388,9 +388,9 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		visp.z -= modelApplicateCenter;
 		visp.x -= gridLineExtensionPerc * modelAbscissaLength;
 		visp.z -= gridLineExtensionPerc * modelApplicateLength;
-		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 0.f, 0.f, 0.f } });
 
-		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 0.f, 0.f, 0.f } });
 
 		visp = vis3DDataModel[0][i * (axisYSize - 1) / 10][axisZSize - 1];
 		visp.x -= modelAbscissaCenter;
@@ -398,7 +398,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		visp.z -= modelApplicateCenter;
 		visp.x -= gridLineExtensionPerc * modelAbscissaLength;
 		visp.z += gridLineExtensionPerc * modelApplicateLength;
-		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 1.f, 1.f, 1.f } });
+		gridLinesVertices.push_back({ visp.x, visp.y, visp.z, { 0.f, 0.f, 0.f } });
 	}
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> gridVertexBuffer;
@@ -667,7 +667,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	this->d3dDevice->CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
 
 
-	float color[] = { 0.f, 0.f, 0.f, 1.f };
+	float color[] = { 1.f, 1.f, 1.f, 1.f };
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> constBuffer;
 
@@ -1115,7 +1115,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 				d2dDeviceContext->DrawTextLayout(
 					D2D1::Point2F(scrVec.m128_f32[0] + offsetX, scrVec.m128_f32[1] + offsetY),
 					textLayout.Get(),
-					whiteBrush.Get()
+					blackBrush.Get()
 				);
 
 				if (axValIter->second.second.size() > 1) {
@@ -1137,7 +1137,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 					d2dDeviceContext->DrawTextLayout(
 						D2D1::Point2F(scrVec.m128_f32[0] + offsetX, scrVec.m128_f32[1] + offsetY),
 						textLayout.Get(),
-						whiteBrush.Get()
+						blackBrush.Get()
 					);
 				}
 
@@ -1218,7 +1218,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 				d2dDeviceContext->DrawTextLayout(
 					D2D1::Point2F(scrVec.m128_f32[0] + offsetX, scrVec.m128_f32[1] + offsetY),
 					textLayout.Get(),
-					whiteBrush.Get()
+					blackBrush.Get()
 				);
 
 				if (axValIter->second.second.size() > 1) {
@@ -1240,7 +1240,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 					d2dDeviceContext->DrawTextLayout(
 						D2D1::Point2F(scrVec.m128_f32[0] + offsetX, scrVec.m128_f32[1] + offsetY),
 						textLayout.Get(),
-						whiteBrush.Get()
+						blackBrush.Get()
 					);
 				}
 
