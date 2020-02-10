@@ -472,8 +472,14 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		break;
 	}
 	case WM_CTLCOLORSTATIC: {
-		SetTextColor((HDC)wParam, WHITE);
-		SetBkColor((HDC)wParam, DARK_GRAY);
+		if (wcType == WndClass::Type::VIS_LINE) {
+			SetTextColor((HDC)wParam, BLACK);
+			SetBkColor((HDC)wParam, WHITE);
+		}
+		else {
+			SetTextColor((HDC)wParam, WHITE);
+			SetBkColor((HDC)wParam, DARK_GRAY);
+		}
 
 		return (BOOL)GetStockObject(NULL_BRUSH);
 		break;
@@ -598,7 +604,7 @@ void App::createWndClasses() {
 		this->hCurrentInst,
 		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D)),
 		LoadCursor(this->hCurrentInst, IDC_ARROW),
-		CreateSolidBrush(DARK_GRAY),
+		CreateSolidBrush(WHITE),
 		MAKEINTRESOURCEW(IDC_MTV3D_VIS),
 		L"VisLine",
 		LoadIcon(this->hCurrentInst, MAKEINTRESOURCE(IDI_MTV3D))

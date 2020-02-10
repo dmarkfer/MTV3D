@@ -82,8 +82,8 @@ void LinePreviewWnd::drawChart(PAINTSTRUCT* ps, HWND hWnd) {
 	HDC hdc = BeginPaint(lineWnd->getHandle(), ps);
 
 	Gdiplus::Graphics graphics(hdc);
-	Gdiplus::Pen penThick(Gdiplus::Color(255, 255, 255, 255), 5);
-	Gdiplus::Pen penThin(Gdiplus::Color(255, 255, 255, 255), 1);
+	Gdiplus::Pen penThick(Gdiplus::Color(255, 0, 0, 0), 5);
+	Gdiplus::Pen penThin(Gdiplus::Color(255, 0, 0, 0), 1);
 
 	RECT rect;
 	GetClientRect(lineWnd->getHandle(), &rect);
