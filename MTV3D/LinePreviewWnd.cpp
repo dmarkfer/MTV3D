@@ -188,7 +188,7 @@ void LinePreviewWnd::drawChart(PAINTSTRUCT* ps, HWND hWnd) {
 		
 		curveRelErrPts.push_back({
 			int(rect.right / 2 - rect.right / 3 + (rect.right * 2. / 3.) * (el.axis - lineWnd->linePoints[0].axis) / axDiff),
-			int(rect.bottom / 2 + rect.bottom / 3 - (rect.bottom * 2. / 3.) * (relerrMaxValue - el.relError) / relerrDiff)
+			int(rect.bottom / 2 + rect.bottom / 3 - (rect.bottom * 2. / 3.) * (el.relError - relerrMinValue) / relerrDiff)
 		});
 	}
 
@@ -208,7 +208,7 @@ void LinePreviewWnd::drawChart(PAINTSTRUCT* ps, HWND hWnd) {
 			rect.right / 2 - rect.right / 3 - 120, rect.bottom / 2 - rect.bottom / 3 + i * heightTenth - 10, 100, 20,
 			lineWnd->getHandle(), nullptr, lineWnd->hCurrentInst, nullptr));
 
-		swprintf_s(axisValWStr, L"%1.5e", relerrMinValue + i * relerrTenth);
+		swprintf_s(axisValWStr, L"%1.5e", relerrMaxValue - i * relerrTenth);
 		lineWnd->childWnds.push_back(CreateWindow(L"STATIC", axisValWStr, WS_VISIBLE | WS_CHILD,
 			rect.right / 2 + rect.right / 3 + 40, rect.bottom / 2 - rect.bottom / 3 + i * heightTenth - 10, 100, 20,
 			lineWnd->getHandle(), nullptr, lineWnd->hCurrentInst, nullptr));
