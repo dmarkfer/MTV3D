@@ -425,8 +425,8 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 	this->d3dDevice->CreateBuffer(&gridVertexBufferDesc, &gridVertexSubresourceData, &gridVertexBuffer);
 
 
-	long double resValQ = modelReliefLength / (resultMaxValue - resultMinValue);
-	long double relErrValQ = modelReliefLength / (relerrMaxValue - relerrMinValue);
+	long double resValQ = (1 + gridLineExtensionPerc) * modelReliefLength / (resultMaxValue - resultMinValue);
+	long double relErrValQ = (1 + gridLineExtensionPerc) * modelReliefLength / (relerrMaxValue - relerrMinValue);
 
 	for (int i = 0; i < axisOneSize; ++i) {
 		for (int j = 0; j < axisTwoSize; ++j) {
