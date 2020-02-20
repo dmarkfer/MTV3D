@@ -195,14 +195,14 @@ void LinePreviewWnd::drawChart(PAINTSTRUCT* ps, HWND hWnd) {
 	Gdiplus::Pen resPen(Gdiplus::Color(255, 255, 153, 0), 3);
 	Gdiplus::Pen relErrPen(Gdiplus::Color(255, 204, 0, 153), 3);
 
-	graphics.DrawCurve(&resPen, curveResPts.data(), curveResPts.size());
-	graphics.DrawCurve(&relErrPen, curveRelErrPts.data(), curveRelErrPts.size());
+	graphics.DrawCurve(&resPen, curveResPts.data(), curveResPts.size(), 0.);
+	graphics.DrawCurve(&relErrPen, curveRelErrPts.data(), curveRelErrPts.size(), 0.);
 
 	long double resTenth = resDiff / 10.L;
 	long double relerrTenth = relerrDiff / 10.L;
 
 
-	for (int i = 0; i <= 10; ++i) {
+	for (int i = 0; i < 10; ++i) {
 		swprintf_s(axisValWStr, L"%1.5e", resultMaxValue - i * resTenth);
 		lineWnd->childWnds.push_back(CreateWindow(L"STATIC", axisValWStr, WS_VISIBLE | WS_CHILD,
 			rect.right / 2 - rect.right / 3 - 120, rect.bottom / 2 - rect.bottom / 3 + i * heightTenth - 10, 100, 20,
@@ -213,6 +213,16 @@ void LinePreviewWnd::drawChart(PAINTSTRUCT* ps, HWND hWnd) {
 			rect.right / 2 + rect.right / 3 + 40, rect.bottom / 2 - rect.bottom / 3 + i * heightTenth - 10, 100, 20,
 			lineWnd->getHandle(), nullptr, lineWnd->hCurrentInst, nullptr));
 	}
+
+	swprintf_s(axisValWStr, L"%1.5e", resultMinValue);
+	lineWnd->childWnds.push_back(CreateWindow(L"STATIC", axisValWStr, WS_VISIBLE | WS_CHILD,
+		rect.right / 2 - rect.right / 3 - 120, rect.bottom / 2 - rect.bottom / 3 + 10 * heightTenth - 10, 100, 20,
+		lineWnd->getHandle(), nullptr, lineWnd->hCurrentInst, nullptr));
+
+	swprintf_s(axisValWStr, L"%1.5e", relerrMinValue);
+	lineWnd->childWnds.push_back(CreateWindow(L"STATIC", axisValWStr, WS_VISIBLE | WS_CHILD,
+		rect.right / 2 + rect.right / 3 + 40, rect.bottom / 2 - rect.bottom / 3 + 10 * heightTenth - 10, 100, 20,
+		lineWnd->getHandle(), nullptr, lineWnd->hCurrentInst, nullptr));
 
 	for (int i = 0; i < 20; ++i) {
 		for (int j = 0; j < 40; ++j) {
