@@ -175,16 +175,16 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 	case WM_SETCURSOR: {
 		if (wcType == WndClass::Type::VIS_DISPLAY) {
 			SetCursor(CursorData::cursorGrabInteractionProject == hWnd ? CursorData::cursorHandGrab : CursorData::cursorHandNoGrab);
+			return true;
 		}
 		else if (wcType == WndClass::Type::EDITABLE) {
 			SetCursor(LoadCursor(nullptr, IDC_IBEAM));
+			return true;
 		}
 		else {
 			CursorData::cursorGrabInteractionProject = nullptr;
 			SetCursor(LoadCursor(nullptr, IDC_ARROW));
 		}
-		return true;
-		break;
 	}
 	case WM_LBUTTONDOWN: {
 		if (wcType == WndClass::Type::VIS_DISPLAY) {
@@ -324,7 +324,7 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 				rect.right / 2 - 250, rect.bottom / 2 - 150, 500, 300,
 				nullptr, nullptr, App::appPointer->hCurrentInst, nullptr);
 			LONG style = GetWindowLong(docWnd, GWL_STYLE);
-			style &= ~(WS_MAXIMIZEBOX | WS_MINIMIZEBOX);
+			style &= ~(WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SIZEBOX);
 			SetWindowLong(docWnd, GWL_STYLE, style);
 
 			hdc = BeginPaint(docWnd, &ps);
@@ -357,7 +357,7 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 				rect.right / 2 - 400, rect.bottom / 2 - 250, 800, 500,
 				nullptr, nullptr, App::appPointer->hCurrentInst, nullptr);
 			LONG style = GetWindowLong(docWnd, GWL_STYLE);
-			style &= ~(WS_MAXIMIZEBOX | WS_MINIMIZEBOX);
+			style &= ~(WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SIZEBOX);
 			SetWindowLong(docWnd, GWL_STYLE, style);
 
 			hdc = BeginPaint(docWnd, &ps);
