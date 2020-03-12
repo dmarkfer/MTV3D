@@ -389,6 +389,117 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			}
 			break;
 		}
+		case IDM_EXPORT: {
+			OPENFILENAME ofnObj;
+
+			ZeroMemory(&ofnObj, sizeof(OPENFILENAME));
+
+			WCHAR filterList[] = L"PNG (*.png)\0\0";
+
+			ofnObj.lStructSize = sizeof(OPENFILENAME);
+			ofnObj.hwndOwner = hWnd;
+			ofnObj.hInstance = App::appPointer->hCurrentInst;
+			ofnObj.lpstrFilter = filterList;
+			ofnObj.nFilterIndex = 0;
+			ofnObj.lpstrFile = new WCHAR[FILEPATH_MAX_LENGTH];
+			ofnObj.lpstrFile[0] = '\0';
+			ofnObj.nMaxFile = FILEPATH_MAX_LENGTH;
+			ofnObj.lpstrDefExt = L"png";
+			ofnObj.lpstrTitle = L"Export as PNG";
+			ofnObj.Flags = OFN_OVERWRITEPROMPT;
+
+			if (GetSaveFileName(&ofnObj)) {
+				SetCursor(LoadCursor(nullptr, IDC_WAIT));
+
+				HDC hScreenDC = GetDC(hWnd);
+				HDC hMemoryDC = CreateCompatibleDC(hScreenDC);
+
+				int width = GetDeviceCaps(hScreenDC, HORZRES);
+				int height = GetDeviceCaps(hScreenDC, VERTRES);
+				
+				if (wcType == WndClass::Type::VIS_MERGED) {
+					for (const auto & op : App::appPointer->openProjects) {
+						if (op.second.second->hVisMerWnd->getHandle() == hWnd) {
+							width = op.second.second->hVisMerWnd->getWndRect().right;
+							height = op.second.second->hVisMerWnd->getDisplayDim();
+							break;
+						}
+					}
+				}
+				else if (wcType == WndClass::Type::VIS_MERGED_PLANE) {
+					bool breakFlag = false;
+					for (const auto & op : App::appPointer->openProjects) {
+						for (const auto & vmw : op.second.second->openPlanePreviews) {
+							if (vmw.second->hPlaneMerWnd->getHandle() == hWnd) {
+								width = vmw.second->hPlaneMerWnd->getWndRect().right;
+								height = vmw.second->hPlaneMerWnd->getDisplayDim();
+								breakFlag = true;
+								break;
+							}
+						}
+						if (breakFlag) {
+							break;
+						}
+					}
+				}
+				else if (wcType == WndClass::Type::VIS_LINE) {
+					RECT rctScrCapt;
+					GetClientRect(hWnd, &rctScrCapt);
+
+					width = rctScrCapt.right;
+					height = rctScrCapt.bottom;
+				}
+
+
+				HBITMAP hBitmap = CreateCompatibleBitmap(hScreenDC, width, height);
+				HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemoryDC, hBitmap);
+
+				BitBlt(hMemoryDC, 0, 0, width, height, hScreenDC, 0, 0, SRCCOPY);
+				hBitmap = (HBITMAP)SelectObject(hMemoryDC, hOldBitmap);
+
+				DeleteDC(hMemoryDC);
+				DeleteDC(hScreenDC);
+
+				Gdiplus::Bitmap bitmap(hBitmap, nullptr);
+				IStream * stream = nullptr;
+				HRESULT hr = CreateStreamOnHGlobal(nullptr, TRUE, &stream);
+
+				CLSID pngClsid;
+				WCHAR format[] = L"image/png";
+				Gdiplus::ImageCodecInfo * pImageCodecInfo = nullptr;
+				UINT num = 0u;
+				UINT size = 0u;
+				Gdiplus::GetImageEncodersSize(&num, &size);
+				pImageCodecInfo = new Gdiplus::ImageCodecInfo[size];
+				
+				Gdiplus::GetImageEncoders(num, size, pImageCodecInfo);
+
+				UINT ret;
+				for (ret = 0u; ret < num; ++ret) {
+					if (wcscmp(pImageCodecInfo[ret].MimeType, format) == 0) {
+						pngClsid = pImageCodecInfo[ret].Clsid;
+						break;
+					}
+				}
+
+				bitmap.Save(stream, &pngClsid);
+
+				Gdiplus::Image im(stream);
+				im.Save(ofnObj.lpstrFile, &pngClsid, nullptr);
+
+				stream->Release();
+
+				delete[] pImageCodecInfo;
+
+				SetCursor(LoadCursor(nullptr, IDC_ARROW));
+
+				MessageBox(hWnd, (L"Created image file: " + std::wstring(ofnObj.lpstrFile)).c_str(), L"Export done!", MB_ICONINFORMATION);
+			}
+
+			delete[] ofnObj.lpstrFile;
+
+			break;
+		}
 		case IDM_CLOSE:
 		case IDM_EXIT: {
 			DestroyWindow(hWnd);

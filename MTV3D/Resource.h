@@ -1,6 +1,7 @@
 #define IDM_NEW_PROJ		11
 #define IDM_EXIT			12
 #define IDM_CLOSE			13
+#define IDM_EXPORT			14
 #define IDM_DOC				32
 #define IDM_ABOUT			31
 #define BUTTON_LINK			33
