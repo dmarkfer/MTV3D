@@ -166,7 +166,86 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		case WndClass::Type::MAIN: {
 			if (App::appPointer->hMainWnd) {
 				App::appPointer->hMainWnd->resizeListView();
+				App::appPointer->hMainWnd->resizeButtons();
 			}
+			break;
+		}
+		case WndClass::Type::VIS_MERGED: {
+			if (App::appPointer->openProjects.size()) {
+				for (const auto & op : App::appPointer->openProjects) {
+					if (op.second.second->hVisMerWnd) {
+						if (op.second.second->hVisMerWnd->getHandle() == hWnd) {
+							op.second.second->hVisMerWnd->resize();
+							break;
+						}
+					}
+				}
+			}
+			break;
+		}
+		case WndClass::Type::VIS_MERGED_PLANE: {
+			if (App::appPointer->openProjects.size()) {
+				bool breakFlag = false;
+				for (const auto & op : App::appPointer->openProjects) {
+					if (op.second.second->openPlanePreviews.size()) {
+						for (const auto & vmw : op.second.second->openPlanePreviews) {
+							if (vmw.second->hPlaneMerWnd) {
+								if (vmw.second->hPlaneMerWnd->getHandle() == hWnd) {
+									vmw.second->hPlaneMerWnd->setAxis(vmw.second->getAxis());
+									vmw.second->hPlaneMerWnd->resize();
+									breakFlag = true;
+									break;
+								}
+							}
+						}
+						if (breakFlag) {
+							break;
+						}
+					}
+				}
+			}
+			break;
+		}
+		case WndClass::Type::VIS_LINE: {
+			break;
+		}
+		}
+		break;
+	}
+	case WM_SIZING: {
+		switch (wcType) {
+		case WndClass::Type::MAIN: {
+			App::appPointer->hMainWnd->resizeListView();
+			App::appPointer->hMainWnd->resizeButtons();
+			break;
+		}
+		case WndClass::Type::VIS_MERGED: {
+			for (const auto & op : App::appPointer->openProjects) {
+				if (op.second.second->hVisMerWnd->getHandle() == hWnd) {
+					op.second.second->hVisMerWnd->resize();
+					break;
+				}
+			}
+			break;
+		}
+		case WndClass::Type::VIS_MERGED_PLANE: {
+			bool breakFlag = false;
+			for (const auto & op : App::appPointer->openProjects) {
+				for (const auto & vmw : op.second.second->openPlanePreviews) {
+					if (vmw.second->hPlaneMerWnd->getHandle() == hWnd) {
+						vmw.second->hPlaneMerWnd->setAxis(vmw.second->getAxis());
+						vmw.second->hPlaneMerWnd->resize();
+						breakFlag = true;
+						break;
+					}
+				}
+				if (breakFlag) {
+					break;
+				}
+			}
+			break;
+		}
+		case WndClass::Type::VIS_LINE: {
 			break;
 		}
 		}
@@ -472,7 +551,7 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		break;
 	}
 	case WM_CTLCOLORSTATIC: {
-		if (wcType == WndClass::Type::VIS_LINE) {
+		if (wcType == WndClass::Type::VIS_LINE  ||  wcType == WndClass::Type::DATA_WND_CLASS) {
 			SetTextColor((HDC)wParam, BLACK);
 			SetBkColor((HDC)wParam, WHITE);
 		}
@@ -655,6 +734,21 @@ void App::createWndClasses() {
 		nullptr
 	};
 
+	this->wndClassTypeStruct[WndClass::Type::DATA_WND_CLASS] = {
+		sizeof(WNDCLASSEXW),
+		CS_HREDRAW | CS_VREDRAW,
+		App::wndProc,
+		0,
+		0,
+		this->hCurrentInst,
+		nullptr,
+		LoadCursor(this->hCurrentInst, IDC_ARROW),
+		CreateSolidBrush(WHITE),
+		nullptr,
+		L"DataWndClass",
+		nullptr
+	};
+
 	this->wndClassTypeStruct[WndClass::Type::VIS_LEGEND] = {
 		sizeof(WNDCLASSEXW),
 		CS_HREDRAW | CS_VREDRAW,
@@ -709,6 +803,7 @@ void App::createWndClasses() {
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_RESULT]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_RELERR]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_DISPLAY]);
+	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::DATA_WND_CLASS]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_LEGEND]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::EDITABLE]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::ABOUT]);

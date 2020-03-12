@@ -33,17 +33,17 @@ MainWindow::MainWindow(HINSTANCE hInst) {
 
 	this->hBtnNewProj = CreateWindow(L"BUTTON", L"New project",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		wndRect.right - 300, 300, 150, 30,
+		int(0.8 * wndRect.right), int(0.45f * wndRect.bottom), 150, 30,
 		this->hWnd, (HMENU) BUTTON_NEW_PROJ, hInst, nullptr);
 
 	this->hBtnCloseSel = CreateWindow(L"BUTTON", L"Close selected",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | WS_DISABLED,
-		wndRect.right - 300, 350, 150, 30,
+		int(0.8 * wndRect.right), int(0.45f * wndRect.bottom) + 50, 150, 30,
 		this->hWnd, (HMENU) BUTTON_CLOSE_SEL, hInst, nullptr);
 	
 	this->hBtnCloseAll = CreateWindow(L"BUTTON", L"Close all",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | WS_DISABLED,
-		wndRect.right - 300, 400, 150, 30,
+		int(0.8 * wndRect.right), int(0.45f * wndRect.bottom) + 100, 150, 30,
 		this->hWnd, (HMENU) BUTTON_CLOSE_ALL, hInst, nullptr);
 }
 
@@ -87,7 +87,15 @@ void MainWindow::initListView(HINSTANCE hInst) {
 
 
 void MainWindow::resizeListView() {
-	MoveWindow(this->hWndListView, 100, 180, this->wndRect.right - 500, this->wndRect.bottom - 300, TRUE);
+	GetClientRect(this->hWnd, &wndRect);
+	MoveWindow(this->hWndListView, int(0.07f * wndRect.right), int(0.25f * wndRect.bottom), int(0.65f * this->wndRect.right), int(0.6f * this->wndRect.bottom), TRUE);
+}
+
+
+void MainWindow::resizeButtons() {
+	MoveWindow(this->hBtnNewProj, int(0.8 * wndRect.right), int(0.45f * wndRect.bottom), 150, 30, TRUE);
+	MoveWindow(this->hBtnCloseSel, int(0.8 * wndRect.right), int(0.45f * wndRect.bottom) + 50, 150, 30, TRUE);
+	MoveWindow(this->hBtnCloseAll, int(0.8 * wndRect.right), int(0.45f * wndRect.bottom) + 100, 150, 30, TRUE);
 }
 
 

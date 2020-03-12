@@ -24,11 +24,19 @@
 
 class VisMergedWndBase {
 protected:
+	char wClass;
+
 	HWND hWnd;
 	HWND hResultDisplay;
 	HWND hRelErrDisplay;
+	HWND hDataWnd;
 	HWND hResultLegend;
 	HWND hRelErrLegend;
+	HWND hResultTitle;
+	HWND hRelErrTitle;
+	HWND hResultLegendVal[7];
+	HWND hRelErrLegendVal[7];
+
 	HWND hCheckGrid;
 	HWND hCheckAxesVals;
 
@@ -42,6 +50,7 @@ protected:
 	HWND hAxisValueBox;
 
 	RECT wndRect;
+	RECT dataWndRect;
 	int displayDim;
 	int dialogWidth;
 	int dialogHeight;
@@ -49,16 +58,29 @@ public:
 	VisMergedWndBase(HINSTANCE hInst, LPWSTR windowTitle, char wClass);
 	virtual ~VisMergedWndBase() = default;
 
+	void setResultTitle(HWND hWnd);
+	void setRelErrTitle(HWND hWnd);
+	void setResultLegendVal(unsigned index, HWND hWnd);
+	void setRelErrLegendVal(unsigned index, HWND hWnd);
+
+	char getWClass();
 	HWND getHandle();
 	HWND getResultDisplay();
 	HWND getRelErrDisplay();
+	HWND getDataWnd();
 	HWND getResultLegend();
 	HWND getRelErrLegend();
+	HWND getResultTitle();
+	HWND getRelErrTitle();
+	HWND getResultLegendVal(unsigned index);
+	HWND getRelErrLegendVal(unsigned index);
 	HWND getRadioButtonX();
 	HWND getRadioButtonY();
 	HWND getRadioButtonZ();
 	HWND getAxisValueBox();
 	RECT getWndRect();
+	RECT getDataWndRect();
 	int getDisplayDim();
 	int getDialogHeight();
+	virtual void resize();
 };

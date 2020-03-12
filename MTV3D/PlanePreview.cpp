@@ -33,41 +33,48 @@ PlanePreview::PlanePreview(char axis, float axisValue): axis(axis), axisValue(ax
 }
 
 
+char PlanePreview::getAxis() {
+	return this->axis;
+}
+
+
 void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAccelTable, LPWSTR fileAbsolutePath, int planePointsDataSize, Graphics::Point2D* planePointsData) {
 	this->hCurrentInst = hCurrentInst;
 	this->hAccelTable = hAccelTable;
 	this->fileAbsolutePath = fileAbsolutePath;
 	this->windowTitle = new WCHAR[WCHAR_ARR_MAX];
 	WCHAR axisEqValueStr[101];
+	WCHAR planeTitle[101];
 	swprintf_s(axisEqValueStr, L"%c = %1.3f", this->axis, this->axisValue);
+	swprintf_s(planeTitle, L"Plane ( %s )", axisEqValueStr);
 	swprintf_s(this->windowTitle, WCHAR_ARR_MAX - 1, L"MTV3D - %s ( %s )", this->fileAbsolutePath, axisEqValueStr);
 
-	this->hVisMerWnd = std::make_unique<PlaneMergedWnd>(this->hCurrentInst, this->windowTitle);
+	this->hPlaneMerWnd = std::make_unique<PlaneMergedWnd>(this->hCurrentInst, this->windowTitle);
 	if (this->axis == 'X') {
-		SendMessage(this->hVisMerWnd->getRadioButtonY(), BM_SETCHECK, BST_CHECKED, 0);
-		EnableWindow(this->hVisMerWnd->getRadioButtonX(), false);
-		ShowWindow(this->hVisMerWnd->getRadioButtonX(), SW_HIDE);
-		CreateWindow(L"STATIC", axisEqValueStr, WS_VISIBLE | WS_CHILD,
-			this->hVisMerWnd->getWndRect().right / 4 + 50, this->hVisMerWnd->getDisplayDim() + this->hVisMerWnd->getDialogHeight() / 3 + 30, 100, 20,
-			this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+		SendMessage(this->hPlaneMerWnd->getRadioButtonY(), BM_SETCHECK, BST_CHECKED, 0);
+		EnableWindow(this->hPlaneMerWnd->getRadioButtonX(), false);
+		ShowWindow(this->hPlaneMerWnd->getRadioButtonX(), SW_HIDE);
+		this->hPlaneMerWnd->setAxisBtnReplacementVal(CreateWindow(L"STATIC", axisEqValueStr, WS_VISIBLE | WS_CHILD,
+			this->hPlaneMerWnd->getWndRect().right / 4 + 50, this->hPlaneMerWnd->getDisplayDim() + this->hPlaneMerWnd->getDialogHeight() / 3 + 30, 100, 20,
+			this->hPlaneMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr));
 	}
 	else if (this->axis == 'Y') {
-		SendMessage(this->hVisMerWnd->getRadioButtonX(), BM_SETCHECK, BST_CHECKED, 0);
-		EnableWindow(this->hVisMerWnd->getRadioButtonY(), false);
-		ShowWindow(this->hVisMerWnd->getRadioButtonY(), SW_HIDE);
-		CreateWindow(L"STATIC", axisEqValueStr, WS_VISIBLE | WS_CHILD,
-			this->hVisMerWnd->getWndRect().right / 4 + 120, this->hVisMerWnd->getDisplayDim() + this->hVisMerWnd->getDialogHeight() / 3 + 30, 100, 20,
-			this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+		SendMessage(this->hPlaneMerWnd->getRadioButtonX(), BM_SETCHECK, BST_CHECKED, 0);
+		EnableWindow(this->hPlaneMerWnd->getRadioButtonY(), false);
+		ShowWindow(this->hPlaneMerWnd->getRadioButtonY(), SW_HIDE);
+		this->hPlaneMerWnd->setAxisBtnReplacementVal(CreateWindow(L"STATIC", axisEqValueStr, WS_VISIBLE | WS_CHILD,
+			this->hPlaneMerWnd->getWndRect().right / 4 + 120, this->hPlaneMerWnd->getDisplayDim() + this->hPlaneMerWnd->getDialogHeight() / 3 + 30, 100, 20,
+			this->hPlaneMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr));
 	}
 	else {
-		SendMessage(this->hVisMerWnd->getRadioButtonX(), BM_SETCHECK, BST_CHECKED, 0);
-		EnableWindow(this->hVisMerWnd->getRadioButtonZ(), false);
-		ShowWindow(this->hVisMerWnd->getRadioButtonZ(), SW_HIDE);
-		CreateWindow(L"STATIC", axisEqValueStr, WS_VISIBLE | WS_CHILD,
-			this->hVisMerWnd->getWndRect().right / 4 + 200, this->hVisMerWnd->getDisplayDim() + this->hVisMerWnd->getDialogHeight() / 3 + 30, 100, 20,
-			this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+		SendMessage(this->hPlaneMerWnd->getRadioButtonX(), BM_SETCHECK, BST_CHECKED, 0);
+		EnableWindow(this->hPlaneMerWnd->getRadioButtonZ(), false);
+		ShowWindow(this->hPlaneMerWnd->getRadioButtonZ(), SW_HIDE);
+		this->hPlaneMerWnd->setAxisBtnReplacementVal(CreateWindow(L"STATIC", axisEqValueStr, WS_VISIBLE | WS_CHILD,
+			this->hPlaneMerWnd->getWndRect().right / 4 + 200, this->hPlaneMerWnd->getDisplayDim() + this->hPlaneMerWnd->getDialogHeight() / 3 + 30, 100, 20,
+			this->hPlaneMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr));
 	}
-	ShowWindow(this->hVisMerWnd->getHandle(), SW_SHOWMAXIMIZED);
+	ShowWindow(this->hPlaneMerWnd->getHandle(), SW_SHOWMAXIMIZED);
 
 	SetCursor(LoadCursor(nullptr, IDC_WAIT));
 
@@ -168,45 +175,51 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 
 
 
-	CreateWindow(L"STATIC", L"Result", WS_VISIBLE | WS_CHILD,
-		this->hVisMerWnd->getWndRect().right / 2 - this->hVisMerWnd->getDisplayDim() / 25 - 110, 30, 120, 20,
-		this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+	this->hPlaneMerWnd->setPlaneTitle(CreateWindow(L"STATIC", planeTitle, WS_VISIBLE | WS_CHILD,
+		this->hPlaneMerWnd->getDataWndRect().right / 2 - 60, this->hPlaneMerWnd->getDisplayDim() / 5 - 70, 150, 20,
+		this->hPlaneMerWnd->getDataWnd(), nullptr, this->hCurrentInst, nullptr));
 
-	CreateWindow(L"STATIC", L"Relative\nError", WS_VISIBLE | WS_CHILD,
-		this->hVisMerWnd->getWndRect().right / 2 + this->hVisMerWnd->getDisplayDim() / 25 + 30, 30, 120, 40,
-		this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+	this->hPlaneMerWnd->setResultTitle(CreateWindow(L"STATIC", L"Result", WS_VISIBLE | WS_CHILD,
+		this->hPlaneMerWnd->getDataWndRect().right / 2 - int(0.05f * this->hPlaneMerWnd->getDisplayDim()) - 80, this->hPlaneMerWnd->getDisplayDim() / 5 - 60 + ((this->hPlaneMerWnd->getWClass() == 'P') ? 0 : 20), 120, 20,
+		this->hPlaneMerWnd->getDataWnd(), nullptr, this->hCurrentInst, nullptr));
+
+	this->hPlaneMerWnd->setRelErrTitle(CreateWindow(L"STATIC", L"Relative\nError", WS_VISIBLE | WS_CHILD,
+		this->hPlaneMerWnd->getDataWndRect().right / 2 + int(0.1f * this->hPlaneMerWnd->getDisplayDim()), this->hPlaneMerWnd->getDisplayDim() / 5 - 60 + ((this->hPlaneMerWnd->getWClass() == 'P') ? 0 : 20), 120, 40,
+		this->hPlaneMerWnd->getDataWnd(), nullptr, this->hCurrentInst, nullptr));
 
 	WCHAR legendValue[101];
 
 	for (int i = 0; i <= 5; ++i) {
 		swprintf_s(legendValue, L"%1.5e", this->resultLegend[5 - i].value);
 
-		CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
-			this->hVisMerWnd->getWndRect().right / 2 - this->hVisMerWnd->getDisplayDim() / 25 - 110, 90 + int((this->hVisMerWnd->getDisplayDim() / 2.L) * i / 5.L), 120, 20,
-			this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+		this->hPlaneMerWnd->setResultLegendVal(i, CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
+			this->hPlaneMerWnd->getDataWndRect().right / 2 - 100 - int(0.025f * this->hPlaneMerWnd->getDisplayDim()), int(this->hPlaneMerWnd->getDisplayDim() * (2.f + i) / 10) - 10 + ((this->hPlaneMerWnd->getWClass() == 'P') ? 0 : 20), 120, 20,
+			this->hPlaneMerWnd->getDataWnd(), nullptr, this->hCurrentInst, nullptr));
 	}
 
 	swprintf_s(legendValue, L"%1.5e", 0.L);
 
-	CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
-		this->hVisMerWnd->getWndRect().right / 2 - this->hVisMerWnd->getDisplayDim() / 25 - 110, 90 + int(this->hVisMerWnd->getDisplayDim() / 2.L) + 60, 120, 20,
-		this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+	this->hPlaneMerWnd->setResultLegendVal(6, CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
+		this->hPlaneMerWnd->getDataWndRect().right / 2 - 100 - int(0.025f * this->hPlaneMerWnd->getDisplayDim()), int(this->hPlaneMerWnd->getDisplayDim() * 0.8f) + ((this->hPlaneMerWnd->getWClass() == 'P') ? 0 : 20), 120, 20,
+		this->hPlaneMerWnd->getDataWnd(), nullptr, this->hCurrentInst, nullptr));
 
 
 	for (int i = 0; i <= 5; ++i) {
 		swprintf_s(legendValue, L"%1.5e", this->relerrLegend[5 - i].value);
 
-		CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
-			this->hVisMerWnd->getWndRect().right / 2 + this->hVisMerWnd->getDisplayDim() / 25 + 30, 90 + int((this->hVisMerWnd->getDisplayDim() / 2.L) * i / 5.L), 120, 20,
-			this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+		this->hPlaneMerWnd->setRelErrLegendVal(i, CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
+			this->hPlaneMerWnd->getDataWndRect().right / 2 + int(0.05f * this->hPlaneMerWnd->getDisplayDim()), int(this->hPlaneMerWnd->getDisplayDim() * (2.f + i) / 10) - 10 + ((this->hPlaneMerWnd->getWClass() == 'P') ? 0 : 20), 120, 20,
+			this->hPlaneMerWnd->getDataWnd(), nullptr, this->hCurrentInst, nullptr));
 	}
 
 	swprintf_s(legendValue, L"irrelevant");
 
-	CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
-		this->hVisMerWnd->getWndRect().right / 2 + this->hVisMerWnd->getDisplayDim() / 25 + 30, 90 + int(this->hVisMerWnd->getDisplayDim() / 2.L) + 60, 120, 20,
-		this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+	this->hPlaneMerWnd->setRelErrLegendVal(6, CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
+		this->hPlaneMerWnd->getDataWndRect().right / 2 + int(0.05f * this->hPlaneMerWnd->getDisplayDim()), int(this->hPlaneMerWnd->getDisplayDim() * 0.8f) + ((this->hPlaneMerWnd->getWClass() == 'P') ? 0 : 20), 120, 20,
+		this->hPlaneMerWnd->getDataWnd(), nullptr, this->hCurrentInst, nullptr));
 
+
+	this->hPlaneMerWnd->resize();
 
 	SetCursor(LoadCursor(nullptr, IDC_ARROW));
 
@@ -219,8 +232,8 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
 
 	D3D11_VIEWPORT viewport;
-	viewport.Width = (float)this->hVisMerWnd->getDisplayDim();
-	viewport.Height = (float)this->hVisMerWnd->getDisplayDim();
+	viewport.Width = (float)this->hPlaneMerWnd->getDisplayDim();
+	viewport.Height = (float)this->hPlaneMerWnd->getDisplayDim();
 	viewport.MinDepth = 0.f;
 	viewport.MaxDepth = 1.f;
 	viewport.TopLeftX = 0.f;
@@ -296,8 +309,8 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> depthStencil;
 	D3D11_TEXTURE2D_DESC depthDesc;
 	ZeroMemory(&depthDesc, sizeof(D3D11_TEXTURE2D_DESC));
-	depthDesc.Width = this->hVisMerWnd->getDisplayDim();
-	depthDesc.Height = this->hVisMerWnd->getDisplayDim();
+	depthDesc.Width = this->hPlaneMerWnd->getDisplayDim();
+	depthDesc.Height = this->hPlaneMerWnd->getDisplayDim();
 	depthDesc.MipLevels = 1u;
 	depthDesc.ArraySize = 1u;
 	depthDesc.Format = DXGI_FORMAT_D32_FLOAT;
@@ -555,16 +568,16 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 			PlanePreview::flagLinePrevCreation = false;
 
 			WCHAR selectedLineAxisStr[101];
-			GetWindowText(this->hVisMerWnd->getAxisValueBox(), selectedLineAxisStr, 100);
+			GetWindowText(this->hPlaneMerWnd->getAxisValueBox(), selectedLineAxisStr, 100);
 			auto axisValCont = Graphics::validFloat(std::wstring(selectedLineAxisStr));
 
 			if (axisValCont) {
 				char selAxis = 'Z';
 
-				if (Button_GetCheck(this->hVisMerWnd->getRadioButtonX()) == BST_CHECKED) {
+				if (Button_GetCheck(this->hPlaneMerWnd->getRadioButtonX()) == BST_CHECKED) {
 					selAxis = 'X';
 				}
-				else if (Button_GetCheck(this->hVisMerWnd->getRadioButtonY()) == BST_CHECKED) {
+				else if (Button_GetCheck(this->hPlaneMerWnd->getRadioButtonY()) == BST_CHECKED) {
 					selAxis = 'Y';
 				}
 
@@ -674,7 +687,7 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 				}
 				else {
 					if (IsWindow(this->openLinePreviews[pr]->getHandle())) {
-						MessageBox(this->hVisMerWnd->getHandle(), (std::wstring(L"You have already opened line: ") + std::wstring(1, this->axis) + L" = " + std::to_wstring(this->axisValue) + L" , " + std::wstring(1, selAxis) + L" = " + std::to_wstring(*axisValCont)).c_str(), L"Already open!", MB_ICONINFORMATION);
+						MessageBox(this->hPlaneMerWnd->getHandle(), (std::wstring(L"You have already opened line: ") + std::wstring(1, this->axis) + L" = " + std::to_wstring(this->axisValue) + L" , " + std::wstring(1, selAxis) + L" = " + std::to_wstring(*axisValCont)).c_str(), L"Already open!", MB_ICONINFORMATION);
 					}
 					else {
 						this->openLinePreviews[pr]->reCreate();
@@ -687,13 +700,13 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 
 
 		RECT fillRect;
-		GetClientRect(this->hVisMerWnd->getResultLegend(), &fillRect);
+		GetClientRect(this->hPlaneMerWnd->getResultLegend(), &fillRect);
 
-		HDC hdc = GetDC(this->hVisMerWnd->getResultLegend());
+		HDC hdc = GetDC(this->hPlaneMerWnd->getResultLegend());
 		Gdiplus::Graphics * gdiGraphics = Gdiplus::Graphics::FromHDC(hdc);
 
 		int legendSize = this->resultLegend.size() - 1;
-		int levelSize = int(fillRect.bottom / (float)legendSize);
+		int levelSize = (int)ceil(fillRect.bottom / (float)legendSize);
 
 		for (int i = 0; i < legendSize; ++i) {
 			Graphics::CustomColor colHigh = this->resultLegend[legendSize - i].color;
@@ -716,13 +729,13 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 
 
 
-		GetClientRect(this->hVisMerWnd->getRelErrLegend(), &fillRect);
+		GetClientRect(this->hPlaneMerWnd->getRelErrLegend(), &fillRect);
 
-		hdc = GetDC(this->hVisMerWnd->getRelErrLegend());
+		hdc = GetDC(this->hPlaneMerWnd->getRelErrLegend());
 		gdiGraphics = Gdiplus::Graphics::FromHDC(hdc);
 
 		legendSize = this->relerrLegend.size() - 1;
-		levelSize = int(fillRect.bottom / (float)legendSize);
+		levelSize = (int)ceil(fillRect.bottom / (float)legendSize);
 
 		for (int i = 0; i < legendSize; ++i) {
 			Graphics::CustomColor colHigh = this->relerrLegend[legendSize - i].color;
@@ -745,18 +758,33 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 
 
 
-		hdc = GetDC(this->hVisMerWnd->getHandle());
-		gdiGraphics = Gdiplus::Graphics::FromHDC(hdc);
+		HBRUSH hBlackBrush = CreateSolidBrush(BLACK);
 
-		Gdiplus::Pen whitePen(Gdiplus::Color(255, 255, 255, 255), (float)fillRect.right);
+		hdc = GetDC(this->hPlaneMerWnd->getDataWnd());
+		
 
-		gdiGraphics->DrawLine(&whitePen, this->hVisMerWnd->getWndRect().right / 2 - this->hVisMerWnd->getDisplayDim() / 25 - 10 + fillRect.right / 2, 100 + this->hVisMerWnd->getDisplayDim() / 2 + 48,
-			this->hVisMerWnd->getWndRect().right / 2 - this->hVisMerWnd->getDisplayDim() / 25 - 10 + fillRect.right / 2, 100 + this->hVisMerWnd->getDisplayDim() / 2 + 48 + 20);
+		RECT rct = this->hPlaneMerWnd->getDataWndRect();
+		FrameRect(hdc, &rct, hBlackBrush);
 
-		gdiGraphics->DrawLine(&whitePen, this->hVisMerWnd->getWndRect().right / 2 + 10 + fillRect.right / 2, 100 + this->hVisMerWnd->getDisplayDim() / 2 + 48,
-			this->hVisMerWnd->getWndRect().right / 2 + 10 + fillRect.right / 2, 100 + this->hVisMerWnd->getDisplayDim() / 2 + 48 + 20);
 
-		delete gdiGraphics;
+		RECT rctZero;
+		rctZero.left = this->hPlaneMerWnd->getDataWndRect().right / 2 - int(0.05f * this->hPlaneMerWnd->getDisplayDim());
+		rctZero.top = int(0.8f * this->hPlaneMerWnd->getDisplayDim());
+		rctZero.right = rctZero.left + fillRect.right;
+		rctZero.bottom = rctZero.top + 20;
+
+		FrameRect(hdc, &rctZero, hBlackBrush);
+
+
+		RECT rctIrr;
+		rctIrr.left = this->hPlaneMerWnd->getDataWndRect().right / 2 + int(0.01f * this->hPlaneMerWnd->getDisplayDim());
+		rctIrr.top = int(0.8f * this->hPlaneMerWnd->getDisplayDim());
+		rctIrr.right = rctIrr.left + fillRect.right;
+		rctIrr.bottom = rctIrr.top + 20;
+
+		FrameRect(hdc, &rctIrr, hBlackBrush);
+
+
 		DeleteDC(hdc);
 		
 
@@ -769,23 +797,23 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 		this->d3dDeviceContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 
-		if (CursorData::cursorGrabInteractionProject == this->hVisMerWnd->getResultDisplay() || CursorData::cursorGrabInteractionProject == this->hVisMerWnd->getRelErrDisplay()) {
+		if (CursorData::cursorGrabInteractionProject == this->hPlaneMerWnd->getResultDisplay() || CursorData::cursorGrabInteractionProject == this->hPlaneMerWnd->getRelErrDisplay()) {
 			POINT cursorPosition;
 			GetCursorPos(&cursorPosition);
 			ScreenToClient(CursorData::cursorGrabInteractionProject, &cursorPosition);
 
 			Graphics::ScreenVector clickScreenVector = {
-				CursorData::clickPosX - this->hVisMerWnd->getDisplayDim() / 2.f,
-				-(CursorData::clickPosY - this->hVisMerWnd->getDisplayDim() / 2.f)
+				CursorData::clickPosX - this->hPlaneMerWnd->getDisplayDim() / 2.f,
+				-(CursorData::clickPosY - this->hPlaneMerWnd->getDisplayDim() / 2.f)
 			};
 			Graphics::ScreenVector cursorScreenVector = {
-				cursorPosition.x - this->hVisMerWnd->getDisplayDim() / 2.f,
-				-(cursorPosition.y - this->hVisMerWnd->getDisplayDim() / 2.f)
+				cursorPosition.x - this->hPlaneMerWnd->getDisplayDim() / 2.f,
+				-(cursorPosition.y - this->hPlaneMerWnd->getDisplayDim() / 2.f)
 			};
 
 			float clickScreenVectorLength = std::sqrt(clickScreenVector.x * clickScreenVector.x + clickScreenVector.y * clickScreenVector.y);
 			float cursorScreenVectorLength = std::sqrt(cursorScreenVector.x * cursorScreenVector.x + cursorScreenVector.y * cursorScreenVector.y);
-			float rotationAngle = DirectX::XMConvertToRadians(360) * (cursorScreenVectorLength - clickScreenVectorLength) / (this->hVisMerWnd->getDisplayDim() / 2.f);
+			float rotationAngle = DirectX::XMConvertToRadians(360) * (cursorScreenVectorLength - clickScreenVectorLength) / (this->hPlaneMerWnd->getDisplayDim() / 2.f);
 
 			DirectX::XMVECTOR clickVector = DirectX::XMVectorSet(clickScreenVector.x, clickScreenVector.y, 0.f, 0.f);
 			DirectX::XMVECTOR cursorVector = DirectX::XMVectorSet(cursorScreenVector.x, cursorScreenVector.y, 0.f, 0.f);
@@ -1283,7 +1311,7 @@ void PlanePreview::initDirect3D() {
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swapChainDesc.BufferCount = 1;
 
-	swapChainDesc.OutputWindow = this->hVisMerWnd->getResultDisplay();
+	swapChainDesc.OutputWindow = this->hPlaneMerWnd->getResultDisplay();
 	swapChainDesc.Windowed = TRUE;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 	swapChainDesc.Flags = 0;
@@ -1291,6 +1319,6 @@ void PlanePreview::initDirect3D() {
 	dxgiFactory->CreateSwapChain(dxgiDevice.Get(), &swapChainDesc, &this->swapChainResultDisplay);
 
 
-	swapChainDesc.OutputWindow = this->hVisMerWnd->getRelErrDisplay();
+	swapChainDesc.OutputWindow = this->hPlaneMerWnd->getRelErrDisplay();
 	dxgiFactory->CreateSwapChain(dxgiDevice.Get(), &swapChainDesc, &this->swapChainRelErrDisplay);
 }

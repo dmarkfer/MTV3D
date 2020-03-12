@@ -51,13 +51,16 @@ private:
 	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChainResultDisplay;
 	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChainRelErrDisplay;
 
-	std::unique_ptr<VisMergedWindow> hVisMerWnd;
 
 	std::vector<Graphics::LegendColorLevel> resultLegend;
 	std::vector<Graphics::LegendColorLevel> relerrLegend;
 
-	std::map<std::pair<char, float>, std::unique_ptr<PlanePreview>> openPlanePreviews;
 	std::map<std::pair<char, float>, std::thread> planePreviewsThreads;
+
+public:
+	std::unique_ptr<VisMergedWindow> hVisMerWnd;
+	std::map<std::pair<char, float>, std::unique_ptr<PlanePreview>> openPlanePreviews;
+
 public:
 	VisComponent() = default;
 	~VisComponent() = default;

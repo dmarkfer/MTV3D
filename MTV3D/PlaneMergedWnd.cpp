@@ -31,6 +31,55 @@ PlaneMergedWnd::PlaneMergedWnd(HINSTANCE hInst, LPWSTR windowTitle): VisMergedWn
 }
 
 
+void PlaneMergedWnd::setAxis(char axis) {
+	this->axis = axis;
+}
+
+
+char PlaneMergedWnd::getAxis() {
+	return this->axis;
+}
+
+
+void PlaneMergedWnd::setPlaneTitle(HWND hWnd) {
+	this->hPlaneTitle = hWnd;
+}
+
+
+HWND PlaneMergedWnd::getPlaneTitle() {
+	return this->hPlaneTitle;
+}
+
+
+void PlaneMergedWnd::setAxisBtnReplacementVal(HWND hWnd) {
+	this->hAxisBtnReplacementVal = hWnd;
+}
+
+
+HWND PlaneMergedWnd::getAxisBtnReplacementVal() {
+	return this->hAxisBtnReplacementVal;
+}
+
+
 HWND PlaneMergedWnd::getBtnCreateLine() {
 	return this->hBtnCreateLine;
+}
+
+
+void PlaneMergedWnd::resize() {
+	this->VisMergedWndBase::resize();
+
+	MoveWindow(hPlaneTitle, dataWndRect.right / 2 - 60, displayDim / 5 - 70, 150, 20, TRUE);
+
+	if (this->axis == 'X') {
+		MoveWindow(hAxisBtnReplacementVal, wndRect.right / 4 + 50, displayDim + dialogHeight / 3 + 30, 100, 20, TRUE);
+	}
+	else if (this->axis == 'Y') {
+		MoveWindow(hAxisBtnReplacementVal, wndRect.right / 4 + 120, displayDim + dialogHeight / 3 + 30, 100, 20, TRUE);
+	}
+	else {
+		MoveWindow(hAxisBtnReplacementVal, wndRect.right / 4 + 200, displayDim + dialogHeight / 3 + 30, 100, 20, TRUE);
+	}
+	
+	MoveWindow(hBtnCreateLine, wndRect.right / 4 + dialogWidth * 2 / 3, this->displayDim + dialogHeight * 2 / 3, 180, 30, TRUE);
 }

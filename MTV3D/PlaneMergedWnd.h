@@ -26,10 +26,20 @@
 
 class PlaneMergedWnd: public VisMergedWndBase {
 private:
+	char axis;
+	HWND hPlaneTitle;
+	HWND hAxisBtnReplacementVal;
 	HWND hBtnCreateLine;
 public:
 	PlaneMergedWnd(HINSTANCE hInst, LPWSTR windowTitle);
 	~PlaneMergedWnd() = default;
 
+	void setAxis(char axis);
+	char getAxis();
+	void setPlaneTitle(HWND hWnd);
+	HWND getPlaneTitle();
+	void setAxisBtnReplacementVal(HWND hWnd);
+	HWND getAxisBtnReplacementVal();
 	HWND getBtnCreateLine();
+	virtual void resize() override;
 };

@@ -32,4 +32,5 @@ public:
 	~VisMergedWindow() = default;
 
 	HWND getBtnCreatePlane();
+	virtual void resize() override;
 };

@@ -45,12 +45,14 @@ private:
 	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChainResultDisplay;
 	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChainRelErrDisplay;
 
-	std::unique_ptr<PlaneMergedWnd> hVisMerWnd;
 
 	std::vector<Graphics::LegendColorLevel> resultLegend;
 	std::vector<Graphics::LegendColorLevel> relerrLegend;
 
+public:
+	std::unique_ptr<PlaneMergedWnd> hPlaneMerWnd;
 	std::map<std::pair<std::pair<char, float>, std::pair<char, float>>, std::unique_ptr<LinePreviewWnd>> openLinePreviews;
+
 public:
 	thread_local static float scaleBase;
 	thread_local static bool gridActive;
@@ -60,6 +62,7 @@ public:
 	PlanePreview(char axis, float axisValue);
 	~PlanePreview() = default;
 
+	char getAxis();
 	void run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAccelTable, LPWSTR fileAbsolutePath, int planePointsDataSize, Graphics::Point2D* planePointsData);
 private:
 	void initDirect3D();

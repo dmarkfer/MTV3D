@@ -36,3 +36,10 @@ VisMergedWindow::VisMergedWindow(HINSTANCE hInst, LPWSTR windowTitle): VisMerged
 HWND VisMergedWindow::getBtnCreatePlane() {
 	return this->hBtnCreatePlane;
 }
+
+
+void VisMergedWindow::resize() {
+	this->VisMergedWndBase::resize();
+
+	MoveWindow(hBtnCreatePlane, wndRect.right / 4 + dialogWidth * 2 / 3, this->displayDim + dialogHeight * 2 / 3, 180, 30, TRUE);
+}

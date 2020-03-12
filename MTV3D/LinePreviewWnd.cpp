@@ -119,7 +119,7 @@ void LinePreviewWnd::drawChart(PAINTSTRUCT* ps, HWND hWnd) {
 
 	swprintf_s(axisValWStr, L"Line ( %c = %1.3f , %c = %1.3f )", lineWnd->pr.first.first, lineWnd->pr.first.second, lineWnd->pr.second.first, lineWnd->pr.second.second);
 	lineWnd->childWnds.push_back(CreateWindow(L"STATIC", axisValWStr, WS_VISIBLE | WS_CHILD,
-		rect.right / 2 - 120, 50, 300, 20,
+		rect.right / 2 - 120, int(0.07f * rect.bottom), 300, 20,
 		lineWnd->getHandle(), nullptr, lineWnd->hCurrentInst, nullptr));
 
 	swprintf_s(axisValWStr, L"axis %c", lineAxis);

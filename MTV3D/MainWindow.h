@@ -38,6 +38,7 @@ public:
 	void loadLogo(HDC hdc, LPWSTR rootDir, float qLogo, int fontHeight, int fontWidth);
 	void initListView(HINSTANCE hInst);
 	void resizeListView();
+	void resizeButtons();
 	void deleteListViewItem(int index);
 
 	HWND getHandle();

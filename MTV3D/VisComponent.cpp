@@ -139,45 +139,47 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 
 
-	CreateWindow(L"STATIC", L"Result", WS_VISIBLE | WS_CHILD,
-		this->hVisMerWnd->getWndRect().right / 2 - this->hVisMerWnd->getDisplayDim() / 25 - 110, 30, 120, 20,
-		this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+	this->hVisMerWnd->setResultTitle(CreateWindow(L"STATIC", L"Result", WS_VISIBLE | WS_CHILD,
+		this->hVisMerWnd->getDataWndRect().right / 2 - int(0.05f * this->hVisMerWnd->getDisplayDim()) - 80, this->hVisMerWnd->getDisplayDim() / 5 - 60, 120, 20,
+		this->hVisMerWnd->getDataWnd(), nullptr, this->hCurrentInst, nullptr));
 
-	CreateWindow(L"STATIC", L"Relative\nError", WS_VISIBLE | WS_CHILD,
-		this->hVisMerWnd->getWndRect().right / 2 + this->hVisMerWnd->getDisplayDim() / 25 + 30, 30, 120, 40,
-		this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+	this->hVisMerWnd->setRelErrTitle(CreateWindow(L"STATIC", L"Relative\nError", WS_VISIBLE | WS_CHILD,
+		this->hVisMerWnd->getDataWndRect().right / 2 + int(0.1f * this->hVisMerWnd->getDisplayDim()), this->hVisMerWnd->getDisplayDim() / 5 - 60, 120, 40,
+		this->hVisMerWnd->getDataWnd(), nullptr, this->hCurrentInst, nullptr));
 
 	WCHAR legendValue[101];
 
 	for (int i = 0; i <= 5; ++i) {
 		swprintf_s(legendValue, L"%1.5e", this->resultLegend[5 - i].value);
 
-		CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
-			this->hVisMerWnd->getWndRect().right / 2 - this->hVisMerWnd->getDisplayDim() / 25 - 110, 90 + int((this->hVisMerWnd->getDisplayDim() / 2.L) * i / 5.L), 120, 20,
-			this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+		this->hVisMerWnd->setResultLegendVal(i, CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
+			this->hVisMerWnd->getDataWndRect().right / 2 - 100 - int(0.025f * this->hVisMerWnd->getDisplayDim()), int(this->hVisMerWnd->getDisplayDim() * (2.f + i) / 10) - 10, 120, 20,
+			this->hVisMerWnd->getDataWnd(), nullptr, this->hCurrentInst, nullptr));
 	}
 
 	swprintf_s(legendValue, L"%1.5e", 0.L);
 
-	CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
-		this->hVisMerWnd->getWndRect().right / 2 - this->hVisMerWnd->getDisplayDim() / 25 - 110, 90 + int(this->hVisMerWnd->getDisplayDim() / 2.L) + 60, 120, 20,
-		this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+	this->hVisMerWnd->setResultLegendVal(6, CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
+		this->hVisMerWnd->getDataWndRect().right / 2 - 100 - int(0.025f * this->hVisMerWnd->getDisplayDim()), int(this->hVisMerWnd->getDisplayDim() * 0.8f), 120, 20,
+		this->hVisMerWnd->getDataWnd(), nullptr, this->hCurrentInst, nullptr));
 
 
 	for (int i = 0; i <= 5; ++i) {
 		swprintf_s(legendValue, L"%1.5e", this->relerrLegend[5 - i].value);
 
-		CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
-			this->hVisMerWnd->getWndRect().right / 2 + this->hVisMerWnd->getDisplayDim() / 25 + 30, 90 + int((this->hVisMerWnd->getDisplayDim() / 2.L) * i / 5.L), 120, 20,
-			this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+		this->hVisMerWnd->setRelErrLegendVal(i, CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
+			this->hVisMerWnd->getDataWndRect().right / 2 + int(0.05f * this->hVisMerWnd->getDisplayDim()), int(this->hVisMerWnd->getDisplayDim() * (2.f + i) / 10) - 10, 120, 20,
+			this->hVisMerWnd->getDataWnd(), nullptr, this->hCurrentInst, nullptr));
 	}
 
 	swprintf_s(legendValue, L"irrelevant");
 
-	CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
-		this->hVisMerWnd->getWndRect().right / 2 + this->hVisMerWnd->getDisplayDim() / 25 + 30, 90 + int(this->hVisMerWnd->getDisplayDim() / 2.L) + 60, 120, 20,
-		this->hVisMerWnd->getHandle(), nullptr, this->hCurrentInst, nullptr);
+	this->hVisMerWnd->setRelErrLegendVal(6, CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
+		this->hVisMerWnd->getDataWndRect().right / 2 + int(0.05f * this->hVisMerWnd->getDisplayDim()), int(this->hVisMerWnd->getDisplayDim() * 0.8f), 120, 20,
+		this->hVisMerWnd->getDataWnd(), nullptr, this->hCurrentInst, nullptr));
 
+
+	this->hVisMerWnd->resize();
 
 
 	SetCursor(LoadCursor(nullptr, IDC_ARROW));
@@ -826,7 +828,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		Gdiplus::Graphics * gdiGraphics = Gdiplus::Graphics::FromHDC(hdc);
 
 		int legendSize = this->resultLegend.size() - 1;
-		int levelSize = int(fillRect.bottom / (float)legendSize);
+		int levelSize = (int)ceil(fillRect.bottom / (float)legendSize);
 
 		for (int i = 0; i < legendSize; ++i) {
 			Graphics::CustomColor colHigh = this->resultLegend[legendSize - i].color;
@@ -855,7 +857,7 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 		gdiGraphics = Gdiplus::Graphics::FromHDC(hdc);
 
 		legendSize = this->relerrLegend.size() - 1;
-		levelSize = int(fillRect.bottom / (float)legendSize);
+		levelSize = (int)ceil(fillRect.bottom / (float)legendSize);
 
 		for (int i = 0; i < legendSize; ++i) {
 			Graphics::CustomColor colHigh = this->relerrLegend[legendSize - i].color;
@@ -878,18 +880,33 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 
 
-		hdc = GetDC(this->hVisMerWnd->getHandle());
-		gdiGraphics = Gdiplus::Graphics::FromHDC(hdc);
+		HBRUSH hBlackBrush = CreateSolidBrush(BLACK);
 
-		Gdiplus::Pen whitePen(Gdiplus::Color(255, 255, 255, 255), (float)fillRect.right);
+		hdc = GetDC(this->hVisMerWnd->getDataWnd());
 
-		gdiGraphics->DrawLine(&whitePen, this->hVisMerWnd->getWndRect().right / 2 - this->hVisMerWnd->getDisplayDim() / 25 - 10 + fillRect.right / 2, 100 + this->hVisMerWnd->getDisplayDim() / 2 + 48,
-										 this->hVisMerWnd->getWndRect().right / 2 - this->hVisMerWnd->getDisplayDim() / 25 - 10 + fillRect.right / 2, 100 + this->hVisMerWnd->getDisplayDim() / 2 + 48 + 20);
 
-		gdiGraphics->DrawLine(&whitePen, this->hVisMerWnd->getWndRect().right / 2 + 10 + fillRect.right / 2, 100 + this->hVisMerWnd->getDisplayDim() / 2 + 48,
-										 this->hVisMerWnd->getWndRect().right / 2 + 10 + fillRect.right / 2, 100 + this->hVisMerWnd->getDisplayDim() / 2 + 48 + 20);
+		RECT rct = this->hVisMerWnd->getDataWndRect();
+		FrameRect(hdc, &rct, hBlackBrush);
 
-		delete gdiGraphics;
+
+		RECT rctZero;
+		rctZero.left = this->hVisMerWnd->getDataWndRect().right / 2 - int(0.05f * this->hVisMerWnd->getDisplayDim());
+		rctZero.top = int(0.8f * this->hVisMerWnd->getDisplayDim());
+		rctZero.right = rctZero.left + fillRect.right;
+		rctZero.bottom = rctZero.top + 20;
+
+		FrameRect(hdc, &rctZero, hBlackBrush);
+
+
+		RECT rctIrr;
+		rctIrr.left = this->hVisMerWnd->getDataWndRect().right / 2 + int(0.01f * this->hVisMerWnd->getDisplayDim());
+		rctIrr.top = int(0.8f * this->hVisMerWnd->getDisplayDim());
+		rctIrr.right = rctIrr.left + fillRect.right;
+		rctIrr.bottom = rctIrr.top + 20;
+
+		FrameRect(hdc, &rctIrr, hBlackBrush);
+
+
 		DeleteDC(hdc);
 
 
