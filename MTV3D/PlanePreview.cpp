@@ -397,7 +397,7 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 		gridAxesValuesVertices.push_back(std::make_pair(
 			DirectX::XMVectorSet(visp.axisOne, i * float((1 + gridLineExtensionPerc) * modelReliefLength / 10.L) - relfToAxis, visp.axisTwo, 1.f),
 			std::make_pair(
-				std::make_pair(resultMinValue + i * (resultMaxValue - resultMinValue) / 10.L, relerrMaxValue - i * (relerrMaxValue - relerrMinValue) / 10.L),
+				std::make_pair(resultMinValue + i * (resultMaxValue - resultMinValue) / 10.L, relerrMinValue + i * (relerrMaxValue - relerrMinValue) / 10.L),
 				i == 5 ? L"3MID" : L"3"
 			)
 		));
@@ -447,7 +447,7 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 			visp.axisOne -= modelAbscissaCenter;
 			visp.axisTwo -= modelOrdinateCenter;
 			verticesResult.push_back({ visp.axisOne, float((visp.value - resultMinValue) * resValQ - relfToAxis), visp.axisTwo, getResultColor(visp.value) });
-			verticesRelErr.push_back({ visp.axisOne, float((visp.value == 0.L ? 0.L : visp.relError - relerrMinValue) * relErrValQ - relfToAxis), visp.axisTwo, getRelErrColor(visp.value, visp.relError) });
+			verticesRelErr.push_back({ visp.axisOne, relfToAxis - float((visp.value == 0.L ? 0.L : relerrMaxValue - visp.relError) * relErrValQ), visp.axisTwo, getRelErrColor(visp.value, visp.relError) });
 
 			if (i > 0 && j > 0) {
 				indices.push_back((i - 1) * axisTwoSize + j - 1);
