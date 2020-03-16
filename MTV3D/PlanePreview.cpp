@@ -180,11 +180,11 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 		this->hPlaneMerWnd->getDataWnd(), nullptr, this->hCurrentInst, nullptr));
 
 	this->hPlaneMerWnd->setResultTitle(CreateWindow(L"STATIC", L"Result", WS_VISIBLE | WS_CHILD,
-		this->hPlaneMerWnd->getDataWndRect().right / 2 - int(0.05f * this->hPlaneMerWnd->getDisplayDim()) - 80, this->hPlaneMerWnd->getDisplayDim() / 5 - 60 + ((this->hPlaneMerWnd->getWClass() == 'P') ? 0 : 20), 120, 20,
+		this->hPlaneMerWnd->getDataWndRect().right / 2 - int(0.05f * this->hPlaneMerWnd->getDisplayDim()) - 80, this->hPlaneMerWnd->getDisplayDim() / 5 - 60 + 20, 120, 20,
 		this->hPlaneMerWnd->getDataWnd(), nullptr, this->hCurrentInst, nullptr));
 
 	this->hPlaneMerWnd->setRelErrTitle(CreateWindow(L"STATIC", L"Relative\nError", WS_VISIBLE | WS_CHILD,
-		this->hPlaneMerWnd->getDataWndRect().right / 2 + int(0.1f * this->hPlaneMerWnd->getDisplayDim()), this->hPlaneMerWnd->getDisplayDim() / 5 - 60 + ((this->hPlaneMerWnd->getWClass() == 'P') ? 0 : 20), 120, 40,
+		this->hPlaneMerWnd->getDataWndRect().right / 2 + int(0.1f * this->hPlaneMerWnd->getDisplayDim()), this->hPlaneMerWnd->getDisplayDim() / 5 - 60 + 20, 120, 40,
 		this->hPlaneMerWnd->getDataWnd(), nullptr, this->hCurrentInst, nullptr));
 
 	WCHAR legendValue[101];
@@ -193,14 +193,14 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 		swprintf_s(legendValue, L"%1.5e", this->resultLegend[5 - i].value);
 
 		this->hPlaneMerWnd->setResultLegendVal(i, CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
-			this->hPlaneMerWnd->getDataWndRect().right / 2 - 100 - int(0.025f * this->hPlaneMerWnd->getDisplayDim()), int(this->hPlaneMerWnd->getDisplayDim() * (2.f + i) / 10) - 10 + ((this->hPlaneMerWnd->getWClass() == 'P') ? 0 : 20), 120, 20,
+			this->hPlaneMerWnd->getDataWndRect().right / 2 - 100 - int(0.025f * this->hPlaneMerWnd->getDisplayDim()), int(this->hPlaneMerWnd->getDisplayDim() * (2.f + i) / 10) - 10 + 20, 120, 20,
 			this->hPlaneMerWnd->getDataWnd(), nullptr, this->hCurrentInst, nullptr));
 	}
 
 	swprintf_s(legendValue, L"%1.5e", 0.L);
 
 	this->hPlaneMerWnd->setResultLegendVal(6, CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
-		this->hPlaneMerWnd->getDataWndRect().right / 2 - 100 - int(0.025f * this->hPlaneMerWnd->getDisplayDim()), int(this->hPlaneMerWnd->getDisplayDim() * 0.8f) + ((this->hPlaneMerWnd->getWClass() == 'P') ? 0 : 20), 120, 20,
+		this->hPlaneMerWnd->getDataWndRect().right / 2 - 100 - int(0.025f * this->hPlaneMerWnd->getDisplayDim()), int(this->hPlaneMerWnd->getDisplayDim() * 0.8f) + 20, 120, 20,
 		this->hPlaneMerWnd->getDataWnd(), nullptr, this->hCurrentInst, nullptr));
 
 
@@ -208,14 +208,14 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 		swprintf_s(legendValue, L"%1.5e", this->relerrLegend[5 - i].value);
 
 		this->hPlaneMerWnd->setRelErrLegendVal(i, CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
-			this->hPlaneMerWnd->getDataWndRect().right / 2 + int(0.05f * this->hPlaneMerWnd->getDisplayDim()), int(this->hPlaneMerWnd->getDisplayDim() * (2.f + i) / 10) - 10 + ((this->hPlaneMerWnd->getWClass() == 'P') ? 0 : 20), 120, 20,
+			this->hPlaneMerWnd->getDataWndRect().right / 2 + int(0.05f * this->hPlaneMerWnd->getDisplayDim()), int(this->hPlaneMerWnd->getDisplayDim() * (2.f + i) / 10) - 10 + 20, 120, 20,
 			this->hPlaneMerWnd->getDataWnd(), nullptr, this->hCurrentInst, nullptr));
 	}
 
 	swprintf_s(legendValue, L"irrelevant");
 
 	this->hPlaneMerWnd->setRelErrLegendVal(6, CreateWindow(L"STATIC", legendValue, WS_VISIBLE | WS_CHILD,
-		this->hPlaneMerWnd->getDataWndRect().right / 2 + int(0.05f * this->hPlaneMerWnd->getDisplayDim()), int(this->hPlaneMerWnd->getDisplayDim() * 0.8f) + ((this->hPlaneMerWnd->getWClass() == 'P') ? 0 : 20), 120, 20,
+		this->hPlaneMerWnd->getDataWndRect().right / 2 + int(0.05f * this->hPlaneMerWnd->getDisplayDim()), int(this->hPlaneMerWnd->getDisplayDim() * 0.8f) + 20, 120, 20,
 		this->hPlaneMerWnd->getDataWnd(), nullptr, this->hCurrentInst, nullptr));
 
 
@@ -769,7 +769,7 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 
 		RECT rctZero;
 		rctZero.left = this->hPlaneMerWnd->getDataWndRect().right / 2 - int(0.05f * this->hPlaneMerWnd->getDisplayDim());
-		rctZero.top = int(0.8f * this->hPlaneMerWnd->getDisplayDim());
+		rctZero.top = int(0.8f * this->hPlaneMerWnd->getDisplayDim()) + 20;
 		rctZero.right = rctZero.left + fillRect.right;
 		rctZero.bottom = rctZero.top + 20;
 
@@ -778,7 +778,7 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 
 		RECT rctIrr;
 		rctIrr.left = this->hPlaneMerWnd->getDataWndRect().right / 2 + int(0.01f * this->hPlaneMerWnd->getDisplayDim());
-		rctIrr.top = int(0.8f * this->hPlaneMerWnd->getDisplayDim());
+		rctIrr.top = int(0.8f * this->hPlaneMerWnd->getDisplayDim()) + 20;
 		rctIrr.right = rctIrr.left + fillRect.right;
 		rctIrr.bottom = rctIrr.top + 20;
 
