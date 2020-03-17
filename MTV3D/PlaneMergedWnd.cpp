@@ -28,6 +28,21 @@ PlaneMergedWnd::PlaneMergedWnd(HINSTANCE hInst, LPWSTR windowTitle): VisMergedWn
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
 		wndRect.right / 4 + dialogWidth * 2 / 3, this->displayDim + dialogHeight * 2 / 3, 180, 30,
 		this->hWnd, (HMENU)BUTTON_CREATE_LINE, hInst, nullptr);
+
+	this->elevationScalingTypeGroupWnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"ElevScalTypeGrp", nullptr, WS_VISIBLE | WS_CHILD,
+		50, this->displayDim + 80, 180, 50,
+		this->hWnd, nullptr, hInst, nullptr);
+	this->elevationScalingTypeGroup = CreateWindow(L"BUTTON", L" Elevation scaling ", WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
+		0, 0, 180, 50,
+		this->elevationScalingTypeGroupWnd, nullptr, hInst, nullptr);
+	this->radioButtonLin = CreateWindow(L"BUTTON", L"Lin", WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
+		20, 20, 50, 20,
+		this->elevationScalingTypeGroupWnd, nullptr, hInst, nullptr);
+	this->radioButtonLog = CreateWindow(L"BUTTON", L"Log", WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
+		90, 20, 50, 20,
+		this->elevationScalingTypeGroupWnd, nullptr, hInst, nullptr);
+
+	SendMessage(radioButtonLin, BM_SETCHECK, BST_CHECKED, 0);
 }
 
 
@@ -51,6 +66,16 @@ HWND PlaneMergedWnd::getPlaneTitle() {
 }
 
 
+HWND PlaneMergedWnd::getRadioButtonLin() {
+	return this->radioButtonLin;
+}
+
+
+HWND PlaneMergedWnd::getRadioButtonLog() {
+	return this->radioButtonLog;
+}
+
+
 void PlaneMergedWnd::setAxisBtnReplacementVal(HWND hWnd) {
 	this->hAxisBtnReplacementVal = hWnd;
 }
@@ -70,6 +95,11 @@ void PlaneMergedWnd::resize() {
 	this->VisMergedWndBase::resize();
 
 	MoveWindow(hPlaneTitle, dataWndRect.right / 2 - 60, displayDim / 5 - 70, 150, 20, TRUE);
+
+	MoveWindow(elevationScalingTypeGroupWnd, 50, this->displayDim + 80, 180, 50, TRUE);
+	MoveWindow(elevationScalingTypeGroup, 0, 0, 180, 50, TRUE);
+	MoveWindow(radioButtonLin, 20, 20, 50, 20, TRUE);
+	MoveWindow(radioButtonLog, 90, 20, 50, 20, TRUE);
 
 	if (this->axis == 'X') {
 		MoveWindow(hAxisBtnReplacementVal, wndRect.right / 4 + 50, displayDim + dialogHeight / 3 + 30, 100, 20, TRUE);

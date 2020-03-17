@@ -28,6 +28,10 @@ class PlaneMergedWnd: public VisMergedWndBase {
 private:
 	char axis;
 	HWND hPlaneTitle;
+	HWND elevationScalingTypeGroupWnd;
+	HWND elevationScalingTypeGroup;
+	HWND radioButtonLin;
+	HWND radioButtonLog;
 	HWND hAxisBtnReplacementVal;
 	HWND hBtnCreateLine;
 public:
@@ -38,6 +42,8 @@ public:
 	char getAxis();
 	void setPlaneTitle(HWND hWnd);
 	HWND getPlaneTitle();
+	HWND getRadioButtonLin();
+	HWND getRadioButtonLog();
 	void setAxisBtnReplacementVal(HWND hWnd);
 	HWND getAxisBtnReplacementVal();
 	HWND getBtnCreateLine();

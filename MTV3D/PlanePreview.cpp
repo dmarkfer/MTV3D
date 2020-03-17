@@ -402,6 +402,14 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 			)
 		));
 
+		gridAxesValuesVertices.push_back(std::make_pair(
+			DirectX::XMVectorSet(visp.axisOne, i * float((1 + gridLineExtensionPerc) * modelReliefLength / 10.L) - relfToAxis, visp.axisTwo, 1.f),
+			std::make_pair(
+				std::make_pair(std::pow(10, resultMinValueLog10 + i * (resultMaxValueLog10 - resultMinValueLog10) / 10.L), std::pow(10, relerrMinValueLog10 + i * (relerrMaxValueLog10 - relerrMinValueLog10) / 10.L)),
+				i == 5 ? L"4MID" : L"4"
+			)
+		));
+
 		visp = visPlaneModel[0][0];
 		visp.axisOne -= modelAbscissaCenter;
 		visp.axisTwo -= modelOrdinateCenter;
@@ -441,13 +449,20 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 	long double resValQ = (1 + gridLineExtensionPerc) * modelReliefLength / (resultMaxValue - resultMinValue);
 	long double relErrValQ = (1 + gridLineExtensionPerc) * modelReliefLength / (relerrMaxValue - relerrMinValue);
 
+	long double resValQLog10 = (1 + gridLineExtensionPerc) * modelReliefLength / (resultMaxValueLog10 - resultMinValueLog10);
+	long double relErrValQLog10 = (1 + gridLineExtensionPerc) * modelReliefLength / (relerrMaxValueLog10 - relerrMinValueLog10);
+
 	for (int i = 0; i < axisOneSize; ++i) {
 		for (int j = 0; j < axisTwoSize; ++j) {
 			Graphics::Point2D visp = visPlaneModel[i][j];
 			visp.axisOne -= modelAbscissaCenter;
 			visp.axisTwo -= modelOrdinateCenter;
+			
 			verticesResult.push_back({ visp.axisOne, float((visp.value - resultMinValue) * resValQ - relfToAxis), visp.axisTwo, getResultColor(visp.value) });
 			verticesRelErr.push_back({ visp.axisOne, relfToAxis - float((visp.value == 0.L ? 0.L : relerrMaxValue - visp.relError) * relErrValQ), visp.axisTwo, getRelErrColor(visp.value, visp.relError) });
+
+			verticesResultLog10.push_back({ visp.axisOne, float((std::log10(visp.value) - resultMinValueLog10) * resValQLog10 - relfToAxis), visp.axisTwo, getResultColor(visp.value) });
+			verticesRelErrLog10.push_back({ visp.axisOne, relfToAxis - float((visp.value == 0.L ? 0.L : relerrMaxValueLog10 - std::log10(visp.relError)) * relErrValQLog10), visp.axisTwo, getRelErrColor(visp.value, visp.relError) });
 
 			if (i > 0 && j > 0) {
 				indices.push_back((i - 1) * axisTwoSize + j - 1);
@@ -509,6 +524,44 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 	this->d3dDevice->CreateBuffer(&vertexRelErrBufferDesc, &vertexRelErrSubresourceData, &vertexRelErrBuffer);
 
 
+	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexResultBufferLog10;
+	D3D11_BUFFER_DESC vertexResultBufferDescLog10;
+	ZeroMemory(&vertexResultBufferDescLog10, sizeof(D3D11_BUFFER_DESC));
+	vertexResultBufferDescLog10.ByteWidth = sizeof(Graphics::Vertex) * verticesResultLog10.size();
+	vertexResultBufferDescLog10.Usage = D3D11_USAGE_DEFAULT;
+	vertexResultBufferDescLog10.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexResultBufferDescLog10.CPUAccessFlags = 0;
+	vertexResultBufferDescLog10.MiscFlags = 0;
+	vertexResultBufferDescLog10.StructureByteStride = sizeof(Graphics::Vertex);
+
+	D3D11_SUBRESOURCE_DATA vertexResultSubresourceDataLog10;
+	ZeroMemory(&vertexResultSubresourceDataLog10, sizeof(D3D11_SUBRESOURCE_DATA));
+	vertexResultSubresourceDataLog10.pSysMem = &verticesResultLog10[0];
+	vertexResultSubresourceDataLog10.SysMemPitch = 0;
+	vertexResultSubresourceDataLog10.SysMemSlicePitch = 0;
+
+	this->d3dDevice->CreateBuffer(&vertexResultBufferDescLog10, &vertexResultSubresourceDataLog10, &vertexResultBufferLog10);
+
+
+	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexRelErrBufferLog10;
+	D3D11_BUFFER_DESC vertexRelErrBufferDescLog10;
+	ZeroMemory(&vertexRelErrBufferDescLog10, sizeof(D3D11_BUFFER_DESC));
+	vertexRelErrBufferDescLog10.ByteWidth = sizeof(Graphics::Vertex) * verticesRelErrLog10.size();
+	vertexRelErrBufferDescLog10.Usage = D3D11_USAGE_DEFAULT;
+	vertexRelErrBufferDescLog10.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexRelErrBufferDescLog10.CPUAccessFlags = 0;
+	vertexRelErrBufferDescLog10.MiscFlags = 0;
+	vertexRelErrBufferDescLog10.StructureByteStride = sizeof(Graphics::Vertex);
+
+	D3D11_SUBRESOURCE_DATA vertexRelErrSubresourceDataLog10;
+	ZeroMemory(&vertexRelErrSubresourceDataLog10, sizeof(D3D11_SUBRESOURCE_DATA));
+	vertexRelErrSubresourceDataLog10.pSysMem = &verticesRelErrLog10[0];
+	vertexRelErrSubresourceDataLog10.SysMemPitch = 0;
+	vertexRelErrSubresourceDataLog10.SysMemSlicePitch = 0;
+
+	this->d3dDevice->CreateBuffer(&vertexRelErrBufferDescLog10, &vertexRelErrSubresourceDataLog10, &vertexRelErrBufferLog10);
+
+
 	const UINT stride = sizeof(Graphics::Vertex);
 	const UINT offset = 0;
 
@@ -564,6 +617,13 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 	bool quitFlag = false;
 
 	while (true) {
+		if (Button_GetCheck(this->hPlaneMerWnd->getRadioButtonLin()) == BST_CHECKED) {
+			this->log10ElevationFlag = false;
+		}
+		else {
+			this->log10ElevationFlag = true;
+		}
+
 		if (PlanePreview::flagLinePrevCreation) {
 			PlanePreview::flagLinePrevCreation = false;
 
@@ -793,7 +853,13 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 		this->d3dDeviceContext->ClearRenderTargetView(renderTargetResultDisplay.Get(), color);
 		this->d3dDeviceContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.f, 0u);
 
-		this->d3dDeviceContext->IASetVertexBuffers(0, 1, vertexResultBuffer.GetAddressOf(), &stride, &offset);
+		if (this->log10ElevationFlag) {
+			this->d3dDeviceContext->IASetVertexBuffers(0, 1, vertexResultBufferLog10.GetAddressOf(), &stride, &offset);
+		}
+		else {
+			this->d3dDeviceContext->IASetVertexBuffers(0, 1, vertexResultBuffer.GetAddressOf(), &stride, &offset);
+		}
+		
 		this->d3dDeviceContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 
@@ -907,8 +973,12 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 		gridAxesValScreenVertices.clear();
 
 		for (auto axisPoint : gridAxesValuesVertices) {
-			axisPoint.first = DirectX::XMVector3Transform(axisPoint.first, transformationMatrix);
+			if ((!log10ElevationFlag && axisPoint.second.second[0] == '4') || (log10ElevationFlag && axisPoint.second.second[0] == '3')) {
+				continue;
+			}
 
+			axisPoint.first = DirectX::XMVector3Transform(axisPoint.first, transformationMatrix);
+			
 			gridAxesValScreenVertices.push_back(DirectX::XMVector3Project(
 				axisPoint.first,
 				viewport.TopLeftX, viewport.TopLeftY, viewport.Width, viewport.Height, viewport.MinDepth, viewport.MaxDepth,
@@ -988,6 +1058,10 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 			auto axValIter = gridAxesValuesVertices.begin();
 
 			for (auto scrVec : gridAxesValScreenVertices) {
+				while ((!log10ElevationFlag && axValIter->second.second[0] == '4') || (log10ElevationFlag && axValIter->second.second[0] == '3')) {
+					++axValIter;
+				}
+
 				axValSize = swprintf_s(axVal, L"%1.3Lf", axValIter->second.first.first);
 
 				float offsetX = 0.f, offsetY = 0.f;
@@ -1065,7 +1139,14 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 
 		this->d3dDeviceContext->ClearRenderTargetView(renderTargetRelErrDisplay.Get(), color);
 		this->d3dDeviceContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.f, 0u);
-		this->d3dDeviceContext->IASetVertexBuffers(0, 1, vertexRelErrBuffer.GetAddressOf(), &stride, &offset);
+
+		if (this->log10ElevationFlag) {
+			this->d3dDeviceContext->IASetVertexBuffers(0, 1, vertexRelErrBufferLog10.GetAddressOf(), &stride, &offset);
+		}
+		else {
+			this->d3dDeviceContext->IASetVertexBuffers(0, 1, vertexRelErrBuffer.GetAddressOf(), &stride, &offset);
+		}
+		
 		this->d3dDeviceContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 		this->d3dDeviceContext->VSSetConstantBuffers(0, 1, constBuffer.GetAddressOf());
 
@@ -1107,6 +1188,10 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 			auto axValIter = gridAxesValuesVertices.begin();
 
 			for (auto scrVec : gridAxesValScreenVertices) {
+				while ((!log10ElevationFlag && axValIter->second.second[0] == '4') || (log10ElevationFlag && axValIter->second.second[0] == '3')) {
+					++axValIter;
+				}
+
 				axValSize = swprintf_s(axVal, L"%1.3Lf", axValIter->second.first.first);
 
 				float offsetX = 0.f, offsetY = 0.f;

@@ -36,8 +36,11 @@ private:
 	LPWSTR fileAbsolutePath;
 	LPWSTR windowTitle;
 
+	bool log10ElevationFlag = false;
 	std::vector<Graphics::Vertex> verticesResult;
 	std::vector<Graphics::Vertex> verticesRelErr;
+	std::vector<Graphics::Vertex> verticesResultLog10;
+	std::vector<Graphics::Vertex> verticesRelErrLog10;
 	std::vector<unsigned> indices;
 
 	Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice;

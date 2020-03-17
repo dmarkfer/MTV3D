@@ -875,6 +875,21 @@ void App::createWndClasses() {
 		nullptr
 	};
 
+	this->wndClassTypeStruct[WndClass::Type::ELEV_SCAL_TYPE_GRP] = {
+		sizeof(WNDCLASSEXW),
+		CS_HREDRAW | CS_VREDRAW,
+		App::wndProc,
+		0,
+		0,
+		this->hCurrentInst,
+		nullptr,
+		LoadCursor(this->hCurrentInst, IDC_ARROW),
+		CreateSolidBrush(DARK_GRAY),
+		nullptr,
+		L"ElevScalTypeGrp",
+		nullptr
+	};
+
 	this->wndClassTypeStruct[WndClass::Type::EDITABLE] = {
 		sizeof(WNDCLASSEXW),
 		CS_HREDRAW | CS_VREDRAW,
@@ -916,6 +931,7 @@ void App::createWndClasses() {
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_DISPLAY]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::DATA_WND_CLASS]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::VIS_LEGEND]);
+	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::ELEV_SCAL_TYPE_GRP]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::EDITABLE]);
 	RegisterClassExW(&this->wndClassTypeStruct[WndClass::Type::ABOUT]);
 }
