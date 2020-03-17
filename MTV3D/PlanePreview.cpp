@@ -134,7 +134,7 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 	delete[] planePointsData;
 
 
-	long double resultMinValueLog10 = std::log10(resultMinValue);
+	long double resultMinValueLog10 = (resultMinValue > 0.L) ? std::log10(resultMinValue) : std::numeric_limits<long double>::min_exponent10;
 	long double resultMaxValueLog10 = std::log10(resultMaxValue);
 	long double resultLogFifth = (resultMaxValueLog10 - resultMinValueLog10) / 5.L;
 	if (resultLogFifth < 0.L) {
@@ -461,7 +461,7 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 			verticesResult.push_back({ visp.axisOne, float((visp.value - resultMinValue) * resValQ - relfToAxis), visp.axisTwo, getResultColor(visp.value) });
 			verticesRelErr.push_back({ visp.axisOne, relfToAxis - float((visp.value == 0.L ? 0.L : relerrMaxValue - visp.relError) * relErrValQ), visp.axisTwo, getRelErrColor(visp.value, visp.relError) });
 
-			verticesResultLog10.push_back({ visp.axisOne, float((std::log10(visp.value) - resultMinValueLog10) * resValQLog10 - relfToAxis), visp.axisTwo, getResultColor(visp.value) });
+			verticesResultLog10.push_back({ visp.axisOne, float((visp.value == 0.L ? 0.L : (std::log10(visp.value) - resultMinValueLog10)) * resValQLog10 - relfToAxis), visp.axisTwo, getResultColor(visp.value) });
 			verticesRelErrLog10.push_back({ visp.axisOne, relfToAxis - float((visp.value == 0.L ? 0.L : relerrMaxValueLog10 - std::log10(visp.relError)) * relErrValQLog10), visp.axisTwo, getRelErrColor(visp.value, visp.relError) });
 
 			if (i > 0 && j > 0) {
