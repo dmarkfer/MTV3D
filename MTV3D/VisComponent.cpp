@@ -115,12 +115,12 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 	long double relerrMaxValueLog10 = std::log10(relerrMaxValue);
 	long double relerrLogFifth = (relerrMaxValueLog10 - relerrMinValueLog10) / 5.L;
 
-	this->relerrLegend.push_back({ 1.f, 0.f, 0.f, relerrMinValue });
-	this->relerrLegend.push_back({ 1.f, 1.f, 0.f, std::pow(10, relerrMaxValueLog10 - 4.L * relerrLogFifth) });
-	this->relerrLegend.push_back({ 0.f, 1.f, 0.f, std::pow(10, relerrMaxValueLog10 - 3.L * relerrLogFifth) });
-	this->relerrLegend.push_back({ 0.f, 1.f, 1.f, std::pow(10, relerrMaxValueLog10 - 2.L * relerrLogFifth) });
-	this->relerrLegend.push_back({ 0.f, 0.f, 1.f, std::pow(10, relerrMaxValueLog10 - relerrLogFifth) });
-	this->relerrLegend.push_back({ 1.f, 0.f, 1.f, relerrMaxValue });
+	this->relerrLegend.push_back({ 1.f, 0.f, 1.f, relerrMinValue });
+	this->relerrLegend.push_back({ 0.f, 0.f, 1.f, std::pow(10, relerrMaxValueLog10 - 4.L * relerrLogFifth) });
+	this->relerrLegend.push_back({ 0.f, 1.f, 1.f, std::pow(10, relerrMaxValueLog10 - 3.L * relerrLogFifth) });
+	this->relerrLegend.push_back({ 0.f, 1.f, 0.f, std::pow(10, relerrMaxValueLog10 - 2.L * relerrLogFifth) });
+	this->relerrLegend.push_back({ 1.f, 1.f, 0.f, std::pow(10, relerrMaxValueLog10 - relerrLogFifth) });
+	this->relerrLegend.push_back({ 1.f, 0.f, 0.f, relerrMaxValue });
 
 
 	int axisXSize = axisXValues.size();
@@ -1377,19 +1377,19 @@ Graphics::CustomColor VisComponent::getResultColor(long double resultValue) {
 	long double valLog = std::log10(resultValue);
 	long double levelColor;
 
-	if (valLog <= std::log10(this->resultLegend[1].value)) {
+	if (resultValue <= this->resultLegend[1].value) {
 		levelColor = std::abs(valLog - std::log10(this->resultLegend[0].value)) / std::abs(std::log10(this->resultLegend[1].value) - std::log10(this->resultLegend[0].value));
 		return { 1.f - (float)levelColor, 0.f, 1.f };
 	}
-	else if (valLog <= std::log10(this->resultLegend[2].value)) {
+	else if (resultValue <= this->resultLegend[2].value) {
 		levelColor = std::abs(valLog - std::log10(this->resultLegend[1].value)) / std::abs(std::log10(this->resultLegend[2].value) - std::log10(this->resultLegend[1].value));
 		return { 0.f, (float)levelColor, 1.f };
 	}
-	else if (valLog <= std::log10(this->resultLegend[3].value)) {
+	else if (resultValue <= this->resultLegend[3].value) {
 		levelColor = std::abs(valLog - std::log10(this->resultLegend[2].value)) / std::abs(std::log10(this->resultLegend[3].value) - std::log10(this->resultLegend[2].value));
 		return { 0.f, 1.f, 1.f - (float)levelColor };
 	}
-	else if (valLog <= std::log10(this->resultLegend[4].value)) {
+	else if (resultValue <= this->resultLegend[4].value) {
 		levelColor = std::abs(valLog - std::log10(this->resultLegend[3].value)) / std::abs(std::log10(this->resultLegend[4].value) - std::log10(this->resultLegend[3].value));
 		return { (float)levelColor, 1.f, 0.f };
 	}
@@ -1408,24 +1408,24 @@ Graphics::CustomColor VisComponent::getRelErrColor(long double resultValue, long
 	long double valLog = std::log10(relerrValue);
 	long double levelColor;
 
-	if (relerrValue >= this->relerrLegend[4].value) {
-		levelColor = std::abs(std::log10(this->relerrLegend[5].value - valLog)) / std::abs(std::log10(this->relerrLegend[5].value) - std::log10(this->relerrLegend[4].value));
+	if (relerrValue <= this->relerrLegend[1].value) {
+		levelColor = std::abs(valLog - std::log10(this->relerrLegend[0].value)) / std::abs(std::log10(this->relerrLegend[1].value) - (this->relerrLegend[0].value > 0.L) ? std::log10(this->relerrLegend[0].value) : std::numeric_limits<long double>::min_exponent10);
 		return { 1.f - (float)levelColor, 0.f, 1.f };
 	}
-	else if (relerrValue >= this->relerrLegend[3].value) {
-		levelColor = std::abs(std::log10(this->relerrLegend[4].value - valLog)) / std::abs(std::log10(this->relerrLegend[4].value) - std::log10(this->relerrLegend[3].value));
+	else if (relerrValue <= this->relerrLegend[2].value) {
+		levelColor = std::abs(valLog - std::log10(this->relerrLegend[1].value)) / std::abs(std::log10(this->relerrLegend[2].value) - std::log10(this->relerrLegend[1].value));
 		return { 0.f, (float)levelColor, 1.f };
 	}
-	else if (relerrValue >= this->relerrLegend[2].value) {
-		levelColor = std::abs(std::log10(this->relerrLegend[3].value - valLog)) / std::abs(std::log10(this->relerrLegend[3].value) - std::log10(this->relerrLegend[2].value));
+	else if (relerrValue <= this->relerrLegend[3].value) {
+		levelColor = std::abs(valLog - std::log10(this->relerrLegend[2].value)) / std::abs(std::log10(this->relerrLegend[3].value) - std::log10(this->relerrLegend[2].value));
 		return { 0.f, 1.f, 1.f - (float)levelColor };
 	}
-	else if (relerrValue >= this->relerrLegend[1].value) {
-		levelColor = std::abs(std::log10(this->relerrLegend[2].value - valLog)) / std::abs(std::log10(this->relerrLegend[2].value) - std::log10(this->relerrLegend[1].value));
+	else if (relerrValue <= this->relerrLegend[4].value) {
+		levelColor = std::abs(valLog - std::log10(this->relerrLegend[3].value)) / std::abs(std::log10(this->relerrLegend[4].value) - std::log10(this->relerrLegend[3].value));
 		return { (float)levelColor, 1.f, 0.f };
 	}
 	else {
-		levelColor = std::abs(std::log10(this->relerrLegend[1].value - valLog)) / std::abs(std::log10(this->relerrLegend[1].value) - (this->relerrLegend[0].value > 0.L) ? std::log10(this->relerrLegend[0].value) : std::numeric_limits<long double>::min_exponent10);
+		levelColor = std::abs(valLog - std::log10(this->relerrLegend[4].value)) / std::abs(std::log10(this->relerrLegend[5].value) - std::log10(this->relerrLegend[4].value));
 		return { 1.f, 1.f - (float)levelColor, 0.f };
 	}
 }
