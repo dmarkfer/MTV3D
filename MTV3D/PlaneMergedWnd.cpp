@@ -24,6 +24,11 @@
 
 
 PlaneMergedWnd::PlaneMergedWnd(HINSTANCE hInst, LPWSTR windowTitle): VisMergedWndBase(hInst, windowTitle, 'L') {
+	this->hBtnResetPlaneModel = CreateWindow(L"BUTTON", L"Reset model",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+		180, this->displayDim + 25, 100, 30,
+		this->hWnd, (HMENU)BUTTON_RESET_PLANE_MODEL, hInst, nullptr);
+	
 	this->hBtnCreateLine = CreateWindow(L"BUTTON", L"Create line preview",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
 		wndRect.right / 4 + dialogWidth * 2 / 3, this->displayDim + dialogHeight * 2 / 3, 180, 30,
@@ -86,6 +91,11 @@ HWND PlaneMergedWnd::getAxisBtnReplacementVal() {
 }
 
 
+HWND PlaneMergedWnd::getBtnResetPlaneModel() {
+	return this->hBtnResetPlaneModel;
+}
+
+
 HWND PlaneMergedWnd::getBtnCreateLine() {
 	return this->hBtnCreateLine;
 }
@@ -111,5 +121,6 @@ void PlaneMergedWnd::resize() {
 		MoveWindow(hAxisBtnReplacementVal, wndRect.right / 4 + 200, displayDim + dialogHeight / 3 + 30, 100, 20, TRUE);
 	}
 	
+	MoveWindow(hBtnResetPlaneModel, 180, this->displayDim + 25, 100, 30, TRUE);
 	MoveWindow(hBtnCreateLine, wndRect.right / 4 + dialogWidth * 2 / 3, this->displayDim + dialogHeight * 2 / 3, 180, 30, TRUE);
 }

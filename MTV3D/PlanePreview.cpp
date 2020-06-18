@@ -27,6 +27,7 @@ thread_local float PlanePreview::scaleBase = 1.f;
 thread_local bool PlanePreview::gridActive = true;
 thread_local bool PlanePreview::axesValsActive = true;
 thread_local bool PlanePreview::flagLinePrevCreation = false;
+thread_local bool PlanePreview::resetVerticesFlag = false;
 
 
 PlanePreview::PlanePreview(char axis, float axisValue): axis(axis), axisValue(axisValue) {
@@ -963,6 +964,15 @@ void PlanePreview::run(DWORD callingThreadId, HINSTANCE hCurrentInst, HACCEL hAc
 
 			CursorData::clickPosX = cursorPosition.x;
 			CursorData::clickPosY = cursorPosition.y;
+		}
+
+
+		if (PlanePreview::resetVerticesFlag) {
+			PlanePreview::resetVerticesFlag = false;
+
+			roundRotationMatrix = DirectX::XMMatrixRotationX(0.f);
+			rotationMatrix = DirectX::XMMatrixRotationX(0.f);
+			PlanePreview::scaleBase = 1.f;
 		}
 
 

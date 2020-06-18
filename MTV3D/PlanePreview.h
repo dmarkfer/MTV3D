@@ -61,6 +61,7 @@ public:
 	thread_local static bool gridActive;
 	thread_local static bool axesValsActive;
 	thread_local static bool flagLinePrevCreation;
+	thread_local static bool resetVerticesFlag;
 public:
 	PlanePreview(char axis, float axisValue);
 	~PlanePreview() = default;

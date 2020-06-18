@@ -26,10 +26,20 @@
 VisMergedWindow::VisMergedWindow(HINSTANCE hInst, LPWSTR windowTitle): VisMergedWndBase(hInst, windowTitle, 'P') {
 	SendMessage(radioButtonZ, BM_SETCHECK, BST_CHECKED, 0);
 
+	this->hBtnReset3DModel = CreateWindow(L"BUTTON", L"Reset model",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+		180, this->displayDim + 25, 100, 30,
+		this->hWnd, (HMENU)BUTTON_RESET_3D_MODEL, hInst, nullptr);
+
 	this->hBtnCreatePlane = CreateWindow(L"BUTTON", L"Create plane preview",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
 		wndRect.right / 4 + dialogWidth * 2 / 3, this->displayDim + dialogHeight * 2 / 3, 180, 30,
 		this->hWnd, (HMENU)BUTTON_CREATE_PLANE, hInst, nullptr);
+}
+
+
+HWND VisMergedWindow::getBtnReset3DModel() {
+	return this->hBtnReset3DModel;
 }
 
 
@@ -41,5 +51,6 @@ HWND VisMergedWindow::getBtnCreatePlane() {
 void VisMergedWindow::resize() {
 	this->VisMergedWndBase::resize();
 
+	MoveWindow(hBtnReset3DModel, 180, this->displayDim + 25, 100, 30, TRUE);
 	MoveWindow(hBtnCreatePlane, wndRect.right / 4 + dialogWidth * 2 / 3, this->displayDim + dialogHeight * 2 / 3, 180, 30, TRUE);
 }

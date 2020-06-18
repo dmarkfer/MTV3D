@@ -357,6 +357,14 @@ LRESULT CALLBACK App::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			VisComponent::flagPlanePrevCreation = true;
 			break;
 		}
+		case BUTTON_RESET_3D_MODEL: {
+			VisComponent::resetVerticesFlag = true;
+			break;
+		}
+		case BUTTON_RESET_PLANE_MODEL: {
+			PlanePreview::resetVerticesFlag = true;
+			break;
+		}
 		case CHECK_GRID: {
 			if (HIWORD(wParam) == BN_CLICKED) {
 				if (SendDlgItemMessage(hWnd, CHECK_GRID, BM_GETCHECK, 0, 0)) {

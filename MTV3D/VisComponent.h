@@ -33,6 +33,7 @@ public:
 	thread_local static bool gridActive;
 	thread_local static bool axesValsActive;
 	thread_local static bool flagPlanePrevCreation;
+	thread_local static bool resetVerticesFlag;
 private:
 	HINSTANCE hCurrentInst;
 	HACCEL hAccelTable;

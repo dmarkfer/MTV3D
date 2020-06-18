@@ -28,6 +28,7 @@ thread_local float VisComponent::scaleBase = 1.f;
 thread_local bool VisComponent::gridActive = true;
 thread_local bool VisComponent::axesValsActive = true;
 thread_local bool VisComponent::flagPlanePrevCreation = false;
+thread_local bool VisComponent::resetVerticesFlag = false;
 
 
 void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId, LPWSTR fileAbsolutePath, int visPointsDataSize, Graphics::Point3D* visPointsData) {
@@ -1019,6 +1020,15 @@ void VisComponent::run(HINSTANCE hCurrentInst, HACCEL hAccelTable, int projectId
 
 			CursorData::clickPosX = cursorPosition.x;
 			CursorData::clickPosY = cursorPosition.y;
+		}
+
+
+		if (VisComponent::resetVerticesFlag) {
+			VisComponent::resetVerticesFlag = false;
+
+			roundRotationMatrix = DirectX::XMMatrixRotationX(0.f);
+			rotationMatrix = DirectX::XMMatrixRotationX(0.f);
+			VisComponent::scaleBase = 1.f;
 		}
 
 

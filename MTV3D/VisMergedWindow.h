@@ -26,11 +26,13 @@
 
 class VisMergedWindow: public VisMergedWndBase {
 private:
+	HWND hBtnReset3DModel;
 	HWND hBtnCreatePlane;
 public:
 	VisMergedWindow(HINSTANCE hInst, LPWSTR windowTitle);
 	~VisMergedWindow() = default;
 
+	HWND getBtnReset3DModel();
 	HWND getBtnCreatePlane();
 	virtual void resize() override;
 };

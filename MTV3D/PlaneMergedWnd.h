@@ -33,6 +33,7 @@ private:
 	HWND radioButtonLin;
 	HWND radioButtonLog;
 	HWND hAxisBtnReplacementVal;
+	HWND hBtnResetPlaneModel;
 	HWND hBtnCreateLine;
 public:
 	PlaneMergedWnd(HINSTANCE hInst, LPWSTR windowTitle);
@@ -46,6 +47,7 @@ public:
 	HWND getRadioButtonLog();
 	void setAxisBtnReplacementVal(HWND hWnd);
 	HWND getAxisBtnReplacementVal();
+	HWND getBtnResetPlaneModel();
 	HWND getBtnCreateLine();
 	virtual void resize() override;
 };
